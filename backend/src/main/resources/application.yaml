@@ -1,3 +1,6 @@
 spring:
   application:
     name: backend
+
+whop:
+  key: apik_D8qC....dec3
