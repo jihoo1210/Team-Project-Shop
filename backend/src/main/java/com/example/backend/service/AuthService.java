@@ -37,7 +37,7 @@ public class AuthService {
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // User 엔티티 생성
+        // User 엔티티 생성 (기본 역할: USER)
         User user = User.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
@@ -46,6 +46,7 @@ public class AuthService {
                 .addr(request.getAddr())
                 .addrDetail(request.getAddrDetail())
                 .phone(request.getPhone())
+                .role(com.example.backend.entity.user.Role.USER)
                 .build();
 
         userRepository.save(user);
@@ -68,6 +69,7 @@ public class AuthService {
         session.setAttribute("loginUserId", user.getUserId());
         session.setAttribute("loginUserEmail", user.getEmail());
         session.setAttribute("loginUserName", user.getUsername());
+        session.setAttribute("loginUserRole", user.getRole().name()); // 역할 추가
 
         return UserResponseDTO.from(user);
     }
