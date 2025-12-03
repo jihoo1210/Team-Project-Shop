@@ -1,14 +1,17 @@
 package com.example.backend.dto;
 
-import java.sql.Timestamp;
-
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 public class CommentDTO {
-    private int coNo;            // 댓글 번호 (PK)
-    private int boardNo;         // 어느 글의 댓글인지 (FK)
-    private String userName;     // 작성자 ID (FK)
-    private String coContent;    // 댓글 내용
-    private Timestamp coRegDate; // 작성일
+    private Long coNo;           // 댓글 번호
+    private Long boardNo;        // 게시글 번호
+    private Long writerId;       // 작성자 ID
+    private String writerName;   // 작성자 이름 (화면 표시용)
+    private String coComment;    // 댓글 내용
+    private String secretYn;     // 비밀 댓글 여부
+    private String delYn;        // 삭제 여부
+    private LocalDateTime coRegDate;  // 등록일
+    private LocalDateTime coModDate;  // 수정일
 }
