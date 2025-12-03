@@ -24,7 +24,7 @@ const Header = () => {
   const [searchTerm, setSearchTerm] = useState('')
   
   // TODO: AuthContext에서 가져올 예정
-  const isLoggedIn = false
+  const isLoggedIn = true // 임시로 true 설정
   const cartItemCount = 3 // TODO: 장바구니 개수 상태 연동
 
   const handleSearch = (e: React.FormEvent) => {
