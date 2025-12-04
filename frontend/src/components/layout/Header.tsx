@@ -91,6 +91,16 @@ const Header = () => {
 
           {/* 네비게이션 버튼 */}
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {/* 게시판 버튼 - 항상 표시 */}
+            <Button
+              component={Link}
+              to="/board/notice"
+              color="inherit"
+              sx={{ fontWeight: 600 }}
+            >
+              게시판
+            </Button>
+
             {isLoggedIn ? (
               <>
                 {isAdmin && (
