@@ -43,8 +43,8 @@ const Header = () => {
   return (
     <AppBar position="sticky" elevation={0}>
       <Container maxWidth="lg">
-        <Toolbar sx={{ gap: 3, py: 1.5 }}>
-          {/* 로고 */}
+        <Toolbar sx={{ justifyContent: 'space-between', py: 1.5 }}>
+          {/* 좌측: 로고 */}
           <Typography
             variant="h5"
             component={Link}
@@ -53,18 +53,22 @@ const Header = () => {
               fontWeight: 800,
               color: 'primary.main',
               textDecoration: 'none',
-              mr: 4,
+              flexShrink: 0,
               '&:hover': { opacity: 0.8 },
             }}
           >
             MyShop
           </Typography>
 
-          {/* 검색창 */}
+          {/* 중앙: 검색창 */}
           <Box
             component="form"
             onSubmit={handleSearch}
-            sx={{ flexGrow: 1, maxWidth: 500 }}
+            sx={{ 
+              width: '100%', 
+              maxWidth: 500,
+              mx: 4,
+            }}
           >
             <TextField
               fullWidth
@@ -89,8 +93,8 @@ const Header = () => {
             />
           </Box>
 
-          {/* 네비게이션 버튼 */}
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          {/* 우측: 네비게이션 버튼 */}
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexShrink: 0 }}>
             {/* 게시판 버튼 - 항상 표시 */}
             <Button
               component={Link}
