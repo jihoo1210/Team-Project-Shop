@@ -13,6 +13,7 @@ public class UserResponseDTO {
     private String addr;
     private String addrDetail;
     private String phone;
+    private String role; // 역할 (USER, ADMIN)
 
     // Entity -> DTO 변환
     public static UserResponseDTO from(User user) {
@@ -24,6 +25,7 @@ public class UserResponseDTO {
         dto.setAddr(user.getAddr());
         dto.setAddrDetail(user.getAddrDetail());
         dto.setPhone(user.getPhone());
+        dto.setRole(user.getRole().name()); // 역할 추가
         return dto;
     }
 }
