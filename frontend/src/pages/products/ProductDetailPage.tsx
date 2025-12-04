@@ -176,7 +176,7 @@ const ProductDetailPage = () => {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Grid container spacing={6}>
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item xs={12} md={6}>
             <Skeleton variant="rectangular" height={500} sx={{ borderRadius: 2 }} />
             <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
               {[1, 2, 3, 4].map((i) => (
@@ -184,7 +184,7 @@ const ProductDetailPage = () => {
               ))}
             </Stack>
           </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item xs={12} md={6}>
             <Skeleton variant="text" width="30%" height={30} />
             <Skeleton variant="text" width="80%" height={50} sx={{ mt: 1 }} />
             <Skeleton variant="text" width="50%" height={40} sx={{ mt: 2 }} />
@@ -225,7 +225,7 @@ const ProductDetailPage = () => {
 
       <Grid container spacing={6}>
         {/* 좌측: 상품 이미지 슬라이더 */}
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid item xs={12} md={6}>
           {/* 메인 이미지 */}
           <Box
             sx={{
@@ -293,7 +293,7 @@ const ProductDetailPage = () => {
         </Grid>
 
         {/* 우측: 상품 정보 영역 */}
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid item xs={12} md={6}>
           {/* 브랜드 */}
           <Typography variant="body2" color="text.secondary" gutterBottom>
             {product.brand}

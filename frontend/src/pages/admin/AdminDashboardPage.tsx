@@ -1,12 +1,189 @@
-import { Typography } from '@mui/material'
+import { useState, useEffect } from 'react'
+import {
+  Typography,
+  Box,
+  Grid,
+  Paper,
+  Card,
+  CardContent,
+} from '@mui/material'
+import {
+  People as PeopleIcon,
+  ShoppingCart as ShoppingCartIcon,
+  Inventory as InventoryIcon,
+  TrendingUp as TrendingUpIcon,
+  AttachMoney as AttachMoneyIcon,
+} from '@mui/icons-material'
+import { brandColors } from '@/theme/tokens'
+
+interface DashboardStats {
+  totalMembers: number
+  totalOrders: number
+  totalProducts: number
+  todayOrders: number
+  todaySales: number
+}
 
 const AdminDashboardPage = () => {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalMembers: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    todayOrders: 0,
+    todaySales: 0,
+  })
+
+  useEffect(() => {
+    // TODO: ?�제 API ?�동
+    // const loadStats = async () => {
+    //   const data = await fetchDashboardStats()
+    //   setStats(data)
+    // }
+    // loadStats()
+
+    // ?�시 ?�이??
+    setStats({
+      totalMembers: 1234,
+      totalOrders: 5678,
+      totalProducts: 456,
+      todayOrders: 23,
+      todaySales: 1234000,
+    })
+  }, [])
+
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('ko-KR').format(num)
+  }
+
+  const StatCard = ({
+    title,
+    value,
+    icon,
+    color,
+    suffix = '',
+  }: {
+    title: string
+    value: number
+    icon: React.ReactNode
+    color: string
+    suffix?: string
+  }) => (
+    <Card elevation={0} sx={{ border: '1px solid #E5E7EB', height: '100%' }}>
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box>
+            <Typography color="text.secondary" fontSize="0.875rem" sx={{ mb: 1 }}>
+              {title}
+            </Typography>
+            <Typography variant="h4" fontWeight={700}>
+              {formatNumber(value)}
+              {suffix && (
+                <Typography component="span" fontSize="1rem" fontWeight={400}>
+                  {suffix}
+                </Typography>
+              )}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: `${color}20`,
+              color: color,
+            }}
+          >
+            {icon}
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  )
+
   return (
-    <>
-      <Typography variant="h4">관리자 대시보드</Typography>
-      <Typography>개발 예정</Typography>
-    </>
+    <Box>
+      <Typography variant="h4" fontWeight={700} sx={{ mb: 4 }}>
+        ?�?�보??
+      </Typography>
+
+      {/* ?�계 카드 */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="�??�원 ??
+            value={stats.totalMembers}
+            icon={<PeopleIcon fontSize="large" />}
+            color="#3B82F6"
+            suffix="�?
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="�?주문 ??
+            value={stats.totalOrders}
+            icon={<ShoppingCartIcon fontSize="large" />}
+            color="#10B981"
+            suffix="�?
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="?�록 ?�품 ??
+            value={stats.totalProducts}
+            icon={<InventoryIcon fontSize="large" />}
+            color="#8B5CF6"
+            suffix="�?
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={6}>
+          <StatCard
+            title="?�늘 주문"
+            value={stats.todayOrders}
+            icon={<TrendingUpIcon fontSize="large" />}
+            color="#F59E0B"
+            suffix="�?
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={6}>
+          <StatCard
+            title="?�늘 매출"
+            value={stats.todaySales}
+            icon={<AttachMoneyIcon fontSize="large" />}
+            color="#EF4444"
+            suffix="??
+          />
+        </Grid>
+      </Grid>
+
+      {/* 최근 ?�동 */}
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Paper elevation={0} sx={{ border: '1px solid #E5E7EB', p: 3 }}>
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
+              최근 주문
+            </Typography>
+            <Typography color="text.secondary" fontSize="0.875rem">
+              최근 주문 ?�역???�기???�시?�니??
+            </Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Paper elevation={0} sx={{ border: '1px solid #E5E7EB', p: 3 }}>
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
+              최근 가???�원
+            </Typography>
+            <Typography color="text.secondary" fontSize="0.875rem">
+              최근 가???�원???�기???�시?�니??
+            </Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
   )
 }
 
 export default AdminDashboardPage
+

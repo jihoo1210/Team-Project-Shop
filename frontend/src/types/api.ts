@@ -32,7 +32,7 @@ export interface ApiError extends Error {
 
 /* 회원 */
 export type LoginRequest = { user_id: string; user_pw: string }
-export type LoginResponse = { user_no: number; user_name: string; role: string }
+export type LoginResponse = { user_no: number; user_name: string; role: string; token: string }
 export type JoinRequest = {
   user_pw: string
   user_name: string
