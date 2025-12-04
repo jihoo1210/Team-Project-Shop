@@ -20,6 +20,18 @@ import { useAuth } from '@/hooks/useAuth'
  * 공통 헤더 컴포넌트
  * SPEC: 로고, 검색창, 로그인/회원가입, 마이페이지, 장바구니(아이콘 + 뱃지)
  */
+
+// 공통 버튼 스타일 - 기본 화이트, hover시 검정 배경
+const navButtonStyle = {
+  fontWeight: 600,
+  color: '#1F2937',
+  bgcolor: 'transparent',
+  '&:hover': {
+    bgcolor: '#1F2937',
+    color: 'white',
+  },
+}
+
 const Header = () => {
   const navigate = useNavigate()
   const { isLoggedIn, isAdmin, logout } = useAuth()
@@ -99,8 +111,7 @@ const Header = () => {
             <Button
               component={Link}
               to="/board/notice"
-              color="inherit"
-              sx={{ fontWeight: 600 }}
+              sx={navButtonStyle}
             >
               게시판
             </Button>
@@ -111,8 +122,7 @@ const Header = () => {
                   <Button
                     component={Link}
                     to="/admin"
-                    color="inherit"
-                    sx={{ fontWeight: 600 }}
+                    sx={navButtonStyle}
                   >
                     관리자
                   </Button>
@@ -120,14 +130,12 @@ const Header = () => {
                 <Button
                   component={Link}
                   to="/mypage"
-                  color="inherit"
-                  sx={{ fontWeight: 600 }}
+                  sx={navButtonStyle}
                 >
                   마이페이지
                 </Button>
                 <Button
-                  color="inherit"
-                  sx={{ fontWeight: 600 }}
+                  sx={navButtonStyle}
                   onClick={handleLogout}
                 >
                   로그아웃
@@ -138,17 +146,14 @@ const Header = () => {
                 <Button
                   component={Link}
                   to="/login"
-                  color="inherit"
-                  sx={{ fontWeight: 600 }}
+                  sx={navButtonStyle}
                 >
                   로그인
                 </Button>
                 <Button
                   component={Link}
                   to="/signup"
-                  variant="contained"
-                  color="primary"
-                  sx={{ fontWeight: 600 }}
+                  sx={navButtonStyle}
                 >
                   회원가입
                 </Button>
@@ -159,8 +164,11 @@ const Header = () => {
             <IconButton
               component={Link}
               to="/cart"
-              color="inherit"
-              sx={{ ml: 1 }}
+              sx={{ 
+                ml: 1,
+                color: '#1F2937',
+                '&:hover': { bgcolor: '#1F2937', color: 'white' },
+              }}
             >
               <Badge badgeContent={cartItemCount} color="error">
                 <ShoppingCartOutlinedIcon />

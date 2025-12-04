@@ -22,7 +22,6 @@ import { fetchBoardList } from '@/api/boardApi'
 import type { BoardListItem, PaginatedResponse } from '@/types/api'
 import { brandColors } from '@/theme/tokens'
 
-// SPEC: 게시판 카테고리 - 공지, EVENT, QnA
 const BOARD_CATEGORIES = [
   { value: 'notice', label: '공지사항' },
   { value: 'event', label: 'EVENT' },
@@ -53,7 +52,7 @@ const BoardListPage = () => {
         setBoardData(data)
       } catch (error) {
         console.error('게시판 목록 로드 실패:', error)
-        // Mock 데이터 - API 실패 시 표시
+        // Mock 데이터
         const mockPosts: BoardListItem[] = [
           { board_no: '1', title: '환영합니다! MyShop 오픈 안내', writer_id: '관리자', view: 150 },
           { board_no: '2', title: '배송 관련 공지사항', writer_id: '관리자', view: 89 },
@@ -93,31 +92,18 @@ const BoardListPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* 페이지 타이틀 */}
-      <Typography
-        variant="h4"
-        fontWeight={700}
-        sx={{ mb: 3, color: brandColors.primary }}
-      >
+      <Typography variant="h4" fontWeight={700} sx={{ mb: 3, color: brandColors.primary }}>
         게시판
       </Typography>
 
-      {/* 카테고리 탭 */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs
           value={currentCategory}
           onChange={handleCategoryChange}
           sx={{
-            '& .MuiTab-root': {
-              fontWeight: 600,
-              fontSize: '1rem',
-            },
-            '& .Mui-selected': {
-              color: brandColors.primary,
-            },
-            '& .MuiTabs-indicator': {
-              backgroundColor: brandColors.primary,
-            },
+            '& .MuiTab-root': { fontWeight: 600, fontSize: '1rem' },
+            '& .Mui-selected': { color: brandColors.primary },
+            '& .MuiTabs-indicator': { backgroundColor: brandColors.primary },
           }}
         >
           {BOARD_CATEGORIES.map((cat) => (
@@ -126,38 +112,27 @@ const BoardListPage = () => {
         </Tabs>
       </Box>
 
-      {/* 글쓰기 버튼 (QnA만) */}
       {currentCategory === 'qna' && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
           <Button
             variant="contained"
             startIcon={<CreateIcon />}
             onClick={handleWrite}
-            sx={{
-              bgcolor: brandColors.primary,
-              '&:hover': { bgcolor: '#374151' },
-            }}
+            sx={{ bgcolor: brandColors.primary, '&:hover': { bgcolor: '#374151' } }}
           >
             질문하기
           </Button>
         </Box>
       )}
 
-      {/* 게시글 목록 테이블 */}
       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #E5E7EB' }}>
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: '#F9FAFB' }}>
-              <TableCell sx={{ fontWeight: 600, width: 80 }} align="center">
-                번호
-              </TableCell>
+              <TableCell sx={{ fontWeight: 600, width: 80 }} align="center">번호</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>제목</TableCell>
-              <TableCell sx={{ fontWeight: 600, width: 120 }} align="center">
-                작성자
-              </TableCell>
-              <TableCell sx={{ fontWeight: 600, width: 80 }} align="center">
-                조회
-              </TableCell>
+              <TableCell sx={{ fontWeight: 600, width: 120 }} align="center">작성자</TableCell>
+              <TableCell sx={{ fontWeight: 600, width: 80 }} align="center">조회</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -170,9 +145,7 @@ const BoardListPage = () => {
             ) : boardData?.content.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} align="center" sx={{ py: 8 }}>
-                  <Typography color="text.secondary">
-                    등록된 게시글이 없습니다.
-                  </Typography>
+                  <Typography color="text.secondary">등록된 게시글이 없습니다.</Typography>
                 </TableCell>
               </TableRow>
             ) : (
@@ -192,27 +165,13 @@ const BoardListPage = () => {
                         <Chip
                           label="공지"
                           size="small"
-                          sx={{
-                            bgcolor: brandColors.primary,
-                            color: 'white',
-                            fontSize: '0.75rem',
-                            height: 22,
-                          }}
+                          sx={{ bgcolor: brandColors.primary, color: 'white', fontSize: '0.75rem', height: 22 }}
                         />
                       )}
                       {currentCategory === 'event' && (
-                        <Chip
-                          label="EVENT"
-                          size="small"
-                          color="error"
-                          sx={{ fontSize: '0.75rem', height: 22 }}
-                        />
+                        <Chip label="EVENT" size="small" color="error" sx={{ fontSize: '0.75rem', height: 22 }} />
                       )}
-                      <Typography
-                        sx={{
-                          '&:hover': { textDecoration: 'underline' },
-                        }}
-                      >
+                      <Typography sx={{ '&:hover': { textDecoration: 'underline' } }}>
                         {post.title}
                       </Typography>
                     </Box>
@@ -226,7 +185,6 @@ const BoardListPage = () => {
         </Table>
       </TableContainer>
 
-      {/* 페이지네이션 */}
       {boardData && boardData.totalPages > 1 && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <Pagination
@@ -234,11 +192,6 @@ const BoardListPage = () => {
             page={currentPage}
             onChange={handlePageChange}
             color="primary"
-            sx={{
-              '& .MuiPaginationItem-root.Mui-selected': {
-                bgcolor: brandColors.primary,
-              },
-            }}
           />
         </Box>
       )}
