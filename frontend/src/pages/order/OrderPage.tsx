@@ -108,10 +108,10 @@ const OrderPage: React.FC = () => {
       const user = await fetchUser()
       setShippingInfo(prev => ({
         ...prev,
-        name: user.name || '',
-        phone: user.call || user.phone || '',
+        name: user.username || '',
+        phone: user.phone || '',
         zipcode: user.zipCode || '',
-        address: user.addr || user.address || '',
+        address: user.addr || '',
       }))
     } catch {
       // 사용자 정보 없으면 빈 값 유지

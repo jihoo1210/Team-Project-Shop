@@ -1,17 +1,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { clearAccessToken, getAccessToken, AUTH_EVENTS } from '@/api/axiosClient'
+import { AUTH_EVENTS } from '@/api/axiosClient'
+import { logout as apiLogout } from '@/api/userApi'
 
 interface AuthUser {
-  user_no: number
-  user_id: string
-  user_name: string
+  userId: number
+  email: string
+  username: string
   role: string
 }
 
 /**
  * 인증 상태 관리 훅
  * localStorage에서 사용자 정보를 읽어 인증 상태를 관리
+ * 백엔드 API: /api/auth/*
  */
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null)
@@ -19,18 +21,17 @@ export const useAuth = () => {
 
   // 사용자 정보 로드
   const loadUser = useCallback(() => {
-    const token = getAccessToken()
-    const userNo = localStorage.getItem('user_no')
-    const userId = localStorage.getItem('user_id')
-    const userName = localStorage.getItem('user_name')
+    const userId = localStorage.getItem('userId')
+    const email = localStorage.getItem('email')
+    const username = localStorage.getItem('username')
     const role = localStorage.getItem('role')
 
-    if (token && userNo && userId && userName) {
+    if (userId && email && username) {
       setUser({
-        user_no: Number(userNo),
-        user_id: userId,
-        user_name: userName,
-        role: role || 'User',
+        userId: Number(userId),
+        email: email,
+        username: username,
+        role: role || 'USER',
       })
     } else {
       setUser(null)
@@ -39,11 +40,15 @@ export const useAuth = () => {
   }, [])
 
   // 로그아웃
-  const logout = useCallback(() => {
-    clearAccessToken()
-    localStorage.removeItem('user_no')
-    localStorage.removeItem('user_id')
-    localStorage.removeItem('user_name')
+  const logout = useCallback(async () => {
+    try {
+      await apiLogout()
+    } catch {
+      // 서버 로그아웃 실패해도 로컬 정리
+    }
+    localStorage.removeItem('userId')
+    localStorage.removeItem('email')
+    localStorage.removeItem('username')
     localStorage.removeItem('role')
     setUser(null)
   }, [])
@@ -61,7 +66,7 @@ export const useAuth = () => {
     
     // storage 이벤트 (다른 탭에서 로그아웃 시 동기화)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'myshop_access_token') {
+      if (e.key === 'userId' || e.key === 'email') {
         loadUser()
       }
     }
@@ -76,7 +81,7 @@ export const useAuth = () => {
   return {
     user,
     isLoggedIn: !!user,
-    isAdmin: user?.role === 'Admin',
+    isAdmin: user?.role === 'ADMIN',
     isLoading,
     logout,
     refreshAuth: loadUser,

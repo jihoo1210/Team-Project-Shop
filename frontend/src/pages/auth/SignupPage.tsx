@@ -14,21 +14,21 @@ import { join } from '@/api/userApi'
 
 /**
  * 회원가입 페이지
- * SPEC: POST /api/user/join
- * REQUEST: user_pw, user_name, user_email, user_phone, zipcode, address, addr_detail
+ * 백엔드 API: POST /api/auth/signup
+ * REQUEST: { email, password, passwordConfirm, username, zipCode, addr, addrDetail, phone }
  */
 
 const SignupPage = () => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    user_email: '',
-    user_pw: '',
-    user_pw_confirm: '',
-    user_name: '',
-    user_phone: '',
-    zipcode: '',
-    address: '',
-    addr_detail: '',
+    email: '',
+    password: '',
+    passwordConfirm: '',
+    username: '',
+    phone: '',
+    zipCode: '',
+    addr: '',
+    addrDetail: '',
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -46,8 +46,8 @@ const SignupPage = () => {
         oncomplete: (data) => {
           setFormData((prev) => ({
             ...prev,
-            zipcode: data.zonecode,
-            address: data.address,
+            zipCode: data.zonecode,
+            addr: data.address,
           }))
         },
       }).open()
@@ -60,15 +60,15 @@ const SignupPage = () => {
     e.preventDefault()
 
     // 유효성 검사
-    if (!formData.user_email || !formData.user_pw || !formData.user_name) {
+    if (!formData.email || !formData.password || !formData.username) {
       setError('필수 항목을 모두 입력해주세요.')
       return
     }
-    if (formData.user_pw !== formData.user_pw_confirm) {
+    if (formData.password !== formData.passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다.')
       return
     }
-    if (formData.user_pw.length < 8) {
+    if (formData.password.length < 8) {
       setError('비밀번호는 8자 이상이어야 합니다.')
       return
     }
@@ -76,13 +76,14 @@ const SignupPage = () => {
     try {
       setIsLoading(true)
       await join({
-        user_pw: formData.user_pw,
-        user_name: formData.user_name,
-        user_email: formData.user_email,
-        user_phone: formData.user_phone,
-        zipcode: formData.zipcode,
-        address: formData.address,
-        addr_detail: formData.addr_detail,
+        email: formData.email,
+        password: formData.password,
+        passwordConfirm: formData.passwordConfirm,
+        username: formData.username,
+        phone: formData.phone,
+        zipCode: formData.zipCode,
+        addr: formData.addr,
+        addrDetail: formData.addrDetail,
       })
       
       alert('회원가입이 완료되었습니다. 로그인해주세요.')
@@ -107,8 +108,8 @@ const SignupPage = () => {
             <TextField
               label="이메일"
               type="email"
-              value={formData.user_email}
-              onChange={handleChange('user_email')}
+              value={formData.email}
+              onChange={handleChange('email')}
               fullWidth
               required
               autoFocus
@@ -116,8 +117,8 @@ const SignupPage = () => {
             <TextField
               label="비밀번호"
               type="password"
-              value={formData.user_pw}
-              onChange={handleChange('user_pw')}
+              value={formData.password}
+              onChange={handleChange('password')}
               helperText="8자 이상 입력해주세요"
               fullWidth
               required
@@ -125,22 +126,22 @@ const SignupPage = () => {
             <TextField
               label="비밀번호 확인"
               type="password"
-              value={formData.user_pw_confirm}
-              onChange={handleChange('user_pw_confirm')}
+              value={formData.passwordConfirm}
+              onChange={handleChange('passwordConfirm')}
               fullWidth
               required
             />
             <TextField
               label="이름"
-              value={formData.user_name}
-              onChange={handleChange('user_name')}
+              value={formData.username}
+              onChange={handleChange('username')}
               fullWidth
               required
             />
             <TextField
               label="전화번호"
-              value={formData.user_phone}
-              onChange={handleChange('user_phone')}
+              value={formData.phone}
+              onChange={handleChange('phone')}
               placeholder="010-0000-0000"
               fullWidth
             />
@@ -149,8 +150,8 @@ const SignupPage = () => {
             <Stack direction="row" spacing={2}>
               <TextField
                 label="우편번호"
-                value={formData.zipcode}
-                onChange={handleChange('zipcode')}
+                value={formData.zipCode}
+                onChange={handleChange('zipCode')}
                 sx={{ width: 150 }}
                 InputProps={{ readOnly: true }}
               />
@@ -160,15 +161,15 @@ const SignupPage = () => {
             </Stack>
             <TextField
               label="주소"
-              value={formData.address}
-              onChange={handleChange('address')}
+              value={formData.addr}
+              onChange={handleChange('addr')}
               fullWidth
               InputProps={{ readOnly: true }}
             />
             <TextField
               label="상세 주소"
-              value={formData.addr_detail}
-              onChange={handleChange('addr_detail')}
+              value={formData.addrDetail}
+              onChange={handleChange('addrDetail')}
               fullWidth
             />
 

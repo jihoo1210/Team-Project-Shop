@@ -13,20 +13,19 @@ import {
 } from '@mui/material'
 import { Google as GoogleIcon } from '@mui/icons-material'
 import { login } from '@/api/userApi'
-import { setAccessToken } from '@/api/axiosClient'
 
 /**
  * 로그인 페이지
- * SPEC: POST /api/user/login
- * REQUEST: user_id, user_pw
- * RESPONSE: user_no, user_name, role
+ * 백엔드 API: POST /api/auth/login
+ * REQUEST: { email, password }
+ * RESPONSE: { userId, email, username, role }
  */
 
 const LoginPage = () => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    user_id: '',
-    user_pw: '',
+    email: '',
+    password: '',
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -39,8 +38,8 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.user_id || !formData.user_pw) {
-      setError('아이디와 비밀번호를 입력해주세요.')
+    if (!formData.email || !formData.password) {
+      setError('이메일과 비밀번호를 입력해주세요.')
       return
     }
 
@@ -48,15 +47,10 @@ const LoginPage = () => {
       setIsLoading(true)
       const response = await login(formData)
       
-      // JWT 토큰 저장
-      if (response.token) {
-        setAccessToken(response.token)
-      }
-      
-      // 사용자 정보 저장 (필요시 사용)
-      localStorage.setItem('user_no', String(response.user_no))
-      localStorage.setItem('user_name', response.user_name)
-      localStorage.setItem('user_id', formData.user_id)
+      // 사용자 정보 저장
+      localStorage.setItem('userId', String(response.userId))
+      localStorage.setItem('email', response.email)
+      localStorage.setItem('username', response.username)
       localStorage.setItem('role', response.role)
       
       // 로그인 성공 시 홈으로 이동
@@ -85,10 +79,10 @@ const LoginPage = () => {
         <Box component="form" onSubmit={handleSubmit}>
           <Stack spacing={3}>
             <TextField
-              label="아이디 (이메일)"
+              label="이메일"
               type="email"
-              value={formData.user_id}
-              onChange={handleChange('user_id')}
+              value={formData.email}
+              onChange={handleChange('email')}
               fullWidth
               required
               autoFocus
@@ -96,8 +90,8 @@ const LoginPage = () => {
             <TextField
               label="비밀번호"
               type="password"
-              value={formData.user_pw}
-              onChange={handleChange('user_pw')}
+              value={formData.password}
+              onChange={handleChange('password')}
               fullWidth
               required
             />

@@ -33,7 +33,7 @@ import {
   School as SchoolIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import { fetchUser, updateUser, deleteUser } from '@/api/userApi'
+import { fetchUser, updateUser, deleteUser, updatePassword } from '@/api/userApi'
 import { useAuth } from '@/hooks/useAuth'
 import { useDaumPostcode } from '@/hooks/useDaumPostcode'
 import type { UserProfile } from '@/types/api'
@@ -116,36 +116,38 @@ const MyProfilePage: React.FC = () => {
       const data = await fetchUser()
       setProfile(data)
       setEditedProfile({
-        name: data.name || '',
-        phone: data.call || data.phone || '',
+        name: data.username || '',
+        phone: data.phone || '',
         email: data.email || '',
       })
       // 기본 배송지 설정
-      if (data.addr || data.address) {
+      if (data.addr) {
         setAddresses([{
           id: '1',
           label: '집',
-          name: data.name || '',
-          phone: data.call || data.phone || '',
+          name: data.username || '',
+          phone: data.phone || '',
           zipcode: data.zipCode || '',
-          address: data.addr || data.address || '',
-          addressDetail: '',
+          address: data.addr || '',
+          addressDetail: data.addrDetail || '',
           isDefault: true,
         }])
       }
     } catch {
       // Mock data for development
       const mockProfile: UserProfile = {
-        user_id: '1',
+        userId: 1,
         email: 'user@example.com',
-        name: '홍길동',
+        username: '홍길동',
         phone: '010-1234-5678',
-        address: '서울시 강남구 역삼동 123-45',
-        role: 'user',
+        zipCode: '06241',
+        addr: '서울시 강남구 역삼동 123-45',
+        addrDetail: '101동 202호',
+        role: 'USER',
       }
       setProfile(mockProfile)
       setEditedProfile({
-        name: mockProfile.name || '',
+        name: mockProfile.username || '',
         phone: mockProfile.phone || '',
         email: mockProfile.email || '',
       })
@@ -167,8 +169,8 @@ const MyProfilePage: React.FC = () => {
   const handleEditToggle = () => {
     if (isEditing && profile) {
       setEditedProfile({
-        name: profile.name || '',
-        phone: profile.call || profile.phone || '',
+        name: profile.username || '',
+        phone: profile.phone || '',
         email: profile.email || '',
       })
     }
@@ -185,11 +187,11 @@ const MyProfilePage: React.FC = () => {
     try {
       setSaving(true)
       await updateUser({
-        name: editedProfile.name,
-        call: editedProfile.phone,
+        username: editedProfile.name,
+        phone: editedProfile.phone,
         email: editedProfile.email,
       })
-      setProfile(prev => (prev ? { ...prev, ...editedProfile } : null))
+      setProfile(prev => (prev ? { ...prev, username: editedProfile.name, phone: editedProfile.phone, email: editedProfile.email } : null))
       setIsEditing(false)
       setSnackbar({ open: true, message: '프로필이 저장되었습니다.', severity: 'success' })
     } catch {
@@ -299,10 +301,7 @@ const MyProfilePage: React.FC = () => {
     }
 
     try {
-      await updateUser({
-        password: passwordData.newPassword,
-        currentPassword: passwordData.currentPassword,
-      })
+      await updatePassword(passwordData.currentPassword, passwordData.newPassword)
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
       setSnackbar({ open: true, message: '비밀번호가 변경되었습니다.', severity: 'success' })
     } catch {

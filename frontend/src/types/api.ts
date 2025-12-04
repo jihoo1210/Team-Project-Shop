@@ -31,41 +31,38 @@ export interface ApiError extends Error {
 }
 
 /* 회원 */
-export type LoginRequest = { user_id: string; user_pw: string }
-export type LoginResponse = { user_no: number; user_name: string; role: string; token: string }
+// 백엔드 API: /api/auth/*
+export type LoginRequest = { email: string; password: string }
+export type LoginResponse = { userId: number; email: string; username: string; role: string }
 export type JoinRequest = {
-  user_pw: string
-  user_name: string
-  user_email: string
-  user_phone: string
-  zipcode: string
-  address: string
-  addr_detail: string
+  email: string
+  password: string
+  passwordConfirm: string
+  username: string
+  zipCode?: string
+  addr?: string
+  addrDetail?: string
+  phone?: string
 }
 export interface UserProfile {
-  user_id: string
+  userId: number
   email: string
-  name?: string
+  username: string
+  zipCode?: string
+  addr?: string
+  addrDetail?: string
   phone?: string
-  call?: string  // 연락처 (phone의 대안)
-  address?: string
-  addr?: string  // 주소 (address의 대안)
-  zipCode?: string  // 우편번호
-  addr_detail?: string  // 상세주소
   role: string
-  created_at?: string
 }
 export type UpdateUserRequest = Partial<{
-  name: string
-  email: string  // 이메일
+  email: string
+  username: string
+  zipCode: string
+  addr: string
+  addrDetail: string
   phone: string
-  call: string  // 연락처
-  address: string
-  addr: string  // 주소
-  zipCode: string  // 우편번호
-  addr_detail: string  // 상세주소
   password: string
-  currentPassword: string
+  passwordConfirm: string
 }>
 
 /* 상품 */
