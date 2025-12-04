@@ -43,7 +43,7 @@ const MyOrdersPage = () => {
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        const data = await fetchOrders()
+        const data = await fetchOrders({ page: 0, size: 20 })
         // API 응답 구조에 맞게 조정
         setOrders(data as unknown as OrderItem[])
       } catch (error) {

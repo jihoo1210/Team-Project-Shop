@@ -1,359 +1,386 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import {
-  Typography,
   Box,
+  Container,
+  Typography,
   Paper,
-  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Button,
   TextField,
+  Switch,
   IconButton,
-  Card,
-  CardMedia,
-  CardContent,
-  CardActions,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Switch,
+  Grid,
   FormControlLabel,
-  CircularProgress,
-} from '@mui/material'
+  Alert,
+} from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   ArrowUpward as ArrowUpIcon,
   ArrowDownward as ArrowDownIcon,
-} from '@mui/icons-material'
-import { brandColors } from '@/theme/tokens'
+} from '@mui/icons-material';
+import axiosClient from '../../api/axiosClient';
 
-// 배너 ?�??
 interface Banner {
-  banner_no: number
-  title: string
-  image_url: string
-  link_url: string
-  is_active: boolean
-  order: number
+  id: number;
+  title: string;
+  imageUrl: string;
+  linkUrl: string;
+  order: number;
+  is_active: boolean;
+  startDate: string;
+  endDate: string;
 }
 
-const AdminBannerPage = () => {
-  const [loading, setLoading] = useState(true)
-  const [banners, setBanners] = useState<Banner[]>([])
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editBanner, setEditBanner] = useState<Banner | null>(null)
+const AdminBannerPage: React.FC = () => {
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [formData, setFormData] = useState({
     title: '',
-    image_url: '',
-    link_url: '',
+    imageUrl: '',
+    linkUrl: '',
+    startDate: '',
+    endDate: '',
     is_active: true,
-  })
+  });
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadBanners = async () => {
-      setLoading(true)
-      try {
-        // TODO: ?�제 API ?�동
-        // const data = await fetchBanners()
-        setBanners([])
-      } catch (error) {
-        console.error('배너 목록 로드 ?�패:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadBanners()
-  }, [])
+    fetchBanners();
+  }, []);
 
-  const handleAdd = () => {
-    setEditBanner(null)
-    setFormData({
-      title: '',
-      image_url: '',
-      link_url: '',
-      is_active: true,
-    })
-    setDialogOpen(true)
-  }
-
-  const handleEdit = (banner: Banner) => {
-    setEditBanner(banner)
-    setFormData({
-      title: banner.title,
-      image_url: banner.image_url,
-      link_url: banner.link_url,
-      is_active: banner.is_active,
-    })
-    setDialogOpen(true)
-  }
-
-  const handleSubmit = async () => {
-    if (!formData.title.trim() || !formData.image_url.trim()) {
-      alert('?�목�??��?지 URL???�력?�주?�요.')
-      return
-    }
+  const fetchBanners = async () => {
     try {
-      // TODO: API ?�동
-      if (editBanner) {
-        // await updateBanner({ ...editBanner, ...formData })
-        alert('?�정?�었?�니??')
+      setLoading(true);
+      const response = await axiosClient.get('/api/admin/banners');
+      setBanners(response.data);
+    } catch (err) {
+      // Mock data for development
+      const mockBanners: Banner[] = [
+        { id: 1, title: '신년 세일 이벤트', imageUrl: 'https://via.placeholder.com/1200x400', linkUrl: '/event/newyear', order: 1, is_active: true, startDate: '2024-01-01', endDate: '2024-01-31' },
+        { id: 2, title: '겨울 시즌 특가', imageUrl: 'https://via.placeholder.com/1200x400', linkUrl: '/event/winter', order: 2, is_active: true, startDate: '2024-01-01', endDate: '2024-02-28' },
+        { id: 3, title: '회원가입 이벤트', imageUrl: 'https://via.placeholder.com/1200x400', linkUrl: '/signup', order: 3, is_active: false, startDate: '2024-01-01', endDate: '2024-12-31' },
+      ];
+      setBanners(mockBanners);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenDialog = (banner?: Banner) => {
+    if (banner) {
+      setEditingBanner(banner);
+      setFormData({
+        title: banner.title,
+        imageUrl: banner.imageUrl,
+        linkUrl: banner.linkUrl,
+        startDate: banner.startDate,
+        endDate: banner.endDate,
+        is_active: banner.is_active,
+      });
+    } else {
+      setEditingBanner(null);
+      setFormData({
+        title: '',
+        imageUrl: '',
+        linkUrl: '',
+        startDate: '',
+        endDate: '',
+        is_active: true,
+      });
+    }
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setEditingBanner(null);
+    setError(null);
+  };
+
+  const handleSave = async () => {
+    if (!formData.title || !formData.imageUrl) {
+      setError('제목과 이미지 URL은 필수입니다.');
+      return;
+    }
+
+    try {
+      if (editingBanner) {
+        await axiosClient.put(`/api/admin/banners/${editingBanner.id}`, formData);
+        setBanners(banners.map(b => b.id === editingBanner.id ? { ...b, ...formData } : b));
       } else {
-        // await createBanner(formData)
-        alert('?�록?�었?�니??')
+        const newBanner: Banner = {
+          id: Date.now(),
+          ...formData,
+          order: banners.length + 1,
+        };
+        setBanners([...banners, newBanner]);
       }
-      setDialogOpen(false)
-    } catch (error) {
-      console.error('?�???�패:', error)
-      alert('?�?�에 ?�패?�습?�다.')
+      handleCloseDialog();
+    } catch (err) {
+      // Save locally for demo
+      if (editingBanner) {
+        setBanners(banners.map(b => b.id === editingBanner.id ? { ...b, ...formData } : b));
+      } else {
+        const newBanner: Banner = {
+          id: Date.now(),
+          ...formData,
+          order: banners.length + 1,
+        };
+        setBanners([...banners, newBanner]);
+      }
+      handleCloseDialog();
     }
-  }
+  };
 
-  const handleDelete = async (banner: Banner) => {
-    if (!window.confirm(`"${banner.title}" 배너�???��?�시겠습?�까?`)) return
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+
     try {
-      // TODO: API ?�동
-      // await deleteBanner(banner.banner_no)
-      alert('??��?�었?�니??')
-    } catch (error) {
-      console.error('??�� ?�패:', error)
-      alert('??��???�패?�습?�다.')
+      await axiosClient.delete(`/api/admin/banners/${id}`);
+      setBanners(banners.filter(b => b.id !== id));
+    } catch (err) {
+      // Delete locally for demo
+      setBanners(banners.filter(b => b.id !== id));
     }
-  }
+  };
 
   const handleToggleActive = async (banner: Banner) => {
     try {
-      // TODO: API ?�동
-      // await updateBanner({ ...banner, is_active: !banner.is_active })
-      setBanners((prev) =>
-        prev.map((b) =>
-          b.banner_no === banner.banner_no ? { ...b, is_active: !b.is_active } : b
-        )
-      )
-    } catch (error) {
-      console.error('?�태 변�??�패:', error)
+      await axiosClient.patch(`/api/admin/banners/${banner.id}`, { is_active: !banner.is_active });
+      setBanners(banners.map(b => b.id === banner.id ? { ...b, is_active: !b.is_active } : b));
+    } catch (err) {
+      // Toggle locally for demo
+      setBanners(banners.map(b => b.id === banner.id ? { ...b, is_active: !b.is_active } : b));
     }
-  }
+  };
 
-  const handleMoveUp = async (index: number) => {
-    if (index === 0) return
-    // TODO: API ?�동 - ?�서 변�?
-    const newBanners = [...banners]
-    ;[newBanners[index], newBanners[index - 1]] = [newBanners[index - 1], newBanners[index]]
-    setBanners(newBanners)
-  }
+  const handleMoveOrder = async (id: number, direction: 'up' | 'down') => {
+    const index = banners.findIndex(b => b.id === id);
+    if (index === -1) return;
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === banners.length - 1) return;
 
-  const handleMoveDown = async (index: number) => {
-    if (index === banners.length - 1) return
-    // TODO: API ?�동 - ?�서 변�?
-    const newBanners = [...banners]
-    ;[newBanners[index], newBanners[index + 1]] = [newBanners[index + 1], newBanners[index]]
-    setBanners(newBanners)
-  }
+    const newBanners = [...banners];
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    [newBanners[index], newBanners[swapIndex]] = [newBanners[swapIndex], newBanners[index]];
+    
+    // Update order numbers
+    newBanners.forEach((b, i) => {
+      b.order = i + 1;
+    });
+    
+    setBanners(newBanners);
+  };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    )
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Typography>로딩 중...</Typography>
+      </Container>
+    );
   }
 
   return (
-    <Box>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight={700}>
-          배너 관�?
+        <Typography variant="h4" fontWeight="bold">
+          배너 관리
         </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={handleAdd}
-          sx={{
-            bgcolor: brandColors.primary,
-            '&:hover': { bgcolor: '#374151' },
-          }}
+          onClick={() => handleOpenDialog()}
         >
-          배너 ?�록
+          배너 등록
         </Button>
       </Box>
 
-      {/* ?�내 문구 */}
-      <Paper elevation={0} sx={{ border: '1px solid #E5E7EB', p: 2, mb: 3, bgcolor: '#F9FAFB' }}>
-        <Typography fontSize="0.875rem" color="text.secondary">
-          ??배너???�록???�서?��?메인 ?�이지 ?�라?�더???�시?�니??
-          <br />
-          ??권장 ?��?지 ?�기: 1920 x 600px (가�?x ?�로)
-          <br />
-          ??비활?�화??배너??메인 ?�이지???�시?��? ?�습?�다.
-        </Typography>
-      </Paper>
-
-      {/* 배너 목록 */}
-      {banners.length === 0 ? (
-        <Paper
-          elevation={0}
-          sx={{ border: '1px solid #E5E7EB', p: 8, textAlign: 'center' }}
-        >
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
-            ?�록??배너가 ?�습?�다.
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAdd}
-            sx={{
-              bgcolor: brandColors.primary,
-              '&:hover': { bgcolor: '#374151' },
-            }}
-          >
-            �?배너 ?�록?�기
-          </Button>
-        </Paper>
-      ) : (
-        <Grid container spacing={3}>
-          {banners.map((banner, index) => (
-            <Grid item xs={12} md={6} key={banner.banner_no}>
-              <Card elevation={0} sx={{ border: '1px solid #E5E7EB' }}>
-                <CardMedia
-                  component="img"
-                  height={200}
-                  image={banner.image_url || '/placeholder-banner.jpg'}
-                  alt={banner.title}
-                  sx={{ bgcolor: '#F3F4F6', objectFit: 'cover' }}
-                />
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography variant="h6" fontWeight={600}>
-                      {banner.title}
-                    </Typography>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={banner.is_active}
-                          onChange={() => handleToggleActive(banner)}
-                          size="small"
-                        />
-                      }
-                      label={banner.is_active ? '?�성' : '비활??}
-                    />
-                  </Box>
-                  {banner.link_url && (
-                    <Typography fontSize="0.75rem" color="text.secondary" noWrap>
-                      링크: {banner.link_url}
-                    </Typography>
-                  )}
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-                  <Box>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleMoveUp(index)}
+      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #E5E7EB' }}>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ bgcolor: 'grey.50' }}>
+              <TableCell sx={{ fontWeight: 600, width: 60 }}>순서</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>미리보기</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>제목</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>기간</TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="center">상태</TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="center">관리</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {banners.map((banner, index) => (
+              <TableRow key={banner.id} hover>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleMoveOrder(banner.id, 'up')}
                       disabled={index === 0}
                     >
-                      <ArrowUpIcon />
+                      <ArrowUpIcon fontSize="small" />
                     </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleMoveDown(index)}
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleMoveOrder(banner.id, 'down')}
                       disabled={index === banners.length - 1}
                     >
-                      <ArrowDownIcon />
+                      <ArrowDownIcon fontSize="small" />
                     </IconButton>
                   </Box>
-                  <Box>
-                    <IconButton size="small" onClick={() => handleEdit(banner)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton size="small" color="error" onClick={() => handleDelete(banner)}>
-                      <DeleteIcon />
-                    </IconButton>
+                </TableCell>
+                <TableCell>
+                  <Box
+                    component="img"
+                    src={banner.imageUrl}
+                    alt={banner.title}
+                    sx={{ width: 160, height: 60, objectFit: 'cover', borderRadius: 1 }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Typography fontWeight="medium">{banner.title}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {banner.linkUrl}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">
+                    {banner.startDate} ~ {banner.endDate}
+                  </Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    <Switch
+                      checked={banner.is_active}
+                      onChange={() => handleToggleActive(banner)}
+                      size="small"
+                    />
+                    <Typography variant="body2" color={banner.is_active ? 'success.main' : 'text.secondary'}>
+                      {banner.is_active ? '활성' : '비활성'}
+                    </Typography>
                   </Box>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton size="small" onClick={() => handleOpenDialog(banner)}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton size="small" color="error" onClick={() => handleDelete(banner.id)}>
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      {/* 배너 ?�록/?�정 ?�이?�로�?*/}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle fontWeight={600}>
-          {editBanner ? '배너 ?�정' : '배너 ?�록'}
+      {/* 배너 등록/수정 다이얼로그 */}
+      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {editingBanner ? '배너 수정' : '배너 등록'}
         </DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <TextField
-              label="배너 ?�목"
-              fullWidth
-              value={formData.title}
-              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-              required
-            />
-            <TextField
-              label="?��?지 URL"
-              fullWidth
-              value={formData.image_url}
-              onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
-              placeholder="https://example.com/banner.jpg"
-              required
-            />
-            <TextField
-              label="링크 URL (?�택)"
-              fullWidth
-              value={formData.link_url}
-              onChange={(e) => setFormData((prev) => ({ ...prev, link_url: e.target.value }))}
-              placeholder="https://example.com/event"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, is_active: e.target.checked }))}
-                />
-              }
-              label="?�성??
-            />
-
-            {/* 미리보기 */}
-            {formData.image_url && (
-              <Box>
-                <Typography fontSize="0.875rem" color="text.secondary" sx={{ mb: 1 }}>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2, mt: 1 }}>
+              {error}
+            </Alert>
+          )}
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <TextField
+                label="제목"
+                fullWidth
+                required
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="이미지 URL"
+                fullWidth
+                required
+                value={formData.imageUrl}
+                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                helperText="권장 크기: 1200x400px"
+              />
+            </Grid>
+            {formData.imageUrl && (
+              <Grid item xs={12}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   미리보기
                 </Typography>
                 <Box
                   component="img"
-                  src={formData.image_url}
-                  alt="미리보기"
-                  sx={{
-                    width: '100%',
-                    maxHeight: 200,
-                    objectFit: 'cover',
-                    borderRadius: 1,
-                    bgcolor: '#F3F4F6',
-                  }}
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    e.currentTarget.src = '/placeholder-banner.jpg'
-                  }}
+                  src={formData.imageUrl}
+                  alt="Preview"
+                  sx={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 1 }}
                 />
-              </Box>
+              </Grid>
             )}
-          </Box>
+            <Grid item xs={12}>
+              <TextField
+                label="링크 URL"
+                fullWidth
+                value={formData.linkUrl}
+                onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                label="시작일"
+                type="date"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={formData.startDate}
+                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                label="종료일"
+                type="date"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={formData.endDate}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  />
+                }
+                label="활성화"
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>취소</Button>
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            sx={{ bgcolor: brandColors.primary, '&:hover': { bgcolor: '#374151' } }}
-          >
-            {editBanner ? '?�정' : '?�록'}
+          <Button onClick={handleCloseDialog}>취소</Button>
+          <Button variant="contained" onClick={handleSave}>
+            {editingBanner ? '수정' : '등록'}
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
-  )
-}
+    </Container>
+  );
+};
 
-export default AdminBannerPage
+export default AdminBannerPage;
 

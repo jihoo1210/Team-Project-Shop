@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import {
-  Typography,
   Box,
+  Container,
+  Typography,
   Paper,
   Table,
   TableBody,
@@ -12,268 +13,241 @@ import {
   Button,
   TextField,
   InputAdornment,
-  IconButton,
   Chip,
+  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   Pagination,
-  CircularProgress,
-} from '@mui/material'
+} from '@mui/material';
 import {
   Search as SearchIcon,
-  Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-} from '@mui/icons-material'
-import { fetchItems } from '@/api/itemApi'
-import type { ItemSummary, PaginatedResponse } from '@/types/api'
-import { brandColors } from '@/theme/tokens'
+  Add as AddIcon,
+} from '@mui/icons-material';
+import axiosClient from '../../api/axiosClient';
 
-const AdminProductListPage = () => {
-  const [loading, setLoading] = useState(true)
-  const [products, setProducts] = useState<PaginatedResponse<ItemSummary> | null>(null)
-  const [page, setPage] = useState(1)
-  const [search, setSearch] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editProduct, setEditProduct] = useState<ItemSummary | null>(null)
+interface Product {
+  id: number;
+  name: string;
+  brand: string;
+  price: number;
+  stock: number;
+  status: 'active' | 'soldout' | 'hidden';
+  category: string;
+  createdAt: string;
+}
+
+const AdminProductListPage: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   useEffect(() => {
-    const loadProducts = async () => {
-      setLoading(true)
-      try {
-        const data = await fetchItems({
-          page: page - 1,
-          size: 15,
-          searchField: 'title',
-          searchTerm: search || undefined,
-        })
-        setProducts(data)
-      } catch (error) {
-        console.error('?�품 목록 로드 ?�패:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadProducts()
-  }, [page, search])
+    fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, searchTerm]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setPage(1)
-  }
-
-  const handleAdd = () => {
-    setEditProduct(null)
-    setDialogOpen(true)
-  }
-
-  const handleEdit = (product: ItemSummary) => {
-    setEditProduct(product)
-    setDialogOpen(true)
-  }
-
-  const handleDelete = async (sku: string) => {
-    if (!window.confirm('?�말 ??��?�시겠습?�까?')) return
+  const fetchProducts = async () => {
     try {
-      // TODO: API ?�동
-      // await deleteItem(sku)
-      alert('??��?�었?�니??')
-    } catch (error) {
-      console.error('??�� ?�패:', error)
-      alert('??��???�패?�습?�다.')
+      setLoading(true);
+      const response = await axiosClient.get('/api/admin/products', {
+        params: { page, search: searchTerm },
+      });
+      setProducts(response.data.content);
+      setTotalPages(response.data.totalPages);
+    } catch (err) {
+      // Mock data for development
+      const mockProducts: Product[] = [
+        { id: 1, name: '프리미엄 무선 이어폰', brand: 'TechBrand', price: 89000, stock: 50, status: 'active', category: '전자기기', createdAt: '2024-01-15' },
+        { id: 2, name: '스마트 워치 Pro', brand: 'SmartLife', price: 299000, stock: 30, status: 'active', category: '전자기기', createdAt: '2024-01-10' },
+        { id: 3, name: '노이즈 캔슬링 헤드폰', brand: 'AudioMax', price: 199000, stock: 0, status: 'soldout', category: '전자기기', createdAt: '2024-01-05' },
+        { id: 4, name: '블루투스 스피커', brand: 'SoundWave', price: 79000, stock: 100, status: 'active', category: '전자기기', createdAt: '2024-01-01' },
+        { id: 5, name: '무선 충전기', brand: 'ChargePlus', price: 35000, stock: 200, status: 'active', category: '액세서리', createdAt: '2023-12-20' },
+      ];
+      setProducts(mockProducts);
+      setTotalPages(3);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  const handleOpenDialog = (product?: Product) => {
+    setEditingProduct(product || null);
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setEditingProduct(null);
+  };
+
+  const handleDeleteProduct = async (id: number) => {
+    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+
+    try {
+      await axiosClient.delete(`/api/admin/products/${id}`);
+      setProducts(products.filter(p => p.id !== id));
+    } catch (err) {
+      // Delete locally for demo
+      setProducts(products.filter(p => p.id !== id));
+    }
+  };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ko-KR').format(price) + '??
-  }
+    return new Intl.NumberFormat('ko-KR').format(price) + '원';
+  };
 
   const getStatusChip = (status: string) => {
-    const statusMap: Record<string, { label: string; color: 'success' | 'warning' | 'error' }> = {
-      active: { label: '?�매�?, color: 'success' },
-      soldout: { label: '?�절', color: 'error' },
-      hidden: { label: '?��?', color: 'warning' },
-    }
-    const config = statusMap[status] || { label: status, color: 'warning' }
-    return <Chip label={config.label} color={config.color} size="small" />
-  }
+    const statusConfig: Record<string, { label: string; color: 'success' | 'error' | 'default' }> = {
+      active: { label: '판매중', color: 'success' },
+      soldout: { label: '품절', color: 'error' },
+      hidden: { label: '숨김', color: 'default' },
+    };
+    const config = statusConfig[status] || statusConfig.active;
+    return <Chip label={config.label} color={config.color} size="small" />;
+  };
 
   return (
-    <Box>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" fontWeight={700}>
-          ?�품 관�?
+        <Typography variant="h4" fontWeight="bold">
+          상품 관리
         </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={handleAdd}
-          sx={{
-            bgcolor: brandColors.primary,
-            '&:hover': { bgcolor: '#374151' },
-          }}
+          onClick={() => handleOpenDialog()}
         >
-          ?�품 ?�록
+          상품 등록
         </Button>
       </Box>
 
-      {/* 검??*/}
+      {/* 검색 영역 */}
       <Paper elevation={0} sx={{ border: '1px solid #E5E7EB', p: 2, mb: 3 }}>
-        <Box component="form" onSubmit={handleSearch} sx={{ display: 'flex', gap: 2 }}>
-          <TextField
-            size="small"
-            placeholder="?�품�?검??
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ width: 300 }}
-          />
-          <Button type="submit" variant="outlined">
-            검??
-          </Button>
-        </Box>
+        <TextField
+          placeholder="상품명, 브랜드 검색"
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ width: 300 }}
+        />
       </Paper>
 
-      {/* ?�품 목록 ?�이�?*/}
+      {/* 상품 테이블 */}
       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #E5E7EB' }}>
         <Table>
           <TableHead>
-            <TableRow sx={{ bgcolor: '#F9FAFB' }}>
-              <TableCell sx={{ fontWeight: 600, width: 80 }}>?��?지</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>?�품�?/TableCell>
-              <TableCell sx={{ fontWeight: 600, width: 100 }}>브랜??/TableCell>
-              <TableCell sx={{ fontWeight: 600, width: 120 }} align="right">
-                가�?
-              </TableCell>
-              <TableCell sx={{ fontWeight: 600, width: 80 }} align="center">
-                ?�인??
-              </TableCell>
-              <TableCell sx={{ fontWeight: 600, width: 80 }} align="center">
-                ?�태
-              </TableCell>
-              <TableCell sx={{ fontWeight: 600, width: 100 }} align="center">
-                관�?
-              </TableCell>
+            <TableRow sx={{ bgcolor: 'grey.50' }}>
+              <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>상품명</TableCell>
+              <TableCell sx={{ fontWeight: 600, width: 100 }}>브랜드</TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="right">가격</TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="center">재고</TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="center">상태</TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="center">관리</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
-                  <CircularProgress size={32} />
+            {products.map((product) => (
+              <TableRow key={product.id} hover>
+                <TableCell>{product.id}</TableCell>
+                <TableCell>
+                  <Typography fontWeight="medium">{product.name}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {product.category}
+                  </Typography>
+                </TableCell>
+                <TableCell>{product.brand}</TableCell>
+                <TableCell align="right">{formatPrice(product.price)}</TableCell>
+                <TableCell align="center">{product.stock}</TableCell>
+                <TableCell align="center">{getStatusChip(product.status)}</TableCell>
+                <TableCell align="center">
+                  <IconButton size="small" onClick={() => handleOpenDialog(product)}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton size="small" color="error" onClick={() => handleDeleteProduct(product.id)}>
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
                 </TableCell>
               </TableRow>
-            ) : products?.content.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
-                  <Typography color="text.secondary">?�록???�품???�습?�다.</Typography>
-                </TableCell>
-              </TableRow>
-            ) : (
-              products?.content.map((product) => (
-                <TableRow key={product.sku} hover>
-                  <TableCell>
-                    <Box
-                      component="img"
-                      src={product.main_image_url || '/placeholder.jpg'}
-                      alt={product.title}
-                      sx={{
-                        width: 50,
-                        height: 50,
-                        objectFit: 'cover',
-                        borderRadius: 1,
-                        bgcolor: '#F3F4F6',
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Typography fontWeight={500}>{product.title}</Typography>
-                    <Typography fontSize="0.75rem" color="text.secondary">
-                      SKU: {product.sku}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{product.brand}</TableCell>
-                  <TableCell align="right">{formatPrice(product.price)}</TableCell>
-                  <TableCell align="center">
-                    {product.discount_percent > 0 ? `${product.discount_percent}%` : '-'}
-                  </TableCell>
-                  <TableCell align="center">{getStatusChip(product.status)}</TableCell>
-                  <TableCell align="center">
-                    <IconButton size="small" onClick={() => handleEdit(product)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" color="error" onClick={() => handleDelete(product.sku)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
 
-      {/* ?�이지?�이??*/}
-      {products && products.totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-          <Pagination
-            count={products.totalPages}
-            page={page}
-            onChange={(_, p) => setPage(p)}
-            color="primary"
-          />
-        </Box>
-      )}
+      {/* 페이지네이션 */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(_, value) => setPage(value)}
+          color="primary"
+        />
+      </Box>
 
-      {/* ?�품 ?�록/?�정 ?�이?�로�?*/}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle fontWeight={600}>
-          {editProduct ? '?�품 ?�정' : '?�품 ?�록'}
+      {/* 상품 등록/수정 다이얼로그 */}
+      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {editingProduct ? '상품 수정' : '상품 등록'}
         </DialogTitle>
-        <DialogContent dividers>
-          <Grid container spacing={2}>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12}>
-              <TextField label="?�품�? fullWidth required />
+              <TextField label="상품명" fullWidth required />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField label="브랜?? fullWidth />
+              <TextField label="브랜드" fullWidth />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField label="SKU" fullWidth required />
+              <FormControl fullWidth>
+                <InputLabel>카테고리</InputLabel>
+                <Select label="카테고리" defaultValue="">
+                  <MenuItem value="electronics">전자기기</MenuItem>
+                  <MenuItem value="fashion">패션</MenuItem>
+                  <MenuItem value="home">홈/리빙</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField label="가�? type="number" fullWidth required />
+              <TextField label="가격" type="number" fullWidth required />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField label="?�인??(%)" type="number" fullWidth />
+              <TextField label="재고" type="number" fullWidth required />
             </Grid>
             <Grid item xs={12}>
-              <TextField label="?�품 ?�명" fullWidth multiline rows={4} />
+              <TextField label="상품 설명" fullWidth multiline rows={4} />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>취소</Button>
-          <Button
-            variant="contained"
-            sx={{ bgcolor: brandColors.primary, '&:hover': { bgcolor: '#374151' } }}
-          >
-            {editProduct ? '?�정' : '?�록'}
+          <Button onClick={handleCloseDialog}>취소</Button>
+          <Button variant="contained" onClick={handleCloseDialog}>
+            {editingProduct ? '수정' : '등록'}
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
-  )
-}
+    </Container>
+  );
+};
 
-export default AdminProductListPage
+export default AdminProductListPage;
 

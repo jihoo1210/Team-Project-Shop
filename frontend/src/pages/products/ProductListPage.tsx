@@ -12,7 +12,7 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import CategoryFilter, { FilterState } from '@/components/common/CategoryFilter'
+import CategoryFilter, { type FilterState } from '@/components/common/CategoryFilter'
 import Pagination from '@/components/common/Pagination'
 import ProductCard from '@/components/common/ProductCard'
 import type { ProductSummary } from '@/types/product'
@@ -92,10 +92,10 @@ const ProductListPage = () => {
         case 'price-high':
           return b.price - a.price
         case 'review':
-          return b.reviewCount - a.reviewCount
+          return (b.reviewCount ?? 0) - (a.reviewCount ?? 0)
         case 'popular':
         default:
-          return b.likeCount - a.likeCount
+          return (b.likeCount ?? 0) - (a.likeCount ?? 0)
       }
     })
 

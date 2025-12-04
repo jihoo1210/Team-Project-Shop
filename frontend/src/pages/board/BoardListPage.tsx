@@ -76,10 +76,6 @@ const BoardListPage = () => {
     navigate(`/board/${currentCategory}/write`)
   }
 
-  const getCategoryLabel = (cat: string) => {
-    return BOARD_CATEGORIES.find((c) => c.value === cat)?.label || cat
-  }
-
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* 페이지 타이틀 */}

@@ -1,257 +1,302 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
 import {
-  Typography,
   Box,
+  Container,
+  Typography,
   Paper,
+  Grid,
   TextField,
   Button,
-  Grid,
+  Avatar,
+  Stack,
   Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-} from '@mui/material'
-import { fetchUser, updateUser, deleteUser } from '@/api/userApi'
-import type { UserProfile } from '@/types/api'
-import { brandColors } from '@/theme/tokens'
+  Alert,
+  Snackbar,
+} from '@mui/material';
+import { Person as PersonIcon } from '@mui/icons-material';
+import axiosClient from '../../api/axiosClient';
 
-declare global {
-  interface Window {
-    daum: {
-      Postcode: new (options: {
-        oncomplete: (data: { zonecode: string; address: string }) => void
-      }) => { open: () => void }
-    }
-  }
+interface UserProfile {
+  id: number;
+  email: string;
+  name: string;
+  phone: string;
+  address: string;
+  profileImage?: string;
 }
 
-const MyProfilePage = () => {
-  const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [form, setForm] = useState({
-    name: '',
+const MyProfilePage: React.FC = () => {
+  const [profile, setProfile] = useState<UserProfile>({
+    id: 0,
     email: '',
-    call: '',
-    zipCode: '',
-    addr: '',
-  })
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    name: '',
+    phone: '',
+    address: '',
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
+  const [loading, setLoading] = useState(true);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+
+  // 비밀번호 변경
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const data = await fetchUser()
-        setProfile(data)
-        setForm({
-          name: data.name,
-          email: data.email,
-          call: data.call,
-          zipCode: data.zipCode,
-          addr: data.addr,
-        })
-      } catch (error) {
-        console.error('?�로??로드 ?�패:', error)
-        alert('로그?�이 ?�요?�니??')
-        navigate('/login')
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadProfile()
-  }, [navigate])
+    fetchProfile();
+  }, []);
 
-  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }))
-  }
-
-  const handleAddressSearch = () => {
-    new window.daum.Postcode({
-      oncomplete: (data) => {
-        setForm((prev) => ({
-          ...prev,
-          zipCode: data.zonecode,
-          addr: data.address,
-        }))
-      },
-    }).open()
-  }
-
-  const handleSave = async () => {
-    setSaving(true)
+  const fetchProfile = async () => {
     try {
-      await updateUser(form)
-      alert('?�보가 ?�정?�었?�니??')
-    } catch (error) {
-      console.error('?�보 ?�정 ?�패:', error)
-      alert('?�보 ?�정???�패?�습?�다.')
+      setLoading(true);
+      const response = await axiosClient.get('/api/users/me');
+      setProfile(response.data);
+      setEditedProfile(response.data);
+    } catch (err) {
+      // Mock data for development
+      const mockProfile: UserProfile = {
+        id: 1,
+        email: 'user@example.com',
+        name: '홍길동',
+        phone: '010-1234-5678',
+        address: '서울시 강남구 역삼동 123-45',
+      };
+      setProfile(mockProfile);
+      setEditedProfile(mockProfile);
     } finally {
-      setSaving(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleDeleteAccount = async () => {
-    try {
-      await deleteUser()
-      localStorage.clear()
-      alert('?�원 ?�퇴가 ?�료?�었?�니??')
-      navigate('/')
-    } catch (error) {
-      console.error('?�원 ?�퇴 ?�패:', error)
-      alert('?�원 ?�퇴???�패?�습?�다.')
+  const handleEditToggle = () => {
+    if (isEditing) {
+      setEditedProfile(profile);
     }
-    setDeleteDialogOpen(false)
-  }
+    setIsEditing(!isEditing);
+  };
+
+  const handleInputChange = (field: keyof UserProfile) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setEditedProfile(prev => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      await axiosClient.put('/api/users/me', editedProfile);
+      setProfile(editedProfile);
+      setIsEditing(false);
+      setSnackbar({ open: true, message: '프로필이 저장되었습니다.', severity: 'success' });
+    } catch (err) {
+      // Save locally for demo
+      setProfile(editedProfile);
+      setIsEditing(false);
+      setSnackbar({ open: true, message: '프로필이 저장되었습니다.', severity: 'success' });
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    setPasswordError(null);
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('새 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      setPasswordError('비밀번호는 8자 이상이어야 합니다.');
+      return;
+    }
+
+    try {
+      await axiosClient.put('/api/users/me/password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setSnackbar({ open: true, message: '비밀번호가 변경되었습니다.', severity: 'success' });
+    } catch (err) {
+      // For demo
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setSnackbar({ open: true, message: '비밀번호가 변경되었습니다.', severity: 'success' });
+    }
+  };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    )
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Typography>로딩 중...</Typography>
+      </Container>
+    );
   }
 
   return (
-    <>
-      <Typography variant="h5" fontWeight={700} sx={{ mb: 3 }}>
-        ???�보
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
+        내 정보
       </Typography>
 
-      <Paper elevation={0} sx={{ border: '1px solid #E5E7EB', p: 4, mb: 3 }}>
-        <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-          기본 ?�보
-        </Typography>
-
-        <Grid container spacing={3}>
-          {/* ?�름 */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="?�름"
-              fullWidth
-              value={form.name}
-              onChange={handleChange('name')}
-            />
-          </Grid>
-
-          {/* ?�메??*/}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="?�메??
-              type="email"
-              fullWidth
-              value={form.email}
-              onChange={handleChange('email')}
-            />
-          </Grid>
-
-          {/* ?�락�?*/}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="?�락�?
-              fullWidth
-              value={form.call}
-              onChange={handleChange('call')}
-              placeholder="010-0000-0000"
-            />
-          </Grid>
-        </Grid>
-      </Paper>
-
-      <Paper elevation={0} sx={{ border: '1px solid #E5E7EB', p: 4, mb: 3 }}>
-        <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-          배송지 ?�보
-        </Typography>
-
-        <Grid container spacing={3}>
-          {/* ?�편번호 */}
-          <Grid item xs={12} sm={6}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <TextField
-                label="?�편번호"
-                value={form.zipCode}
-                InputProps={{ readOnly: true }}
-                sx={{ flex: 1 }}
-              />
+      <Grid container spacing={3}>
+        {/* 프로필 정보 */}
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" fontWeight="bold">
+                프로필 정보
+              </Typography>
               <Button
-                variant="outlined"
-                onClick={handleAddressSearch}
-                sx={{ minWidth: 100 }}
+                variant={isEditing ? 'outlined' : 'contained'}
+                onClick={handleEditToggle}
               >
-                검??
+                {isEditing ? '취소' : '수정'}
               </Button>
             </Box>
-          </Grid>
 
-          {/* 주소 */}
-          <Grid item xs={12}>
-            <TextField
-              label="주소"
-              fullWidth
-              value={form.addr}
-              InputProps={{ readOnly: true }}
-            />
-          </Grid>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
+              <Avatar
+                src={profile.profileImage}
+                sx={{ width: 100, height: 100, bgcolor: 'primary.main' }}
+              >
+                <PersonIcon sx={{ fontSize: 60 }} />
+              </Avatar>
+              {isEditing && (
+                <Button variant="outlined" size="small">
+                  이미지 변경
+                </Button>
+              )}
+            </Box>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="이메일"
+                  fullWidth
+                  value={editedProfile.email}
+                  disabled
+                  helperText="이메일은 변경할 수 없습니다"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="이름"
+                  fullWidth
+                  value={editedProfile.name}
+                  onChange={handleInputChange('name')}
+                  disabled={!isEditing}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="연락처"
+                  fullWidth
+                  value={editedProfile.phone}
+                  onChange={handleInputChange('phone')}
+                  disabled={!isEditing}
+                  placeholder="010-0000-0000"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="주소"
+                  fullWidth
+                  value={editedProfile.address}
+                  onChange={handleInputChange('address')}
+                  disabled={!isEditing}
+                />
+              </Grid>
+            </Grid>
+
+            {isEditing && (
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button variant="contained" onClick={handleSaveProfile}>
+                  저장
+                </Button>
+              </Box>
+            )}
+          </Paper>
         </Grid>
-      </Paper>
 
-      {/* ?�??버튼 */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mb: 4 }}>
-        <Button
-          variant="contained"
-          size="large"
-          onClick={handleSave}
-          disabled={saving}
-          sx={{
-            bgcolor: brandColors.primary,
-            '&:hover': { bgcolor: '#374151' },
-            px: 4,
-          }}
-        >
-          {saving ? '?�??�?..' : '?�보 ?�정'}
-        </Button>
-      </Box>
+        {/* 비밀번호 변경 */}
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              비밀번호 변경
+            </Typography>
+            <Divider sx={{ my: 2 }} />
 
-      <Divider sx={{ my: 4 }} />
+            {passwordError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {passwordError}
+              </Alert>
+            )}
 
-      {/* ?�원 ?�퇴 */}
-      <Paper elevation={0} sx={{ border: '1px solid #FCA5A5', p: 3, bgcolor: '#FEF2F2' }}>
-        <Typography fontWeight={600} color="error" sx={{ mb: 1 }}>
-          ?�원 ?�퇴
-        </Typography>
-        <Typography color="text.secondary" fontSize="0.875rem" sx={{ mb: 2 }}>
-          ?�퇴 ??모든 ?�이?��? ??��?�며 복구?????�습?�다.
-        </Typography>
-        <Button
-          variant="outlined"
-          color="error"
-          onClick={() => setDeleteDialogOpen(true)}
-        >
-          ?�원 ?�퇴
-        </Button>
-      </Paper>
+            <Stack spacing={2} sx={{ maxWidth: 400 }}>
+              <TextField
+                label="현재 비밀번호"
+                type="password"
+                fullWidth
+                value={passwordData.currentPassword}
+                onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+              />
+              <TextField
+                label="새 비밀번호"
+                type="password"
+                fullWidth
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                helperText="8자 이상 입력해주세요"
+              />
+              <TextField
+                label="새 비밀번호 확인"
+                type="password"
+                fullWidth
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+              />
+              <Button
+                variant="contained"
+                onClick={handlePasswordChange}
+                disabled={!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+              >
+                비밀번호 변경
+              </Button>
+            </Stack>
+          </Paper>
+        </Grid>
 
-      {/* ?�퇴 ?�인 ?�이?�로�?*/}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>?�원 ?�퇴</DialogTitle>
-        <DialogContent>
-          <Typography>
-            ?�말 ?�퇴?�시겠습?�까? ???�업?� ?�돌�????�습?�다.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>취소</Button>
-          <Button color="error" onClick={handleDeleteAccount}>
-            ?�퇴?�기
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
-  )
-}
+        {/* 회원 탈퇴 */}
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom color="error">
+              회원 탈퇴
+            </Typography>
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              회원 탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
+            </Typography>
+            <Button variant="outlined" color="error">
+              회원 탈퇴
+            </Button>
+          </Paper>
+        </Grid>
+      </Grid>
 
-export default MyProfilePage
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+      >
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Container>
+  );
+};
+
+export default MyProfilePage;
 

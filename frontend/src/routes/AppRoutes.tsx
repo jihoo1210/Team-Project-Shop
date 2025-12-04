@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Outlet, useRoutes } from 'react-router-dom'
 import LoadingScreen from '@/components/common/LoadingScreen'
+import { AuthGuard, AdminGuard, GuestGuard } from '@/components/auth/AuthGuard'
 import AdminLayout from '@/layouts/AdminLayout'
 import MainLayout from '@/layouts/MainLayout'
 import MyPageLayout from '@/layouts/MyPageLayout'
@@ -36,18 +37,50 @@ const AppRoutes = () => {
         { path: 'products', element: <ProductListPage /> },
         { path: 'products/:id', element: <ProductDetailPage /> },
         { path: 'cart', element: <CartPage /> },
-        { path: 'order', element: <OrderPage /> },
-        { path: 'login', element: <LoginPage /> },
-        { path: 'signup', element: <SignupPage /> },
+        { 
+          path: 'order', 
+          element: (
+            <AuthGuard>
+              <OrderPage />
+            </AuthGuard>
+          ) 
+        },
+        { 
+          path: 'login', 
+          element: (
+            <GuestGuard>
+              <LoginPage />
+            </GuestGuard>
+          ) 
+        },
+        { 
+          path: 'signup', 
+          element: (
+            <GuestGuard>
+              <SignupPage />
+            </GuestGuard>
+          ) 
+        },
         { path: 'board', element: <BoardListPage /> },
         { path: 'board/:category', element: <BoardListPage /> },
         { path: 'board/:category/:id', element: <BoardDetailPage /> },
-        { path: 'board/:category/write', element: <BoardWritePage /> },
+        { 
+          path: 'board/:category/write', 
+          element: (
+            <AuthGuard>
+              <BoardWritePage />
+            </AuthGuard>
+          ) 
+        },
       ],
     },
     {
       path: '/mypage',
-      element: <MyPageLayout />,
+      element: (
+        <AuthGuard>
+          <MyPageLayout />
+        </AuthGuard>
+      ),
       children: [
         { index: true, element: <Navigate to="profile" replace /> },
         { path: 'profile', element: <MyProfilePage /> },
@@ -57,7 +90,11 @@ const AppRoutes = () => {
     },
     {
       path: '/admin',
-      element: <AdminLayout />,
+      element: (
+        <AdminGuard>
+          <AdminLayout />
+        </AdminGuard>
+      ),
       children: [
         { index: true, element: <AdminDashboardPage /> },
         { path: 'products', element: <AdminProductListPage /> },

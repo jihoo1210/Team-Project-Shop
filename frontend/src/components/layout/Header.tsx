@@ -14,6 +14,7 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
 
 /**
  * 공통 헤더 컴포넌트
@@ -21,17 +22,22 @@ import { Link, useNavigate } from 'react-router-dom'
  */
 const Header = () => {
   const navigate = useNavigate()
+  const { isLoggedIn, isAdmin, logout } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   
-  // TODO: AuthContext에서 가져올 예정
-  const isLoggedIn = true // 임시로 true 설정
-  const cartItemCount = 3 // TODO: 장바구니 개수 상태 연동
+  // TODO: 장바구니 개수 상태 연동 (Context 또는 API)
+  const cartItemCount = 0
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchTerm.trim()) {
       navigate(`/products?searchTerm=${encodeURIComponent(searchTerm)}`)
     }
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
   }
 
   return (
@@ -87,6 +93,16 @@ const Header = () => {
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             {isLoggedIn ? (
               <>
+                {isAdmin && (
+                  <Button
+                    component={Link}
+                    to="/admin"
+                    color="inherit"
+                    sx={{ fontWeight: 600 }}
+                  >
+                    관리자
+                  </Button>
+                )}
                 <Button
                   component={Link}
                   to="/mypage"
@@ -98,9 +114,7 @@ const Header = () => {
                 <Button
                   color="inherit"
                   sx={{ fontWeight: 600 }}
-                  onClick={() => {
-                    // TODO: 로그아웃 처리
-                  }}
+                  onClick={handleLogout}
                 >
                   로그아웃
                 </Button>
