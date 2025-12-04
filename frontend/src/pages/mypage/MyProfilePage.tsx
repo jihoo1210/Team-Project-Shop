@@ -18,27 +18,80 @@ import {
   DialogContentText,
   DialogActions,
   CircularProgress,
+  IconButton,
+  Card,
+  CardContent,
+  Chip,
 } from '@mui/material'
-import { Person as PersonIcon } from '@mui/icons-material'
+import {
+  Person as PersonIcon,
+  Search as SearchIcon,
+  Delete as DeleteIcon,
+  Add as AddIcon,
+  Home as HomeIcon,
+  Work as WorkIcon,
+  School as SchoolIcon,
+} from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { fetchUser, updateUser, deleteUser } from '@/api/userApi'
 import { useAuth } from '@/hooks/useAuth'
+import { useDaumPostcode } from '@/hooks/useDaumPostcode'
 import type { UserProfile } from '@/types/api'
 
+// 배송지 타입
+interface Address {
+  id: string
+  label: string
+  name: string
+  phone: string
+  zipcode: string
+  address: string
+  addressDetail: string
+  isDefault: boolean
+}
+
+const addressIcons: Record<string, React.ReactNode> = {
+  '집': <HomeIcon />,
+  '직장': <WorkIcon />,
+  '학교': <SchoolIcon />,
+}
+
+/**
+ * 마이페이지 - 내 정보
+ * SPEC:
+ * - 기본 정보 (이름, 이메일, 전화번호, 주소)
+ * - 주소 관리 (기본 배송지 / 추가 배송지 최대 3개)
+ * - 비밀번호 변경
+ * - 회원 탈퇴
+ */
 const MyProfilePage: React.FC = () => {
   const navigate = useNavigate()
   const { logout } = useAuth()
+  const { openPostcode } = useDaumPostcode()
 
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [editedProfile, setEditedProfile] = useState({
     name: '',
     phone: '',
-    address: '',
+    email: '',
   })
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' })
+
+  // 배송지 관리
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [addressDialogOpen, setAddressDialogOpen] = useState(false)
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null)
+  const [newAddress, setNewAddress] = useState<Omit<Address, 'id' | 'isDefault'>>({
+    label: '집',
+    name: '',
+    phone: '',
+    zipcode: '',
+    address: '',
+    addressDetail: '',
+  })
 
   // 비밀번호 변경
   const [passwordData, setPasswordData] = useState({
@@ -64,10 +117,23 @@ const MyProfilePage: React.FC = () => {
       setProfile(data)
       setEditedProfile({
         name: data.name || '',
-        phone: data.phone || '',
-        address: data.address || '',
+        phone: data.call || data.phone || '',
+        email: data.email || '',
       })
-    } catch (err) {
+      // 기본 배송지 설정
+      if (data.addr || data.address) {
+        setAddresses([{
+          id: '1',
+          label: '집',
+          name: data.name || '',
+          phone: data.call || data.phone || '',
+          zipcode: data.zipCode || '',
+          address: data.addr || data.address || '',
+          addressDetail: '',
+          isDefault: true,
+        }])
+      }
+    } catch {
       // Mock data for development
       const mockProfile: UserProfile = {
         user_id: '1',
@@ -81,8 +147,18 @@ const MyProfilePage: React.FC = () => {
       setEditedProfile({
         name: mockProfile.name || '',
         phone: mockProfile.phone || '',
-        address: mockProfile.address || '',
+        email: mockProfile.email || '',
       })
+      setAddresses([{
+        id: '1',
+        label: '집',
+        name: '홍길동',
+        phone: '010-1234-5678',
+        zipcode: '06241',
+        address: '서울시 강남구 역삼동 123-45',
+        addressDetail: '101동 202호',
+        isDefault: true,
+      }])
     } finally {
       setLoading(false)
     }
@@ -92,8 +168,8 @@ const MyProfilePage: React.FC = () => {
     if (isEditing && profile) {
       setEditedProfile({
         name: profile.name || '',
-        phone: profile.phone || '',
-        address: profile.address || '',
+        phone: profile.call || profile.phone || '',
+        email: profile.email || '',
       })
     }
     setIsEditing(!isEditing)
@@ -108,17 +184,107 @@ const MyProfilePage: React.FC = () => {
   const handleSaveProfile = async () => {
     try {
       setSaving(true)
-      await updateUser(editedProfile)
+      await updateUser({
+        name: editedProfile.name,
+        call: editedProfile.phone,
+        email: editedProfile.email,
+      })
       setProfile(prev => (prev ? { ...prev, ...editedProfile } : null))
       setIsEditing(false)
       setSnackbar({ open: true, message: '프로필이 저장되었습니다.', severity: 'success' })
-    } catch (err) {
+    } catch {
       setSnackbar({ open: true, message: '프로필 저장에 실패했습니다.', severity: 'error' })
     } finally {
       setSaving(false)
     }
   }
 
+  // 배송지 관리
+  const handleOpenAddressDialog = (address?: Address) => {
+    if (address) {
+      setEditingAddress(address)
+      setNewAddress({
+        label: address.label,
+        name: address.name,
+        phone: address.phone,
+        zipcode: address.zipcode,
+        address: address.address,
+        addressDetail: address.addressDetail,
+      })
+    } else {
+      setEditingAddress(null)
+      setNewAddress({
+        label: '집',
+        name: editedProfile.name,
+        phone: editedProfile.phone,
+        zipcode: '',
+        address: '',
+        addressDetail: '',
+      })
+    }
+    setAddressDialogOpen(true)
+  }
+
+  const handleSearchAddress = () => {
+    openPostcode((result) => {
+      setNewAddress(prev => ({
+        ...prev,
+        zipcode: result.zonecode,
+        address: result.address,
+      }))
+    })
+  }
+
+  const handleSaveAddress = () => {
+    if (!newAddress.name || !newAddress.phone || !newAddress.address) {
+      setSnackbar({ open: true, message: '필수 정보를 입력해주세요.', severity: 'error' })
+      return
+    }
+
+    if (editingAddress) {
+      // 수정
+      setAddresses(prev => prev.map(addr => 
+        addr.id === editingAddress.id 
+          ? { ...addr, ...newAddress }
+          : addr
+      ))
+    } else {
+      // 추가 (최대 3개)
+      if (addresses.length >= 3) {
+        setSnackbar({ open: true, message: '배송지는 최대 3개까지 등록할 수 있습니다.', severity: 'error' })
+        return
+      }
+      const newAddr: Address = {
+        id: Date.now().toString(),
+        ...newAddress,
+        isDefault: addresses.length === 0,
+      }
+      setAddresses(prev => [...prev, newAddr])
+    }
+
+    setAddressDialogOpen(false)
+    setSnackbar({ open: true, message: '배송지가 저장되었습니다.', severity: 'success' })
+  }
+
+  const handleDeleteAddress = (id: string) => {
+    const addr = addresses.find(a => a.id === id)
+    if (addr?.isDefault && addresses.length > 1) {
+      setSnackbar({ open: true, message: '기본 배송지는 삭제할 수 없습니다. 다른 배송지를 기본으로 설정해주세요.', severity: 'error' })
+      return
+    }
+    setAddresses(prev => prev.filter(a => a.id !== id))
+    setSnackbar({ open: true, message: '배송지가 삭제되었습니다.', severity: 'success' })
+  }
+
+  const handleSetDefaultAddress = (id: string) => {
+    setAddresses(prev => prev.map(addr => ({
+      ...addr,
+      isDefault: addr.id === id,
+    })))
+    setSnackbar({ open: true, message: '기본 배송지가 변경되었습니다.', severity: 'success' })
+  }
+
+  // 비밀번호 변경
   const handlePasswordChange = async () => {
     setPasswordError(null)
 
@@ -139,7 +305,7 @@ const MyProfilePage: React.FC = () => {
       })
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
       setSnackbar({ open: true, message: '비밀번호가 변경되었습니다.', severity: 'success' })
-    } catch (err) {
+    } catch {
       setPasswordError('비밀번호 변경에 실패했습니다. 현재 비밀번호를 확인해주세요.')
     }
   }
@@ -154,8 +320,8 @@ const MyProfilePage: React.FC = () => {
       setWithdrawLoading(true)
       await deleteUser()
       logout()
-      navigate('/', { replace: true })
-    } catch (err) {
+      navigate('/withdraw-complete', { replace: true })
+    } catch {
       setSnackbar({ open: true, message: '회원 탈퇴에 실패했습니다.', severity: 'error' })
     } finally {
       setWithdrawLoading(false)
@@ -195,9 +361,7 @@ const MyProfilePage: React.FC = () => {
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
-              <Avatar
-                sx={{ width: 100, height: 100, bgcolor: 'primary.main' }}
-              >
+              <Avatar sx={{ width: 100, height: 100, bgcolor: 'primary.main' }}>
                 <PersonIcon sx={{ fontSize: 60 }} />
               </Avatar>
               {isEditing && (
@@ -212,7 +376,7 @@ const MyProfilePage: React.FC = () => {
                 <TextField
                   label="이메일"
                   fullWidth
-                  value={profile?.email || ''}
+                  value={editedProfile.email}
                   disabled
                   helperText="이메일은 변경할 수 없습니다"
                 />
@@ -236,15 +400,6 @@ const MyProfilePage: React.FC = () => {
                   placeholder="010-0000-0000"
                 />
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="주소"
-                  fullWidth
-                  value={editedProfile.address}
-                  onChange={handleInputChange('address')}
-                  disabled={!isEditing}
-                />
-              </Grid>
             </Grid>
 
             {isEditing && (
@@ -257,6 +412,77 @@ const MyProfilePage: React.FC = () => {
                   {saving ? <CircularProgress size={24} /> : '저장'}
                 </Button>
               </Box>
+            )}
+          </Paper>
+        </Grid>
+
+        {/* 배송지 관리 */}
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" fontWeight="bold">
+                배송지 관리
+              </Typography>
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                onClick={() => handleOpenAddressDialog()}
+                disabled={addresses.length >= 3}
+              >
+                배송지 추가
+              </Button>
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              최대 3개의 배송지를 등록할 수 있습니다. (집 / 직장 / 학교)
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+
+            {addresses.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography color="text.secondary">등록된 배송지가 없습니다.</Typography>
+                <Button 
+                  variant="contained" 
+                  sx={{ mt: 2 }}
+                  onClick={() => handleOpenAddressDialog()}
+                >
+                  배송지 등록하기
+                </Button>
+              </Box>
+            ) : (
+              <Stack spacing={2}>
+                {addresses.map((addr) => (
+                  <Card key={addr.id} variant="outlined">
+                    <CardContent>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                          {addressIcons[addr.label] || <HomeIcon />}
+                          <Typography fontWeight="bold">{addr.label}</Typography>
+                          {addr.isDefault && (
+                            <Chip label="기본" size="small" color="primary" />
+                          )}
+                        </Box>
+                        <Box>
+                          {!addr.isDefault && (
+                            <Button size="small" onClick={() => handleSetDefaultAddress(addr.id)}>
+                              기본으로 설정
+                            </Button>
+                          )}
+                          <IconButton size="small" onClick={() => handleOpenAddressDialog(addr)}>
+                            <SearchIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" color="error" onClick={() => handleDeleteAddress(addr.id)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                      <Typography variant="body2">{addr.name} / {addr.phone}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        [{addr.zipcode}] {addr.address} {addr.addressDetail}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Stack>
             )}
           </Paper>
         </Grid>
@@ -329,6 +555,69 @@ const MyProfilePage: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* 배송지 추가/수정 모달 */}
+      <Dialog open={addressDialogOpen} onClose={() => setAddressDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{editingAddress ? '배송지 수정' : '배송지 추가'}</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              select
+              label="배송지 이름"
+              fullWidth
+              value={newAddress.label}
+              onChange={(e) => setNewAddress(prev => ({ ...prev, label: e.target.value }))}
+              SelectProps={{ native: true }}
+            >
+              <option value="집">집</option>
+              <option value="직장">직장</option>
+              <option value="학교">학교</option>
+            </TextField>
+            <TextField
+              label="수령인"
+              fullWidth
+              required
+              value={newAddress.name}
+              onChange={(e) => setNewAddress(prev => ({ ...prev, name: e.target.value }))}
+            />
+            <TextField
+              label="연락처"
+              fullWidth
+              required
+              value={newAddress.phone}
+              onChange={(e) => setNewAddress(prev => ({ ...prev, phone: e.target.value }))}
+            />
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <TextField
+                label="우편번호"
+                value={newAddress.zipcode}
+                InputProps={{ readOnly: true }}
+                sx={{ flex: 1 }}
+              />
+              <Button variant="outlined" onClick={handleSearchAddress} startIcon={<SearchIcon />}>
+                주소 검색
+              </Button>
+            </Box>
+            <TextField
+              label="주소"
+              fullWidth
+              required
+              value={newAddress.address}
+              InputProps={{ readOnly: true }}
+            />
+            <TextField
+              label="상세주소"
+              fullWidth
+              value={newAddress.addressDetail}
+              onChange={(e) => setNewAddress(prev => ({ ...prev, addressDetail: e.target.value }))}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddressDialogOpen(false)}>취소</Button>
+          <Button variant="contained" onClick={handleSaveAddress}>저장</Button>
+        </DialogActions>
+      </Dialog>
 
       {/* 회원탈퇴 확인 모달 */}
       <Dialog open={withdrawOpen} onClose={() => setWithdrawOpen(false)}>

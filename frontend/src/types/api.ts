@@ -47,14 +47,23 @@ export interface UserProfile {
   email: string
   name?: string
   phone?: string
+  call?: string  // 연락처 (phone의 대안)
   address?: string
+  addr?: string  // 주소 (address의 대안)
+  zipCode?: string  // 우편번호
+  addr_detail?: string  // 상세주소
   role: string
   created_at?: string
 }
 export type UpdateUserRequest = Partial<{
   name: string
+  email: string  // 이메일
   phone: string
+  call: string  // 연락처
   address: string
+  addr: string  // 주소
+  zipCode: string  // 우편번호
+  addr_detail: string  // 상세주소
   password: string
   currentPassword: string
 }>

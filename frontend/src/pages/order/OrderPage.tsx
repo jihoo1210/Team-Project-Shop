@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   Container,
@@ -12,36 +12,51 @@ import {
   RadioGroup,
   FormControl,
   FormControlLabel,
+  FormGroup,
+  Checkbox,
   Stack,
   Alert,
   Card,
   CardContent,
-} from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { createOrder } from '@/api/orderApi';
-import { fetchUser } from '@/api/userApi';
+} from '@mui/material'
+import { Search as SearchIcon } from '@mui/icons-material'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { createOrder } from '@/api/orderApi'
+import { fetchUser } from '@/api/userApi'
+import { useDaumPostcode } from '@/hooks/useDaumPostcode'
 
 interface OrderItem {
-  productId: number;
-  productName: string;
-  productImage: string;
-  price: number;
-  quantity: number;
+  productId: number
+  productName: string
+  productImage: string
+  price: number
+  quantity: number
+  option?: string
 }
 
 interface ShippingInfo {
-  name: string;
-  phone: string;
-  zipcode: string;
-  address: string;
-  addressDetail: string;
-  memo: string;
+  name: string
+  phone: string
+  zipcode: string
+  address: string
+  addressDetail: string
+  memo: string
 }
 
+/**
+ * 주문서/결제 페이지
+ * SPEC: /order
+ * - 주문 상품 요약
+ * - 배송지 정보 (다음 우편번호 API 연동)
+ * - 결제수단 선택
+ * - 최종 결제 금액 및 약관 동의
+ */
 const OrderPage: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { openPostcode } = useDaumPostcode()
+
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     name: '',
     phone: '',
@@ -49,15 +64,22 @@ const OrderPage: React.FC = () => {
     address: '',
     addressDetail: '',
     memo: '',
-  });
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  })
+  const [paymentMethod, setPaymentMethod] = useState('card')
+  const [agreements, setAgreements] = useState({
+    all: false,
+    terms: false,
+    privacy: false,
+    payment: false,
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (location.state?.cartItems) {
-      setOrderItems(location.state.cartItems);
+      setOrderItems(location.state.cartItems)
     } else {
+      // 데모용 mock 데이터
       const mockItems: OrderItem[] = [
         {
           productId: 1,
@@ -65,6 +87,7 @@ const OrderPage: React.FC = () => {
           productImage: 'https://via.placeholder.com/80',
           price: 89000,
           quantity: 1,
+          option: '블랙 / M',
         },
         {
           productId: 2,
@@ -72,41 +95,81 @@ const OrderPage: React.FC = () => {
           productImage: 'https://via.placeholder.com/80',
           price: 299000,
           quantity: 2,
+          option: '실버 / L',
         },
-      ];
-      setOrderItems(mockItems);
+      ]
+      setOrderItems(mockItems)
     }
-    fetchUserInfo();
-  }, [location.state]);
+    fetchUserInfo()
+  }, [location.state])
 
   const fetchUserInfo = async () => {
     try {
-      const user = await fetchUser();
+      const user = await fetchUser()
       setShippingInfo(prev => ({
         ...prev,
         name: user.name || '',
-        phone: user.phone || '',
-        address: user.address || '',
-      }));
+        phone: user.call || user.phone || '',
+        zipcode: user.zipCode || '',
+        address: user.addr || user.address || '',
+      }))
     } catch {
-      // Use empty values for demo
+      // 사용자 정보 없으면 빈 값 유지
     }
-  };
+  }
 
   const handleInputChange = (field: keyof ShippingInfo) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setShippingInfo(prev => ({ ...prev, [field]: e.target.value }));
-  };
+    setShippingInfo(prev => ({ ...prev, [field]: e.target.value }))
+  }
+
+  // 다음 우편번호 API 연동
+  const handleSearchAddress = () => {
+    openPostcode((result) => {
+      setShippingInfo(prev => ({
+        ...prev,
+        zipcode: result.zonecode,
+        address: result.address,
+      }))
+    })
+  }
+
+  // 약관 동의 처리
+  const handleAgreementChange = (field: keyof typeof agreements) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const checked = e.target.checked
+
+    if (field === 'all') {
+      setAgreements({
+        all: checked,
+        terms: checked,
+        privacy: checked,
+        payment: checked,
+      })
+    } else {
+      const newAgreements = { ...agreements, [field]: checked }
+      newAgreements.all = newAgreements.terms && newAgreements.privacy && newAgreements.payment
+      setAgreements(newAgreements)
+    }
+  }
 
   const handleSubmit = async () => {
+    // 배송 정보 유효성 검사
     if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
-      setError('배송 정보를 모두 입력해주세요.');
-      return;
+      setError('배송 정보를 모두 입력해주세요.')
+      return
     }
 
-    setIsSubmitting(true);
-    setError(null);
+    // 약관 동의 검사
+    if (!agreements.terms || !agreements.privacy || !agreements.payment) {
+      setError('필수 약관에 모두 동의해주세요.')
+      return
+    }
+
+    setIsSubmitting(true)
+    setError(null)
 
     try {
       const orderData = {
@@ -115,28 +178,29 @@ const OrderPage: React.FC = () => {
         username: shippingInfo.name,
         orderDetail: shippingInfo.memo,
         call: shippingInfo.phone,
-      };
+      }
 
-      const result = await createOrder(orderData);
-      navigate(`/order/complete?orderId=${result.order_id}`);
-    } catch (err: any) {
-      setError(err.response?.data?.message || '주문 처리 중 오류가 발생했습니다.');
+      const result = await createOrder(orderData)
+      navigate(`/order/complete?orderId=${result.order_id}`)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '주문 처리 중 오류가 발생했습니다.'
+      setError(errorMessage)
       // 데모용 - 실패해도 완료 페이지로 이동
       setTimeout(() => {
-        navigate('/order/complete?orderId=demo-order-001');
-      }, 1000);
+        navigate('/order/complete?orderId=demo-order-001')
+      }, 1000)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
-  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingFee = subtotal >= 50000 ? 0 : 3000;
-  const totalPrice = subtotal + shippingFee;
+  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const shippingFee = subtotal >= 50000 ? 0 : 3000
+  const totalPrice = subtotal + shippingFee
 
   const formatPrice = (price: number) => {
-    return price.toLocaleString('ko-KR') + '원';
-  };
+    return price.toLocaleString('ko-KR') + '원'
+  }
 
   if (orderItems.length === 0) {
     return (
@@ -150,7 +214,7 @@ const OrderPage: React.FC = () => {
           </Button>
         </Paper>
       </Container>
-    );
+    )
   }
 
   return (
@@ -185,6 +249,11 @@ const OrderPage: React.FC = () => {
                     />
                     <Box sx={{ flex: 1 }}>
                       <Typography fontWeight="medium">{item.productName}</Typography>
+                      {item.option && (
+                        <Typography variant="body2" color="text.secondary">
+                          옵션: {item.option}
+                        </Typography>
+                      )}
                       <Typography variant="body2" color="text.secondary">
                         수량: {item.quantity}개
                       </Typography>
@@ -228,11 +297,17 @@ const OrderPage: React.FC = () => {
                     label="우편번호"
                     fullWidth
                     value={shippingInfo.zipcode}
-                    onChange={handleInputChange('zipcode')}
+                    InputProps={{ readOnly: true }}
+                    placeholder="주소 검색을 해주세요"
                   />
                 </Grid>
                 <Grid item xs={12} sm={8}>
-                  <Button variant="outlined" sx={{ height: '56px' }}>
+                  <Button 
+                    variant="outlined" 
+                    sx={{ height: '56px' }}
+                    startIcon={<SearchIcon />}
+                    onClick={handleSearchAddress}
+                  >
                     주소 검색
                   </Button>
                 </Grid>
@@ -242,7 +317,8 @@ const OrderPage: React.FC = () => {
                     fullWidth
                     required
                     value={shippingInfo.address}
-                    onChange={handleInputChange('address')}
+                    InputProps={{ readOnly: true }}
+                    placeholder="주소 검색을 통해 입력해주세요"
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -251,6 +327,7 @@ const OrderPage: React.FC = () => {
                     fullWidth
                     value={shippingInfo.addressDetail}
                     onChange={handleInputChange('addressDetail')}
+                    placeholder="상세주소를 입력해주세요"
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -282,6 +359,63 @@ const OrderPage: React.FC = () => {
                   <FormControlLabel value="phone" control={<Radio />} label="휴대폰 결제" />
                 </RadioGroup>
               </FormControl>
+              {paymentMethod === 'bank' && (
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  주문 후 24시간 이내에 입금해주세요. 미입금 시 자동 취소됩니다.
+                </Alert>
+              )}
+              {paymentMethod === 'virtual' && (
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  가상계좌는 주문 완료 후 발급됩니다. 7일 이내 입금해주세요.
+                </Alert>
+              )}
+            </Paper>
+
+            {/* 약관 동의 */}
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" fontWeight="bold" gutterBottom>
+                약관 동의
+              </Typography>
+              <Divider sx={{ my: 2 }} />
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={agreements.all}
+                      onChange={handleAgreementChange('all')}
+                    />
+                  }
+                  label={<Typography fontWeight="bold">전체 동의</Typography>}
+                />
+                <Divider sx={{ my: 1 }} />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={agreements.terms}
+                      onChange={handleAgreementChange('terms')}
+                    />
+                  }
+                  label="(필수) 이용약관 동의"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={agreements.privacy}
+                      onChange={handleAgreementChange('privacy')}
+                    />
+                  }
+                  label="(필수) 개인정보 처리방침 동의"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={agreements.payment}
+                      onChange={handleAgreementChange('payment')}
+                    />
+                  }
+                  label="(필수) 결제 서비스 이용 동의"
+                />
+              </FormGroup>
             </Paper>
           </Stack>
         </Grid>
@@ -309,6 +443,11 @@ const OrderPage: React.FC = () => {
                     )}
                   </Typography>
                 </Box>
+                {subtotal < 50000 && (
+                  <Typography variant="caption" color="text.secondary">
+                    * 5만원 이상 구매 시 무료배송
+                  </Typography>
+                )}
                 <Divider />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="h6" fontWeight="bold">총 결제 금액</Typography>
@@ -323,7 +462,7 @@ const OrderPage: React.FC = () => {
                 fullWidth
                 sx={{ mt: 3, py: 1.5 }}
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !agreements.terms || !agreements.privacy || !agreements.payment}
               >
                 {isSubmitting ? '처리 중...' : `${formatPrice(totalPrice)} 결제하기`}
               </Button>
@@ -332,8 +471,8 @@ const OrderPage: React.FC = () => {
         </Grid>
       </Grid>
     </Container>
-  );
-};
+  )
+}
 
-export default OrderPage;
+export default OrderPage
 

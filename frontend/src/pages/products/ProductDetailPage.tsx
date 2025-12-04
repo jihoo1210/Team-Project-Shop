@@ -561,6 +561,48 @@ const ProductDetailPage = () => {
           </Box>
         </TabPanel>
       </Box>
+
+      {/* 연관 상품 영역 */}
+      <Box sx={{ mt: 8 }}>
+        <Typography variant="h5" fontWeight={700} gutterBottom>
+          이 상품과 비슷한 상품
+        </Typography>
+        <Grid container spacing={3} sx={{ mt: 2 }}>
+          {[1, 2, 3, 4].map((item) => (
+            <Grid item xs={6} sm={3} key={item}>
+              <Box
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  '&:hover': { boxShadow: 2 },
+                }}
+                onClick={() => navigate(`/products/${item}`)}
+              >
+                <Box
+                  component="img"
+                  src={`https://via.placeholder.com/300x300?text=Product+${item}`}
+                  alt={`연관 상품 ${item}`}
+                  sx={{ width: '100%', height: 200, objectFit: 'cover' }}
+                />
+                <Box sx={{ p: 2 }}>
+                  <Typography variant="body2" color="text.secondary" noWrap>
+                    {product?.brand || 'Brand'}
+                  </Typography>
+                  <Typography fontWeight={600} noWrap>
+                    추천 상품 {item}
+                  </Typography>
+                  <Typography fontWeight={700} color="primary">
+                    {(Math.floor(Math.random() * 100) * 1000 + 10000).toLocaleString()}원
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
     </Container>
   )
 }

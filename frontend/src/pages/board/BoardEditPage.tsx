@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import {
   Container,
@@ -8,26 +8,48 @@ import {
   TextField,
   Button,
   CircularProgress,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
 } from '@mui/material'
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material'
+import { 
+  ArrowBack as ArrowBackIcon,
+  AttachFile as AttachFileIcon,
+  Delete as DeleteIcon,
+  Image as ImageIcon,
+  InsertDriveFile as FileIcon,
+  PictureAsPdf as PdfIcon,
+} from '@mui/icons-material'
 import { fetchBoardDetail, updateBoard } from '@/api/boardApi'
 import { brandColors } from '@/theme/tokens'
+
+interface AttachedFile {
+  id: string
+  file: File
+  preview?: string
+}
 
 /**
  * 게시글 수정 페이지
  * - 기존 게시글 데이터 로드
  * - 제목/내용 수정
+ * - 파일 첨부 기능
  * - 수정 완료 후 상세 페이지로 이동
  */
 const BoardEditPage = () => {
   const { category, id } = useParams<{ category: string; id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
 
   // 현재 로그인 사용자 정보
   const currentUserId = localStorage.getItem('user_id') || ''
@@ -68,6 +90,63 @@ const BoardEditPage = () => {
       qna: 'QnA',
     }
     return labels[cat] || cat
+  }
+
+  // 파일 선택 핸들러
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (!files) return
+
+    const maxFiles = 5
+    const maxFileSize = 10 * 1024 * 1024 // 10MB
+
+    const remainingSlots = maxFiles - attachedFiles.length
+    if (remainingSlots <= 0) {
+      alert('최대 5개까지 첨부할 수 있습니다.')
+      return
+    }
+
+    const newFiles: AttachedFile[] = []
+    for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
+      const file = files[i]
+      if (file.size > maxFileSize) {
+        alert(`파일 "${file.name}"이 10MB를 초과합니다.`)
+        continue
+      }
+      newFiles.push({
+        id: `${Date.now()}-${i}`,
+        file,
+        preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+      })
+    }
+
+    setAttachedFiles((prev) => [...prev, ...newFiles])
+    event.target.value = ''
+  }
+
+  // 파일 제거
+  const handleRemoveFile = (fileId: string) => {
+    setAttachedFiles((prev) => {
+      const file = prev.find((f) => f.id === fileId)
+      if (file?.preview) {
+        URL.revokeObjectURL(file.preview)
+      }
+      return prev.filter((f) => f.id !== fileId)
+    })
+  }
+
+  // 파일 아이콘 반환
+  const getFileIcon = (file: File) => {
+    if (file.type.startsWith('image/')) return <ImageIcon />
+    if (file.type === 'application/pdf') return <PdfIcon />
+    return <FileIcon />
+  }
+
+  // 파일 크기 포맷
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
   const handleBack = () => {
@@ -166,6 +245,51 @@ const BoardEditPage = () => {
             onChange={(e) => setContent(e.target.value)}
             placeholder="내용을 입력해주세요"
           />
+
+          {/* 파일 첨부 */}
+          <Box>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+              style={{ display: 'none' }}
+            />
+            <Button
+              variant="outlined"
+              startIcon={<AttachFileIcon />}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={attachedFiles.length >= 5}
+            >
+              파일 첨부 ({attachedFiles.length}/5)
+            </Button>
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+              최대 5개, 파일당 10MB까지
+            </Typography>
+
+            {/* 첨부된 파일 목록 */}
+            {attachedFiles.length > 0 && (
+              <List dense sx={{ mt: 1 }}>
+                {attachedFiles.map((attached) => (
+                  <ListItem key={attached.id} sx={{ bgcolor: 'grey.50', borderRadius: 1, mb: 0.5 }}>
+                    <ListItemIcon sx={{ minWidth: 40 }}>
+                      {getFileIcon(attached.file)}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={attached.file.name}
+                      secondary={formatFileSize(attached.file.size)}
+                    />
+                    <ListItemSecondaryAction>
+                      <IconButton edge="end" size="small" onClick={() => handleRemoveFile(attached.id)}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </Box>
 
           {/* 버튼 */}
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>

@@ -20,6 +20,7 @@ const SignupPage = lazy(() => import('@/pages/auth/SignupPage'))
 const MyProfilePage = lazy(() => import('@/pages/mypage/MyProfilePage'))
 const MyOrdersPage = lazy(() => import('@/pages/mypage/MyOrdersPage'))
 const MyPostsPage = lazy(() => import('@/pages/mypage/MyPostsPage'))
+const WithdrawCompletePage = lazy(() => import('@/pages/mypage/WithdrawCompletePage'))
 const BoardListPage = lazy(() => import('@/pages/board/BoardListPage'))
 const BoardDetailPage = lazy(() => import('@/pages/board/BoardDetailPage'))
 const BoardWritePage = lazy(() => import('@/pages/board/BoardWritePage'))
@@ -64,6 +65,7 @@ const AppRoutes = () => {
             </AuthGuard>
           ) 
         },
+        { path: 'withdraw-complete', element: <WithdrawCompletePage /> },
         { 
           path: 'login', 
           element: (
