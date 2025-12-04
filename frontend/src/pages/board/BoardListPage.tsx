@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  Container,
   Typography,
   Box,
   Tabs,
@@ -91,7 +90,7 @@ const BoardListPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box>
       <Typography variant="h4" fontWeight={700} sx={{ mb: 3, color: brandColors.primary }}>
         게시판
       </Typography>
@@ -142,14 +141,14 @@ const BoardListPage = () => {
                   <Typography color="text.secondary">로딩 중...</Typography>
                 </TableCell>
               </TableRow>
-            ) : boardData?.content.length === 0 ? (
+            ) : !boardData?.content || boardData.content.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} align="center" sx={{ py: 8 }}>
                   <Typography color="text.secondary">등록된 게시글이 없습니다.</Typography>
                 </TableCell>
               </TableRow>
             ) : (
-              boardData?.content.map((post, index) => (
+              boardData.content.map((post, index) => (
                 <TableRow
                   key={post.board_no}
                   hover
@@ -195,7 +194,7 @@ const BoardListPage = () => {
           />
         </Box>
       )}
-    </Container>
+    </Box>
   )
 }
 
