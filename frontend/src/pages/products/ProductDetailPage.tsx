@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
@@ -31,7 +31,8 @@ import {
 } from '@mui/icons-material'
 import { Link as RouterLink } from 'react-router-dom'
 import { fetchItemDetail, toggleFavoriteItem, toggleCartItem } from '@/api/itemApi'
-import type { ItemDetail } from '@/types/api'
+import ReviewSection from '@/components/review/ReviewSection'
+import type { ItemDetail, ReviewListItem } from '@/types/api'
 
 /**
  * 상품 상세 페이지
@@ -81,35 +82,54 @@ const ProductDetailPage = () => {
   // 즐겨찾기 상태
   const [isFavorite, setIsFavorite] = useState(false)
 
+  // 리뷰 목록 (ReviewSection에서 변경 시 갱신)
+  const [reviews, setReviews] = useState<ReviewListItem[]>([])
+
   // 상품 상세 조회 API 호출
-  useEffect(() => {
+  const loadProduct = useCallback(async () => {
     if (!id) return
 
-    const loadProduct = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const data = await fetchItemDetail(id)
-        setProduct(data)
-        setIsFavorite(data.savedInLikes ?? false)
-        
-        // 기본 옵션 선택
-        if (data.colorList?.length > 0) {
-          setSelectedColor(data.colorList[0])
-        }
-        if (data.sizeList?.length > 0) {
-          setSelectedSize(data.sizeList[0])
-        }
-      } catch (err) {
-        setError('상품 정보를 불러오는데 실패했습니다.')
-        console.error(err)
-      } finally {
-        setLoading(false)
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await fetchItemDetail(id)
+      setProduct(data)
+      setIsFavorite(data.savedInLikes ?? false)
+      // reviewList를 ReviewListItem 형태로 변환
+      setReviews(
+        (data.reviewList || []).map((r, idx) => ({
+          review_no: String(idx),
+          writer_id: 'user',
+          score: r.score,
+          content: r.content,
+          created_at: r.created_at,
+          updated_at: r.updated_at,
+        }))
+      )
+      
+      // 기본 옵션 선택
+      if (data.colorList?.length > 0) {
+        setSelectedColor(data.colorList[0])
       }
+      if (data.sizeList?.length > 0) {
+        setSelectedSize(data.sizeList[0])
+      }
+    } catch (err) {
+      setError('상품 정보를 불러오는데 실패했습니다.')
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
-
-    loadProduct()
   }, [id])
+
+  useEffect(() => {
+    loadProduct()
+  }, [loadProduct])
+
+  // 리뷰 변경 시 재로드
+  const handleReviewChange = () => {
+    loadProduct()
+  }
 
   // 수량 변경 핸들러
   const handleQuantityChange = (delta: number) => {
@@ -517,35 +537,11 @@ const ProductDetailPage = () => {
 
         {/* 리뷰 탭 */}
         <TabPanel value={tabValue} index={1}>
-          <Box sx={{ minHeight: 300 }}>
-            {product.reviewList && product.reviewList.length > 0 ? (
-              <Stack spacing={3}>
-                {product.reviewList.map((review, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      p: 3,
-                      border: '1px solid',
-                      borderColor: 'grey.200',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-                      <Rating value={review.score} readOnly size="small" />
-                      <Typography variant="caption" color="text.secondary">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </Typography>
-                    </Stack>
-                    <Typography variant="body1">{review.content}</Typography>
-                  </Box>
-                ))}
-              </Stack>
-            ) : (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography color="text.secondary">아직 작성된 리뷰가 없습니다.</Typography>
-              </Box>
-            )}
-          </Box>
+          <ReviewSection
+            itemId={id!}
+            reviews={reviews}
+            onReviewChange={handleReviewChange}
+          />
         </TabPanel>
 
         {/* Q&A 탭 */}

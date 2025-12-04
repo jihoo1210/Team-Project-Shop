@@ -3,6 +3,7 @@ import HomeIcon from '@mui/icons-material/Home'
 import LogoutIcon from '@mui/icons-material/Logout'
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 import StarIcon from '@mui/icons-material/Star'
+import FavoriteIcon from '@mui/icons-material/Favorite'
 import { Box, Divider, List, ListItemButton, ListItemIcon, ListItemText, Paper, Stack, Typography } from '@mui/material'
 import { NavLink, Outlet } from 'react-router-dom'
 import Header from '@/components/layout/Header'
@@ -12,6 +13,7 @@ const myMenu = [
   { label: '내 정보', to: 'profile', icon: <HomeIcon /> },
   { label: '주문 내역', to: 'orders', icon: <ShoppingBagIcon /> },
   { label: '내가 쓴 글/리뷰', to: 'posts', icon: <StarIcon /> },
+  { label: '찜한 상품', to: 'wishlist', icon: <FavoriteIcon /> },
 ]
 
 const MyPageLayout = () => {

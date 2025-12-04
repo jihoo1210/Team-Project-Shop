@@ -11,6 +11,7 @@ import MyPageLayout from '@/layouts/MyPageLayout'
 const HomePage = lazy(() => import('@/pages/HomePage'))
 const ProductListPage = lazy(() => import('@/pages/products/ProductListPage'))
 const ProductDetailPage = lazy(() => import('@/pages/products/ProductDetailPage'))
+const WishlistPage = lazy(() => import('@/pages/products/WishlistPage'))
 const CartPage = lazy(() => import('@/pages/cart/CartPage'))
 const OrderPage = lazy(() => import('@/pages/order/OrderPage'))
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
@@ -21,6 +22,7 @@ const MyPostsPage = lazy(() => import('@/pages/mypage/MyPostsPage'))
 const BoardListPage = lazy(() => import('@/pages/board/BoardListPage'))
 const BoardDetailPage = lazy(() => import('@/pages/board/BoardDetailPage'))
 const BoardWritePage = lazy(() => import('@/pages/board/BoardWritePage'))
+const BoardEditPage = lazy(() => import('@/pages/board/BoardEditPage'))
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
 const AdminProductListPage = lazy(() => import('@/pages/admin/AdminProductListPage'))
 const AdminMemberListPage = lazy(() => import('@/pages/admin/AdminMemberListPage'))
@@ -36,6 +38,14 @@ const AppRoutes = () => {
         { index: true, element: <HomePage /> },
         { path: 'products', element: <ProductListPage /> },
         { path: 'products/:id', element: <ProductDetailPage /> },
+        { 
+          path: 'wishlist', 
+          element: (
+            <AuthGuard>
+              <WishlistPage />
+            </AuthGuard>
+          ) 
+        },
         { path: 'cart', element: <CartPage /> },
         { 
           path: 'order', 
@@ -72,6 +82,14 @@ const AppRoutes = () => {
             </AuthGuard>
           ) 
         },
+        { 
+          path: 'board/:category/:id/edit', 
+          element: (
+            <AuthGuard>
+              <BoardEditPage />
+            </AuthGuard>
+          ) 
+        },
       ],
     },
     {
@@ -86,6 +104,7 @@ const AppRoutes = () => {
         { path: 'profile', element: <MyProfilePage /> },
         { path: 'orders', element: <MyOrdersPage /> },
         { path: 'posts', element: <MyPostsPage /> },
+        { path: 'wishlist', element: <WishlistPage /> },
       ],
     },
     {

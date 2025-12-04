@@ -18,7 +18,7 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from '@mui/icons-material'
-import { fetchBoardDetail, fetchComments, createComment, deleteBoard, deleteComment, type BoardDetail } from '@/api/boardApi'
+import { fetchBoardDetail, fetchComments, createComment, updateComment, deleteBoard, deleteComment, type BoardDetail } from '@/api/boardApi'
 import type { CommentListItem } from '@/types/api'
 import { brandColors } from '@/theme/tokens'
 
@@ -31,6 +31,11 @@ const BoardDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [newComment, setNewComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // 댓글 수정 상태
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
+  const [editingCommentContent, setEditingCommentContent] = useState('')
+  const [editSubmitting, setEditSubmitting] = useState(false)
 
   // TODO: 실제 로그인 사용자 정보 연동
   const currentUserId = localStorage.getItem('user_id') || ''
@@ -113,6 +118,48 @@ const BoardDetailPage = () => {
     } catch (error) {
       console.error('댓글 삭제 실패:', error)
     }
+  }
+
+  // 댓글 수정 시작
+  const handleEditCommentStart = (comment: CommentListItem) => {
+    setEditingCommentId(comment.co_no)
+    setEditingCommentContent(comment.title) // title이 content 역할
+  }
+
+  // 댓글 수정 취소
+  const handleEditCommentCancel = () => {
+    setEditingCommentId(null)
+    setEditingCommentContent('')
+  }
+
+  // 댓글 수정 제출
+  const handleEditCommentSubmit = async () => {
+    if (!editingCommentId || !editingCommentContent.trim()) return
+    setEditSubmitting(true)
+    try {
+      await updateComment({
+        co_no: editingCommentId,
+        writer_id: currentUserId,
+        co_content: editingCommentContent.trim(),
+      })
+      // 댓글 새로고침
+      if (id) {
+        const commentsData = await fetchComments(id)
+        setComments(commentsData)
+      }
+      setEditingCommentId(null)
+      setEditingCommentContent('')
+    } catch (error) {
+      console.error('댓글 수정 실패:', error)
+      alert('댓글 수정에 실패했습니다.')
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
+
+  // 게시글 수정 페이지로 이동
+  const handleEditPost = () => {
+    navigate(`/board/${category}/${id}/edit`, { state: { post } })
   }
 
   const getCategoryLabel = (cat: string) => {
@@ -209,7 +256,7 @@ const BoardDetailPage = () => {
                 <Button
                   size="small"
                   startIcon={<EditIcon />}
-                  onClick={() => {/* TODO: 수정 페이지 */}}
+                  onClick={handleEditPost}
                 >
                   수정
                 </Button>
@@ -284,15 +331,56 @@ const BoardDetailPage = () => {
                       </Typography>
                       {(comment.writer_id === currentUserId ||
                         currentUserRole === 'Admin') && (
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDeleteComment(comment.co_no)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
+                        <Box sx={{ display: 'flex', gap: 0.5 }}>
+                          {comment.writer_id === currentUserId && (
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEditCommentStart(comment)}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          )}
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteComment(comment.co_no)}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
                       )}
                     </Box>
-                    <Typography fontSize="0.875rem">{comment.title}</Typography>
+                    {/* 수정 모드 */}
+                    {editingCommentId === comment.co_no ? (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={2}
+                          value={editingCommentContent}
+                          onChange={(e) => setEditingCommentContent(e.target.value)}
+                          size="small"
+                        />
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                          <Button size="small" onClick={handleEditCommentCancel}>
+                            취소
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            onClick={handleEditCommentSubmit}
+                            disabled={editSubmitting || !editingCommentContent.trim()}
+                            sx={{
+                              bgcolor: brandColors.primary,
+                              '&:hover': { bgcolor: '#374151' },
+                            }}
+                          >
+                            {editSubmitting ? '수정 중...' : '수정'}
+                          </Button>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Typography fontSize="0.875rem">{comment.title}</Typography>
+                    )}
                   </Box>
                 </Box>
               ))}

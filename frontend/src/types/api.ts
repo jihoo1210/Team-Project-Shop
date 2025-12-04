@@ -66,6 +66,7 @@ export type ReviewSummary = {
 }
 
 export type ItemSummary = {
+  item_id: string
   status: string
   discount_percent: number
   colorList: string[]
@@ -75,6 +76,7 @@ export type ItemSummary = {
   scoreAverage: number
   savedInCart?: boolean
   main_image_url: string
+  thumbnailUrl?: string
   brand: string
   title: string
   reviewCount: number
@@ -144,6 +146,7 @@ export type BoardUpdateRequest = {
   title: string
   content: string
   board_category: string
+  role: 'Admin' | 'User'
 }
 export type BoardDeleteRequest = { board_no: string; writer_id: string; role: 'Admin' | 'User' }
 export type BoardListItem = { board_no: string; title: string; writer_id: string; view: number }
@@ -154,5 +157,33 @@ export type CommentDeleteRequest = { co_no: string; writer_id: string; role: 'Ad
 export type CommentListItem = { co_no: string; title: string; writer_id: string; view: number }
 
 /* 리뷰 */
+export type ReviewWriteRequest = { 
+  item_id: string
+  writer_id: string
+  score: number
+  content: string 
+}
+export type ReviewUpdateRequest = { 
+  review_no: string
+  writer_id: string
+  score: number
+  content: string
+  role: 'Admin' | 'User'
+}
+export type ReviewDeleteRequest = { 
+  review_no: string
+  writer_id: string
+  role: 'Admin' | 'User'
+}
+export type ReviewListItem = {
+  review_no: string
+  writer_id: string
+  score: number
+  content: string
+  created_at: string
+  updated_at: string
+}
+
+// Legacy types (backward compatibility)
 export type CreateReviewRequest = { itemId: string; content: string; score: number }
 export type UpdateReviewRequest = { reviewId: string; content: string; score: number }
