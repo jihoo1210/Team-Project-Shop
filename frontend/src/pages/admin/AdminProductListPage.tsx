@@ -98,7 +98,7 @@ const AdminProductListPage: React.FC = () => {
       });
       setProducts(response.data.content);
       setTotalPages(response.data.totalPages);
-    } catch (err) {
+    } catch {
       // Mock data for development
       const mockProducts: Product[] = [
         { id: 1, name: '프리미엄 무선 이어폰', brand: 'TechBrand', price: 89000, stock: 50, status: 'active', category: '전자기기', createdAt: '2024-01-15' },
@@ -258,7 +258,7 @@ const AdminProductListPage: React.FC = () => {
       fetchProducts();
       handleCloseDialog();
       alert(editingProduct ? '상품이 수정되었습니다.' : '상품이 등록되었습니다.');
-    } catch (err) {
+    } catch {
       // 데모용 로컬 처리
       const newProduct: Product = {
         id: editingProduct?.id || Date.now(),
@@ -289,7 +289,7 @@ const AdminProductListPage: React.FC = () => {
     try {
       await axiosClient.delete(`/api/admin/products/${id}`);
       setProducts(products.filter(p => p.id !== id));
-    } catch (err) {
+    } catch {
       // Delete locally for demo
       setProducts(products.filter(p => p.id !== id));
     }
