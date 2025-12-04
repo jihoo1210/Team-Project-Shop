@@ -1,9 +1,12 @@
-import { Button, Grid, Paper, Stack, Typography } from '@mui/material'
+import { useState, useEffect } from 'react'
+import { Button, Grid, Paper, Stack, Typography, CircularProgress, Box } from '@mui/material'
 import { Link } from 'react-router-dom'
 import MainBanner from '@/components/home/MainBanner'
 import ProductSection from '@/components/home/ProductSection'
+import { fetchItems } from '@/api/itemApi'
 import type { ProductSummary } from '@/types/product'
 
+// Mock data as fallback
 const mockProducts: ProductSummary[] = [
   {
     id: 'SKU-1001',
@@ -77,44 +80,75 @@ const mockProducts: ProductSummary[] = [
   },
 ]
 
-const newProducts: ProductSummary[] = [
-  {
-    id: 'SKU-2001',
-    title: '트렌디 크롭 재킷',
-    brand: 'Fashion Hub',
-    price: 199000,
-    scoreAverage: 4.9,
-    reviewCount: 45,
-    likeCount: 78,
-    mainImage: 'https://placehold.co/606x400/png',
-    badges: ['신규'],
-  },
-  {
-    id: 'SKU-2002',
-    title: '레트로 운동화',
-    brand: 'Sporty Walk',
-    price: 139000,
-    discountPercent: 10,
-    scoreAverage: 4.6,
-    reviewCount: 67,
-    likeCount: 54,
-    mainImage: 'https://placehold.co/607x400/png',
-    badges: ['신규'],
-  },
-  {
-    id: 'SKU-2003',
-    title: '스마트 크로스백',
-    brand: 'Modern Bag',
-    price: 89000,
-    scoreAverage: 4.7,
-    reviewCount: 23,
-    likeCount: 34,
-    mainImage: 'https://placehold.co/608x400/png',
-    badges: ['신규', '추천'],
-  },
-]
-
 const HomePage = () => {
+  const [bestProducts, setBestProducts] = useState<ProductSummary[]>([])
+  const [newProducts, setNewProducts] = useState<ProductSummary[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        // 베스트 상품 (인기순)
+        const bestResponse = await fetchItems({
+          page: 0,
+          size: 6,
+          sortBy: 'like_count',
+          sortDir: 'desc',
+        })
+        const mappedBest: ProductSummary[] = (bestResponse.content || []).map((item: any) => ({
+          id: item.item_id,
+          title: item.item_name || item.title,
+          brand: item.brand || '',
+          price: item.price,
+          discountPercent: item.discount_percent,
+          scoreAverage: item.score_average,
+          reviewCount: item.review_count,
+          likeCount: item.like_count,
+          mainImage: item.main_image || 'https://placehold.co/600x400/png',
+          badges: item.badges,
+        }))
+        setBestProducts(mappedBest.length > 0 ? mappedBest : mockProducts)
+
+        // 신규 상품 (최신순)
+        const newResponse = await fetchItems({
+          page: 0,
+          size: 3,
+          sortBy: 'created_at',
+          sortDir: 'desc',
+        })
+        const mappedNew: ProductSummary[] = (newResponse.content || []).map((item: any) => ({
+          id: item.item_id,
+          title: item.item_name || item.title,
+          brand: item.brand || '',
+          price: item.price,
+          discountPercent: item.discount_percent,
+          scoreAverage: item.score_average,
+          reviewCount: item.review_count,
+          likeCount: item.like_count,
+          mainImage: item.main_image || 'https://placehold.co/600x400/png',
+          badges: ['신규'],
+        }))
+        setNewProducts(mappedNew.length > 0 ? mappedNew : mockProducts.slice(0, 3))
+      } catch {
+        // Fallback to mock data
+        setBestProducts(mockProducts)
+        setNewProducts(mockProducts.slice(0, 3))
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
+
   return (
     <Stack spacing={{ xs: 6, md: 8 }}>
       <MainBanner />
@@ -123,7 +157,7 @@ const HomePage = () => {
       <ProductSection
         title="베스트 & 인기 상품"
         subtitle="오늘 가장 인기 있는 상품을 만나보세요"
-        products={mockProducts}
+        products={bestProducts}
         viewAllLink="/products?sort=best"
       />
 

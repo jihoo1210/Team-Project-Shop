@@ -52,7 +52,7 @@ const AdminBoardPage = () => {
     const loadBoard = async () => {
       setLoading(true)
       try {
-        const data = await fetchBoardList(category, { page: page - 1, size: 15 })
+        const data = await fetchBoardList({ category, page: page - 1, size: 15 })
         setBoardData(data)
       } catch (error) {
         console.error('게시판 목록 로드 실패:', error)
@@ -94,7 +94,7 @@ const AdminBoardPage = () => {
       alert('등록되었습니다.')
       setDialogOpen(false)
       // 새로고침
-      const data = await fetchBoardList(category, { page: page - 1, size: 15 })
+      const data = await fetchBoardList({ category, page: page - 1, size: 15 })
       setBoardData(data)
     } catch (error) {
       console.error('등록 실패:', error)
@@ -112,7 +112,7 @@ const AdminBoardPage = () => {
       })
       alert('삭제되었습니다.')
       // 새로고침
-      const data = await fetchBoardList(category, { page: page - 1, size: 15 })
+      const data = await fetchBoardList({ category, page: page - 1, size: 15 })
       setBoardData(data)
     } catch (error) {
       console.error('삭제 실패:', error)

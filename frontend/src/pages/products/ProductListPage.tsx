@@ -9,34 +9,16 @@ import {
   Select,
   Stack,
   Typography,
+  CircularProgress,
+  Alert,
 } from '@mui/material'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import CategoryFilter, { type FilterState } from '@/components/common/CategoryFilter'
 import Pagination from '@/components/common/Pagination'
 import ProductCard from '@/components/common/ProductCard'
+import { fetchItems } from '@/api/itemApi'
 import type { ProductSummary } from '@/types/product'
-
-// Mock 데이터 - 실제로는 API에서 가져올 데이터
-const mockProducts: ProductSummary[] = Array.from({ length: 24 }, (_, i) => ({
-  id: `SKU-${1000 + i}`,
-  title: `상품 ${i + 1}`,
-  brand: ['MyShop Originals', 'Premium Line', 'Flexfit', 'Urban Style'][i % 4],
-  price: Math.floor(Math.random() * 200000) + 50000,
-  discountPercent: i % 3 === 0 ? Math.floor(Math.random() * 30) + 10 : undefined,
-  scoreAverage: Number((Math.random() * 1 + 4).toFixed(1)),
-  reviewCount: Math.floor(Math.random() * 200) + 10,
-  likeCount: Math.floor(Math.random() * 100) + 5,
-  mainImage: `https://placehold.co/${600 + i}x400/png`,
-  badges:
-    i % 4 === 0
-      ? ['신규']
-      : i % 3 === 0
-        ? ['베스트']
-        : i % 5 === 0
-          ? ['한정수량']
-          : undefined,
-}))
 
 type SortOption = 'popular' | 'latest' | 'price-low' | 'price-high' | 'review'
 
@@ -45,6 +27,10 @@ const ProductListPage = () => {
   const categoryParam = searchParams.get('category')
   const searchTerm = searchParams.get('searchTerm')
 
+  const [products, setProducts] = useState<ProductSummary[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [totalCount, setTotalCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [sortBy, setSortBy] = useState<SortOption>('popular')
   const [filters, setFilters] = useState<FilterState>({
@@ -55,63 +41,109 @@ const ProductListPage = () => {
   })
 
   const itemsPerPage = 12
-  const totalPages = Math.ceil(mockProducts.length / itemsPerPage)
 
-  // 필터링 및 정렬 로직
-  const filteredAndSortedProducts = mockProducts
-    .filter((product) => {
-      // 카테고리 필터
-      if (filters.categories.length > 0) {
-        // 실제로는 product.category와 비교
-        // 현재는 Mock이므로 모든 상품 표시
-      }
+  // 정렬 옵션을 API 파라미터로 변환
+  const getSortParams = (sort: SortOption) => {
+    switch (sort) {
+      case 'latest':
+        return { sortBy: 'created_at', sortDir: 'desc' }
+      case 'price-low':
+        return { sortBy: 'price', sortDir: 'asc' }
+      case 'price-high':
+        return { sortBy: 'price', sortDir: 'desc' }
+      case 'review':
+        return { sortBy: 'review_count', sortDir: 'desc' }
+      case 'popular':
+      default:
+        return { sortBy: 'like_count', sortDir: 'desc' }
+    }
+  }
 
-      // 가격 필터
-      if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) {
-        return false
-      }
+  const loadProducts = useCallback(async () => {
+    setLoading(true)
+    setError(null)
 
-      // 브랜드 필터
-      if (filters.brands.length > 0) {
-        // 실제로는 product.brandId와 비교
-      }
+    try {
+      const sortParams = getSortParams(sortBy)
+      const response = await fetchItems({
+        page: currentPage - 1,
+        size: itemsPerPage,
+        keyword: searchTerm || undefined,
+        category: filters.categories.length > 0 ? filters.categories[0] : undefined,
+        minPrice: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
+        maxPrice: filters.priceRange[1] < 500000 ? filters.priceRange[1] : undefined,
+        ...sortParams,
+      })
 
-      // 검색어 필터
-      if (searchTerm && !product.title.includes(searchTerm)) {
-        return false
-      }
+      // API 응답 형식에 따라 데이터 매핑
+      const mappedProducts: ProductSummary[] = (response.content || []).map((item) => ({
+        id: item.item_id,
+        title: item.item_name || item.title || '상품명',
+        brand: item.brand || '',
+        price: item.price,
+        discountPercent: item.discount_percent,
+        scoreAverage: item.score_average || item.scoreAverage,
+        reviewCount: item.review_count || item.reviewCount,
+        likeCount: item.like_count || item.likeCount,
+        mainImage: item.main_image || item.main_image_url || 'https://placehold.co/600x400/png',
+        badges: item.badges,
+      }))
 
-      return true
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'latest':
-          return b.id.localeCompare(a.id)
-        case 'price-low':
-          return a.price - b.price
-        case 'price-high':
-          return b.price - a.price
-        case 'review':
-          return (b.reviewCount ?? 0) - (a.reviewCount ?? 0)
-        case 'popular':
-        default:
-          return (b.likeCount ?? 0) - (a.likeCount ?? 0)
-      }
-    })
+      setProducts(mappedProducts)
+      setTotalCount(response.totalElements || 0)
+    } catch (err) {
+      console.error('상품 목록 로드 실패:', err)
+      // Fallback to mock data for development
+      const mockProducts: ProductSummary[] = Array.from({ length: 24 }, (_, i) => ({
+        id: `SKU-${1000 + i}`,
+        title: `상품 ${i + 1}`,
+        brand: ['MyShop Originals', 'Premium Line', 'Flexfit', 'Urban Style'][i % 4],
+        price: Math.floor(Math.random() * 200000) + 50000,
+        discountPercent: i % 3 === 0 ? Math.floor(Math.random() * 30) + 10 : undefined,
+        scoreAverage: Number((Math.random() * 1 + 4).toFixed(1)),
+        reviewCount: Math.floor(Math.random() * 200) + 10,
+        likeCount: Math.floor(Math.random() * 100) + 5,
+        mainImage: `https://placehold.co/${600 + i}x400/png`,
+        badges:
+          i % 4 === 0
+            ? ['신규']
+            : i % 3 === 0
+              ? ['베스트']
+              : i % 5 === 0
+                ? ['한정수량']
+                : undefined,
+      }))
+      setProducts(mockProducts)
+      setTotalCount(mockProducts.length)
+    } finally {
+      setLoading(false)
+    }
+  }, [currentPage, sortBy, searchTerm, filters])
 
-  const paginatedProducts = filteredAndSortedProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  useEffect(() => {
+    loadProducts()
+  }, [loadProducts])
+
+  // 카테고리 파라미터 변경 시 필터 업데이트
+  useEffect(() => {
+    if (categoryParam) {
+      setFilters(prev => ({
+        ...prev,
+        categories: [categoryParam],
+      }))
+    }
+  }, [categoryParam])
+
+  const totalPages = Math.ceil(totalCount / itemsPerPage)
 
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters)
-    setCurrentPage(1) // 필터 변경 시 첫 페이지로
+    setCurrentPage(1)
   }
 
   const handleSortChange = (newSort: SortOption) => {
     setSortBy(newSort)
-    setCurrentPage(1) // 정렬 변경 시 첫 페이지로
+    setCurrentPage(1)
   }
 
   return (
@@ -130,9 +162,15 @@ const ProductListPage = () => {
           {searchTerm ? `"${searchTerm}" 검색 결과` : '전체 상품'}
         </Typography>
         <Typography color="text.secondary">
-          총 {filteredAndSortedProducts.length}개의 상품
+          총 {totalCount}개의 상품
         </Typography>
       </Stack>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
 
       <Grid container spacing={3}>
         {/* 좌측 필터 영역 */}
@@ -145,7 +183,7 @@ const ProductListPage = () => {
           {/* 정렬 옵션 */}
           <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="body2" color="text.secondary">
-              {paginatedProducts.length}개 상품 표시 중
+              {products.length}개 상품 표시 중
             </Typography>
             <FormControl size="small" sx={{ minWidth: 150 }}>
               <Select
@@ -161,22 +199,37 @@ const ProductListPage = () => {
             </FormControl>
           </Box>
 
-          {/* 상품 카드 그리드 */}
-          <Grid container spacing={3}>
-            {paginatedProducts.map((product) => (
-              <Grid item xs={12} sm={6} lg={4} key={product.id}>
-                <ProductCard product={product} />
+          {/* 로딩 상태 */}
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+              <CircularProgress />
+            </Box>
+          ) : products.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Typography color="text.secondary">
+                검색 조건에 맞는 상품이 없습니다.
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              {/* 상품 카드 그리드 */}
+              <Grid container spacing={3}>
+                {products.map((product) => (
+                  <Grid item xs={12} sm={6} lg={4} key={product.id}>
+                    <ProductCard product={product} />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
 
-          {/* 페이지네이션 */}
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+              {/* 페이지네이션 */}
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </>
           )}
         </Grid>
       </Grid>

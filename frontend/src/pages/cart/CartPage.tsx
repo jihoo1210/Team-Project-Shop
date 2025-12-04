@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   Container,
@@ -24,202 +24,205 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-} from '@mui/material';
+  CircularProgress,
+} from '@mui/material'
 import {
   Add as AddIcon,
   Remove as RemoveIcon,
   Delete as DeleteIcon,
   ShoppingCart as CartIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import axiosClient from '../../api/axiosClient';
+} from '@mui/icons-material'
+import { useNavigate } from 'react-router-dom'
+import { fetchCartItems as fetchCartApi, toggleCartItem } from '@/api/itemApi'
 
 interface CartItem {
-  cartItemId: number;
-  productId: number;
-  productName: string;
-  productImage: string;
-  price: number;
-  quantity: number;
-  stock: number;
-  selected: boolean;
+  cartItemId: string
+  productId: string
+  productName: string
+  productImage: string
+  price: number
+  quantity: number
+  stock: number
+  selected: boolean
 }
 
 const CartPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectAll, setSelectAll] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const navigate = useNavigate()
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectAll, setSelectAll] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchCartItems();
-  }, []);
+    loadCartItems()
+  }, [])
 
-  const fetchCartItems = async () => {
+  const loadCartItems = async () => {
     try {
-      setLoading(true);
-      const response = await axiosClient.get('/api/cart');
-      const items = response.data.map((item: any) => ({
-        ...item,
+      setLoading(true)
+      const response = await fetchCartApi()
+      const items: CartItem[] = (response.content || []).map((item: any) => ({
+        cartItemId: item.item_id,
+        productId: item.item_id,
+        productName: item.item_name || item.name || '상품명',
+        productImage: item.main_image || item.image || 'https://placehold.co/100x100/png',
+        price: item.price || 0,
+        quantity: item.quantity || 1,
+        stock: item.stock || 99,
         selected: true,
-      }));
-      setCartItems(items);
-      setSelectAll(items.length > 0 && items.every((item: CartItem) => item.selected));
-    } catch (err: any) {
-      setError('장바구니를 불러오는데 실패했습니다.');
+      }))
+      setCartItems(items)
+      setSelectAll(items.length > 0 && items.every((item) => item.selected))
+    } catch {
       // Mock data for development
       const mockItems: CartItem[] = [
         {
-          cartItemId: 1,
-          productId: 1,
+          cartItemId: '1',
+          productId: '1',
           productName: '프리미엄 무선 이어폰',
-          productImage: 'https://via.placeholder.com/100',
+          productImage: 'https://placehold.co/100x100/png',
           price: 89000,
           quantity: 1,
           stock: 50,
           selected: true,
         },
         {
-          cartItemId: 2,
-          productId: 2,
+          cartItemId: '2',
+          productId: '2',
           productName: '스마트 워치 Pro',
-          productImage: 'https://via.placeholder.com/100',
+          productImage: 'https://placehold.co/100x100/png',
           price: 299000,
           quantity: 2,
           stock: 30,
           selected: true,
         },
         {
-          cartItemId: 3,
-          productId: 3,
+          cartItemId: '3',
+          productId: '3',
           productName: '노이즈 캔슬링 헤드폰',
-          productImage: 'https://via.placeholder.com/100',
+          productImage: 'https://placehold.co/100x100/png',
           price: 199000,
           quantity: 1,
           stock: 20,
           selected: true,
         },
-      ];
-      setCartItems(mockItems);
-      setSelectAll(true);
+      ]
+      setCartItems(mockItems)
+      setSelectAll(true)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSelectAll = (checked: boolean) => {
-    setSelectAll(checked);
-    setCartItems(items => items.map(item => ({ ...item, selected: checked })));
-  };
+    setSelectAll(checked)
+    setCartItems((items) => items.map((item) => ({ ...item, selected: checked })))
+  }
 
-  const handleSelectItem = (cartItemId: number, checked: boolean) => {
-    setCartItems(items =>
-      items.map(item =>
+  const handleSelectItem = (cartItemId: string, checked: boolean) => {
+    setCartItems((items) =>
+      items.map((item) =>
         item.cartItemId === cartItemId ? { ...item, selected: checked } : item
       )
-    );
-    const updatedItems = cartItems.map(item =>
+    )
+    const updatedItems = cartItems.map((item) =>
       item.cartItemId === cartItemId ? { ...item, selected: checked } : item
-    );
-    setSelectAll(updatedItems.every(item => item.selected));
-  };
+    )
+    setSelectAll(updatedItems.every((item) => item.selected))
+  }
 
-  const handleQuantityChange = async (cartItemId: number, newQuantity: number) => {
-    const item = cartItems.find(i => i.cartItemId === cartItemId);
-    if (!item) return;
+  const handleQuantityChange = (cartItemId: string, newQuantity: number) => {
+    const item = cartItems.find((i) => i.cartItemId === cartItemId)
+    if (!item) return
 
-    if (newQuantity < 1) newQuantity = 1;
+    if (newQuantity < 1) newQuantity = 1
     if (newQuantity > item.stock) {
-      setError(`재고가 부족합니다. (최대 ${item.stock}개)`);
-      return;
+      setError(`재고가 부족합니다. (최대 ${item.stock}개)`)
+      return
     }
 
-    try {
-      await axiosClient.put(`/api/cart/${cartItemId}`, { quantity: newQuantity });
-      setCartItems(items =>
-        items.map(i =>
-          i.cartItemId === cartItemId ? { ...i, quantity: newQuantity } : i
-        )
-      );
-    } catch (err) {
-      // Update locally anyway for demo
-      setCartItems(items =>
-        items.map(i =>
-          i.cartItemId === cartItemId ? { ...i, quantity: newQuantity } : i
-        )
-      );
-    }
-  };
+    setCartItems((items) =>
+      items.map((i) =>
+        i.cartItemId === cartItemId ? { ...i, quantity: newQuantity } : i
+      )
+    )
+  }
 
-  const handleDeleteClick = (cartItemId: number) => {
-    setItemToDelete(cartItemId);
-    setDeleteDialogOpen(true);
-  };
+  const handleDeleteClick = (cartItemId: string) => {
+    setItemToDelete(cartItemId)
+    setDeleteDialogOpen(true)
+  }
 
   const handleDeleteConfirm = async () => {
-    if (itemToDelete === null) return;
+    if (itemToDelete === null) return
 
     try {
-      await axiosClient.delete(`/api/cart/${itemToDelete}`);
-      setCartItems(items => items.filter(item => item.cartItemId !== itemToDelete));
-    } catch (err) {
+      await toggleCartItem(itemToDelete)
+      setCartItems((items) => items.filter((item) => item.cartItemId !== itemToDelete))
+    } catch {
       // Delete locally anyway for demo
-      setCartItems(items => items.filter(item => item.cartItemId !== itemToDelete));
+      setCartItems((items) => items.filter((item) => item.cartItemId !== itemToDelete))
     } finally {
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
+      setDeleteDialogOpen(false)
+      setItemToDelete(null)
     }
-  };
+  }
 
   const handleDeleteSelected = async () => {
-    const selectedIds = cartItems.filter(item => item.selected).map(item => item.cartItemId);
+    const selectedIds = cartItems.filter((item) => item.selected).map((item) => item.cartItemId)
     if (selectedIds.length === 0) {
-      setError('선택된 상품이 없습니다.');
-      return;
+      setError('선택된 상품이 없습니다.')
+      return
     }
 
     try {
-      await axiosClient.delete('/api/cart', { data: { cartItemIds: selectedIds } });
-      setCartItems(items => items.filter(item => !item.selected));
-    } catch (err) {
+      // 선택된 아이템 각각 삭제
+      await Promise.all(selectedIds.map((id) => toggleCartItem(id)))
+      setCartItems((items) => items.filter((item) => !item.selected))
+    } catch {
       // Delete locally anyway for demo
-      setCartItems(items => items.filter(item => !item.selected));
+      setCartItems((items) => items.filter((item) => !item.selected))
     }
-  };
+  }
 
   const handleOrder = () => {
-    const selectedItems = cartItems.filter(item => item.selected);
+    const selectedItems = cartItems.filter((item) => item.selected)
     if (selectedItems.length === 0) {
-      setError('주문할 상품을 선택해주세요.');
-      return;
+      setError('주문할 상품을 선택해주세요.')
+      return
     }
     // Navigate to order page with selected items
-    navigate('/order', { state: { cartItems: selectedItems } });
-  };
+    navigate('/order', { state: { cartItems: selectedItems } })
+  }
 
-  const selectedItems = cartItems.filter(item => item.selected);
-  const totalPrice = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryFee = totalPrice >= 50000 ? 0 : 3000;
-  const finalPrice = totalPrice + deliveryFee;
+  const selectedItems = cartItems.filter((item) => item.selected)
+  const totalPrice = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const deliveryFee = totalPrice >= 50000 ? 0 : 3000
+  const finalPrice = totalPrice + deliveryFee
 
   const formatPrice = (price: number) => {
-    return price.toLocaleString('ko-KR') + '원';
-  };
+    return price.toLocaleString('ko-KR') + '원'
+  }
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Typography>로딩 중...</Typography>
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <CircularProgress />
+        <Typography sx={{ mt: 2 }}>로딩 중...</Typography>
       </Container>
-    );
+    )
   }
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        gutterBottom
+        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+      >
         <CartIcon fontSize="large" />
         장바구니
       </Typography>
@@ -236,11 +239,7 @@ const CartPage: React.FC = () => {
           <Typography variant="h6" color="text.secondary" gutterBottom>
             장바구니가 비어있습니다
           </Typography>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/products')}
-            sx={{ mt: 2 }}
-          >
+          <Button variant="contained" onClick={() => navigate('/products')} sx={{ mt: 2 }}>
             쇼핑하러 가기
           </Button>
         </Paper>
@@ -248,13 +247,23 @@ const CartPage: React.FC = () => {
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
             <Paper sx={{ overflow: 'hidden' }}>
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'grey.50' }}>
+              <Box
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  bgcolor: 'grey.50',
+                }}
+              >
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Checkbox
                     checked={selectAll}
                     onChange={(e) => handleSelectAll(e.target.checked)}
                   />
-                  <Typography>전체 선택 ({selectedItems.length}/{cartItems.length})</Typography>
+                  <Typography>
+                    전체 선택 ({selectedItems.length}/{cartItems.length})
+                  </Typography>
                 </Box>
                 <Button
                   color="error"
@@ -283,7 +292,9 @@ const CartPage: React.FC = () => {
                         <TableCell padding="checkbox">
                           <Checkbox
                             checked={item.selected}
-                            onChange={(e) => handleSelectItem(item.cartItemId, e.target.checked)}
+                            onChange={(e) =>
+                              handleSelectItem(item.cartItemId, e.target.checked)
+                            }
                           />
                         </TableCell>
                         <TableCell>
@@ -305,7 +316,10 @@ const CartPage: React.FC = () => {
                               <Typography
                                 variant="subtitle1"
                                 fontWeight="medium"
-                                sx={{ cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
+                                sx={{
+                                  cursor: 'pointer',
+                                  '&:hover': { color: 'primary.main' },
+                                }}
                                 onClick={() => navigate(`/products/${item.productId}`)}
                               >
                                 {item.productName}
@@ -317,10 +331,18 @@ const CartPage: React.FC = () => {
                           </Box>
                         </TableCell>
                         <TableCell align="center">
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
                             <IconButton
                               size="small"
-                              onClick={() => handleQuantityChange(item.cartItemId, item.quantity - 1)}
+                              onClick={() =>
+                                handleQuantityChange(item.cartItemId, item.quantity - 1)
+                              }
                               disabled={item.quantity <= 1}
                             >
                               <RemoveIcon fontSize="small" />
@@ -329,8 +351,9 @@ const CartPage: React.FC = () => {
                               size="small"
                               value={item.quantity}
                               onChange={(e) => {
-                                const val = parseInt(e.target.value);
-                                if (!isNaN(val)) handleQuantityChange(item.cartItemId, val);
+                                const val = parseInt(e.target.value)
+                                if (!isNaN(val))
+                                  handleQuantityChange(item.cartItemId, val)
                               }}
                               inputProps={{
                                 style: { textAlign: 'center', width: 40 },
@@ -341,7 +364,9 @@ const CartPage: React.FC = () => {
                             />
                             <IconButton
                               size="small"
-                              onClick={() => handleQuantityChange(item.cartItemId, item.quantity + 1)}
+                              onClick={() =>
+                                handleQuantityChange(item.cartItemId, item.quantity + 1)
+                              }
                               disabled={item.quantity >= item.stock}
                             >
                               <AddIcon fontSize="small" />
@@ -385,7 +410,9 @@ const CartPage: React.FC = () => {
                     <Typography color="text.secondary">배송비</Typography>
                     <Typography>
                       {deliveryFee === 0 ? (
-                        <Box component="span" sx={{ color: 'success.main' }}>무료</Box>
+                        <Box component="span" sx={{ color: 'success.main' }}>
+                          무료
+                        </Box>
                       ) : (
                         formatPrice(deliveryFee)
                       )}
@@ -398,7 +425,9 @@ const CartPage: React.FC = () => {
                   )}
                   <Divider />
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="h6" fontWeight="bold">총 결제 금액</Typography>
+                    <Typography variant="h6" fontWeight="bold">
+                      총 결제 금액
+                    </Typography>
                     <Typography variant="h6" fontWeight="bold" color="primary">
                       {formatPrice(finalPrice)}
                     </Typography>
@@ -436,8 +465,8 @@ const CartPage: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Container>
-  );
-};
+  )
+}
 
-export default CartPage;
+export default CartPage
 

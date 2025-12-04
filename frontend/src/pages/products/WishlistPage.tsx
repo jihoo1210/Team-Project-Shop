@@ -45,7 +45,7 @@ const WishlistPage = () => {
     try {
       setLoading(true)
       const data = await fetchFavoriteItems({ page: 0, size: 100 })
-      setWishlistItems(data || [])
+      setWishlistItems(data.content || [])
     } catch (error) {
       console.error('즐겨찾기 목록 로드 실패:', error)
       setWishlistItems([])
@@ -139,8 +139,8 @@ const WishlistPage = () => {
 
   // 할인가 계산
   const getDiscountedPrice = (item: ItemSummary) => {
-    if (item.discount_percent > 0) {
-      return item.price * (1 - item.discount_percent / 100)
+    if ((item.discount_percent ?? 0) > 0) {
+      return item.price * (1 - (item.discount_percent ?? 0) / 100)
     }
     return item.price
   }
@@ -286,7 +286,7 @@ const WishlistPage = () => {
                   </IconButton>
 
                   {/* 할인 뱃지 */}
-                  {item.discount_percent > 0 && (
+                  {(item.discount_percent ?? 0) > 0 && (
                     <Chip
                       label={`${item.discount_percent}%`}
                       color="error"
@@ -339,7 +339,7 @@ const WishlistPage = () => {
 
                     {/* 가격 */}
                     <Box sx={{ mt: 1 }}>
-                      {item.discount_percent > 0 && (
+                      {(item.discount_percent ?? 0) > 0 && (
                         <Typography
                           variant="body2"
                           color="text.secondary"

@@ -14,6 +14,7 @@ const ProductDetailPage = lazy(() => import('@/pages/products/ProductDetailPage'
 const WishlistPage = lazy(() => import('@/pages/products/WishlistPage'))
 const CartPage = lazy(() => import('@/pages/cart/CartPage'))
 const OrderPage = lazy(() => import('@/pages/order/OrderPage'))
+const OrderCompletePage = lazy(() => import('@/pages/OrderCompletePage'))
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const SignupPage = lazy(() => import('@/pages/auth/SignupPage'))
 const MyProfilePage = lazy(() => import('@/pages/mypage/MyProfilePage'))
@@ -52,6 +53,14 @@ const AppRoutes = () => {
           element: (
             <AuthGuard>
               <OrderPage />
+            </AuthGuard>
+          ) 
+        },
+        { 
+          path: 'order/complete', 
+          element: (
+            <AuthGuard>
+              <OrderCompletePage />
             </AuthGuard>
           ) 
         },

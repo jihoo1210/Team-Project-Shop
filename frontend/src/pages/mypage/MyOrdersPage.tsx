@@ -175,7 +175,7 @@ const MyOrdersPage = () => {
                     </TableCell>
                     <TableCell align="right">
                       <Typography fontWeight={600}>
-                        {formatPrice(order.totalPrice)}
+                        {formatPrice(order.totalPrice || 0)}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
@@ -183,13 +183,13 @@ const MyOrdersPage = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Typography fontSize="0.875rem" color="text.secondary">
-                        {new Date(order.created_at).toLocaleDateString('ko-KR')}
+                        {order.created_at ? new Date(order.created_at).toLocaleDateString('ko-KR') : '-'}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
                       <Button
                         size="small"
-                        onClick={() => handleViewDetail(order.order_no)}
+                        onClick={() => handleViewDetail(order.order_id || '')}
                       >
                         상세보기
                       </Button>
@@ -228,7 +228,7 @@ const MyOrdersPage = () => {
               <Typography fontWeight={600} sx={{ mb: 2 }}>
                 주문 상품
               </Typography>
-              {selectedOrder.items.map((item, index) => (
+              {(selectedOrder.items || []).map((item, index) => (
                 <Box
                   key={index}
                   sx={{
@@ -258,7 +258,7 @@ const MyOrdersPage = () => {
                     </Typography>
                   </Box>
                   <Typography fontWeight={600}>
-                    {formatPrice(item.totalPrice)}
+                    {formatPrice(item.totalPrice || 0)}
                   </Typography>
                 </Box>
               ))}
@@ -304,7 +304,7 @@ const MyOrdersPage = () => {
               >
                 <Typography fontWeight={600}>총 결제금액</Typography>
                 <Typography fontWeight={700} fontSize="1.25rem" color="primary">
-                  {formatPrice(selectedOrder.totalPrice)}
+                  {formatPrice(selectedOrder.totalPrice || 0)}
                 </Typography>
               </Box>
             </Box>

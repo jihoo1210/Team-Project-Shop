@@ -18,7 +18,8 @@ import {
   CardContent,
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axiosClient from '../../api/axiosClient';
+import { createOrder } from '@/api/orderApi';
+import { fetchUser } from '@/api/userApi';
 
 interface OrderItem {
   productId: number;
@@ -80,15 +81,14 @@ const OrderPage: React.FC = () => {
 
   const fetchUserInfo = async () => {
     try {
-      const response = await axiosClient.get('/api/users/me');
-      const user = response.data;
+      const user = await fetchUser();
       setShippingInfo(prev => ({
         ...prev,
         name: user.name || '',
         phone: user.phone || '',
         address: user.address || '',
       }));
-    } catch (err) {
+    } catch {
       // Use empty values for demo
     }
   };
@@ -110,21 +110,20 @@ const OrderPage: React.FC = () => {
 
     try {
       const orderData = {
-        items: orderItems.map(item => ({
-          productId: item.productId,
-          quantity: item.quantity,
-        })),
-        shippingInfo,
-        paymentMethod,
-        totalPrice,
+        addr: shippingInfo.address + ' ' + shippingInfo.addressDetail,
+        zipCode: shippingInfo.zipcode,
+        username: shippingInfo.name,
+        orderDetail: shippingInfo.memo,
+        call: shippingInfo.phone,
       };
 
-      await axiosClient.post('/api/orders', orderData);
-      navigate('/mypage/orders', { state: { orderSuccess: true } });
+      const result = await createOrder(orderData);
+      navigate(`/order/complete?orderId=${result.order_id}`);
     } catch (err: any) {
       setError(err.response?.data?.message || '주문 처리 중 오류가 발생했습니다.');
+      // 데모용 - 실패해도 완료 페이지로 이동
       setTimeout(() => {
-        navigate('/mypage/orders', { state: { orderSuccess: true } });
+        navigate('/order/complete?orderId=demo-order-001');
       }, 1000);
     } finally {
       setIsSubmitting(false);

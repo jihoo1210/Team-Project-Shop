@@ -44,7 +44,8 @@ const BoardListPage = () => {
     const loadBoardList = async () => {
       setLoading(true)
       try {
-        const data = await fetchBoardList(currentCategory, {
+        const data = await fetchBoardList({
+          category: currentCategory,
           page: currentPage - 1,
           size: 15,
         })

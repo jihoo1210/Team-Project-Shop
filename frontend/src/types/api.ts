@@ -42,8 +42,22 @@ export type JoinRequest = {
   address: string
   addr_detail: string
 }
-export type UserProfile = { addr: string; zipCode: string; email: string; name: string; call: string }
-export type UpdateUserRequest = UserProfile
+export interface UserProfile {
+  user_id: string
+  email: string
+  name?: string
+  phone?: string
+  address?: string
+  role: string
+  created_at?: string
+}
+export type UpdateUserRequest = Partial<{
+  name: string
+  phone: string
+  address: string
+  password: string
+  currentPassword: string
+}>
 
 /* 상품 */
 export type PageableQuery = {
@@ -56,6 +70,12 @@ export type PageableQuery = {
 export type ItemListQuery = PageableQuery & {
   searchField?: string
   searchTerm?: string
+  keyword?: string
+  category?: string
+  minPrice?: number
+  maxPrice?: number
+  sortBy?: string
+  sortDir?: string
 }
 
 export type ReviewSummary = {
@@ -67,21 +87,29 @@ export type ReviewSummary = {
 
 export type ItemSummary = {
   item_id: string
+  item_name?: string
   status: string
-  discount_percent: number
-  colorList: string[]
-  likeCount: number
+  discount_percent?: number
+  colorList?: string[]
+  likeCount?: number
+  like_count?: number
   savedInLikes?: boolean
   price: number
-  scoreAverage: number
+  scoreAverage?: number
+  score_average?: number
   savedInCart?: boolean
-  main_image_url: string
+  main_image_url?: string
+  main_image?: string
   thumbnailUrl?: string
-  brand: string
-  title: string
-  reviewCount: number
-  sku: string
-  sizeList: string[]
+  brand?: string
+  title?: string
+  reviewCount?: number
+  review_count?: number
+  sku?: string
+  sizeList?: string[]
+  badges?: string[]
+  quantity?: number
+  stock?: number
 }
 
 export type ItemDetail = {
@@ -120,16 +148,39 @@ export type OrderRequest = {
   orderDetail: string
   call: string
 }
-export type OrderListItem = { main_img_url: string; totalPrice: number; title: string }
-export type OrderDetailItem = { main_img_url: string; totalPrice: number; title: string; number: number; size: string; color: string }
+export type OrderListItem = { 
+  order_id?: string
+  main_img_url?: string
+  totalPrice?: number
+  title?: string
+  created_at?: string
+  status?: string
+}
+export type OrderDetailItem = { 
+  item_id?: string
+  item_name?: string
+  main_img_url?: string
+  totalPrice?: number
+  title?: string
+  number?: number
+  size?: string
+  color?: string
+  price?: number
+  quantity?: number
+}
 export type OrderDetailResponse = {
-  items: OrderDetailItem[]
-  totalPrice: number
-  addr: string
-  zip_code: string
-  call: string
-  username: string
-  payment: string
+  order_id?: string
+  items?: OrderDetailItem[]
+  totalPrice?: number
+  addr?: string
+  address?: string
+  zip_code?: string
+  call?: string
+  phone?: string
+  username?: string
+  payment?: string
+  created_at?: string
+  status?: string
 }
 
 /* 게시판/댓글 */

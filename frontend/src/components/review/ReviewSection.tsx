@@ -69,8 +69,7 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
 
     setWriteSubmitting(true)
     try {
-      await createReview({
-        item_id: itemId,
+      await createReview(itemId, {
         writer_id: currentUserId,
         score: writeScore,
         content: writeContent.trim(),
@@ -105,8 +104,7 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
 
     setEditSubmitting(true)
     try {
-      await updateReview({
-        review_no: editingReview.review_no,
+      await updateReview(editingReview.review_no, {
         writer_id: currentUserId,
         score: editScore,
         content: editContent.trim(),
@@ -128,11 +126,7 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
     if (!window.confirm('리뷰를 삭제하시겠습니까?')) return
 
     try {
-      await deleteReview({
-        review_no: review.review_no,
-        writer_id: currentUserId,
-        role: currentUserRole as 'Admin' | 'User',
-      })
+      await deleteReview(review.review_no)
       alert('리뷰가 삭제되었습니다.')
       onReviewChange()
     } catch (error) {
