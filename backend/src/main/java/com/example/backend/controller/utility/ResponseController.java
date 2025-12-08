@@ -1,4 +1,4 @@
-dpackage com.example.backend.controller.utility;
+package com.example.backend.controller.utility;
 
 import org.springframework.http.ResponseEntity;
 
