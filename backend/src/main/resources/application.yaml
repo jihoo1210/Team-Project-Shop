@@ -2,10 +2,10 @@ spring:
   application:
     name: backend
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://weindb.c9acki6gcwpa.ap-southeast-2.rds.amazonaws.com/teampr
+    username: musicart
+    password: "!good6617"
   h2:
     console:
       enabled: true
@@ -14,5 +14,4 @@ spring:
       ddl-auto: create-drop
     show-sql: true
 
-whop:
-  key: apik_D8qC....dec3
+upload-dir: /home/wein/webapps/uploads/

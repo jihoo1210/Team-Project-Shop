@@ -1,7 +1,21 @@
 package com.example.backend.entity.item.enums;
 
 public enum ColorEnum {
-    RED,
-    GREEN,
-    BLUE;
+
+BLACK,
+WHITE,
+GRAY,
+IVORY,
+RED,
+PINK,
+ORANGE,
+YELLOW,
+GREEN,
+KHAKI,
+BLUE,
+NAVY,
+PURPLE,
+BROWN,
+BEIGE;
+
 }
