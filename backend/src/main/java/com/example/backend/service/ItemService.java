@@ -114,6 +114,7 @@ public class ItemService {
             CartItem cartItem = new CartItem();
             cartItem.setItem(item);
             cartItem.setUser(savedUser);
+            cartItem.setNumber(1);
             cartItemRepository.save(cartItem);
         }
     }

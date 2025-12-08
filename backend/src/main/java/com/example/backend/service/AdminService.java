@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.example.backend.dto.admin.ItemResistraionRequest;
-import com.example.backend.dto.item.whop.CreateProductRequest;
 import com.example.backend.entity.item.Item;
 import com.example.backend.entity.item.details.Color;
 import com.example.backend.entity.item.details.ItemImage;
@@ -36,6 +35,7 @@ public class AdminService {
 
     private void saveColors(List<String> colorList, Item item) {
         colorRepository.deleteByItem(item);
+        if (colorList == null) return;
         for (String colorName : colorList) {
             if (ColorEnum.valueOf(colorName) != null) {
                 Color color = Color.builder()
@@ -49,6 +49,7 @@ public class AdminService {
 
     private void saveSizes(List<String> sizeList, Item item) {
         sizeRepository.deleteByItem(item);
+        if (sizeList == null) return;
         for (String sizeName : sizeList) {
             if (SizeEnum.valueOf(sizeName) != null) {
                 Size size = Size.builder()
@@ -62,6 +63,7 @@ public class AdminService {
 
     private void saveImages(List<String> imageList, Item item) {
         itemImageRepository.deleteByItem(item);
+        if (imageList == null) return;
         for (String imageUrl : imageList) {
             ItemImage itemImage = ItemImage.builder()
                     .imageUrl(imageUrl)

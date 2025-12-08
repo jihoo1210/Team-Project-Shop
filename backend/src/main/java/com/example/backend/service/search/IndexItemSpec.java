@@ -17,10 +17,12 @@ public class IndexItemSpec {
     public static Specification<Item> search(String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory) {
         return (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            String clearSearchTerm = searchTerm.replace("\\s", "").toLowerCase();
-            String pattern = "%" + clearSearchTerm + "%";
-
-            Filter.addSearchFieldPredicates(builder, root, predicates, searchField, pattern);
+            String pattern = "";
+            if (searchTerm != null && !searchTerm.isEmpty()) {
+                String clearSearchTerm = searchTerm.replace("\\s", "").toLowerCase();
+                pattern = "%" + clearSearchTerm + "%";
+                Filter.addSearchFieldPredicates(builder, root, predicates, searchField, pattern);
+            }
 
             Filter.addCategoryPredicates(builder, root, predicates, majorCategory, middleCategory, subcategory);
 
@@ -31,10 +33,11 @@ public class IndexItemSpec {
     public static Specification<FavoriteItem> searchFavorites(String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory) {
         return (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            String clearSearchTerm = searchTerm.replace("\\s", "").toLowerCase();
-            String pattern = "%" + clearSearchTerm + "%";
-
-            Filter.addSearchFieldPredicates(builder, root, predicates, searchField, pattern);
+            if (searchTerm != null && !searchTerm.isEmpty()) {
+                String clearSearchTerm = searchTerm.replace("\\s", "").toLowerCase();
+                String pattern = "%" + clearSearchTerm + "%";
+                Filter.addSearchFieldPredicates(builder, root, predicates, searchField, pattern);
+            }
 
             Filter.addCategoryPredicates(builder, root, predicates, majorCategory, middleCategory, subcategory);
 
@@ -45,10 +48,11 @@ public class IndexItemSpec {
     public static Specification<CartItem> searchCart(String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory) {
         return (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            String clearSearchTerm = searchTerm.replace("\\s", "").toLowerCase();
-            String pattern = "%" + clearSearchTerm + "%";
-
-            Filter.addSearchFieldPredicates(builder, root, predicates, searchField, pattern);
+            if (searchTerm != null && !searchTerm.isEmpty()) {
+                String clearSearchTerm = searchTerm.replace("\\s", "").toLowerCase();
+                String pattern = "%" + clearSearchTerm + "%";
+                Filter.addSearchFieldPredicates(builder, root, predicates, searchField, pattern);
+            }
 
             Filter.addCategoryPredicates(builder, root, predicates, majorCategory, middleCategory, subcategory);
 

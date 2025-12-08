@@ -1,13 +1,15 @@
 package com.example.backend.dto.review;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Builder
-@Value
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReviewCreateRequest {
 
-    String content;
-    Integer score;
-    
+    private String content;
+    private Integer score;
+
 }

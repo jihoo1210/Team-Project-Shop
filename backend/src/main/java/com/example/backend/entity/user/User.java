@@ -1,12 +1,17 @@
 package com.example.backend.entity.user;
 
+import java.util.List;
+
+import com.example.backend.entity.item.utility.CartItem;
+import com.example.backend.entity.item.utility.OrderItem;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "user")
+@Table(name = "users")
 public class User {
 
     @Id
@@ -36,6 +41,12 @@ public class User {
     // 전화번호
     @Column(name = "phone", length = 20)
     private String phone;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItemList;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItemList;
+
 
     @Builder
     public User(String email, String password, String username, 

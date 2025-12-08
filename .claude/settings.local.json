@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew build:*)",
+      "Bash(cmd.exe /c \"cd /d c:\\dev\\Portfolios\\Team\\Team-Project-Shop\\backend && gradlew.bat build --no-daemon 2>&1\")",
+      "Bash(cmd.exe /c \"cd /d c:\\dev\\Portfolios\\Team\\Team-Project-Shop\\backend && gradlew.bat compileJava 2>&1\")",
+      "Bash(powershell.exe -Command \"cd ''c:\\dev\\Portfolios\\Team\\Team-Project-Shop\\backend''; .\\gradlew.bat compileJava 2>&1\")",
+      "Bash(powershell.exe -Command \"cd ''c:\\dev\\Portfolios\\Team\\Team-Project-Shop\\backend''; .\\gradlew.bat build 2>&1\")",
+      "Bash(powershell.exe -Command \"cd ''c:\\dev\\Portfolios\\Team\\Team-Project-Shop\\backend''; .\\gradlew.bat bootRun 2>&1\")",
+      "Bash(powershell.exe -Command \"cd ''c:\\dev\\Portfolios\\Team\\Team-Project-Shop\\backend''; .\\gradlew.bat clean build 2>&1\")",
+      "Bash(ren:*)",
+      "Bash(powershell.exe -Command \"cd 'c:\\dev\\Portfolios\\Team\\Team-Project-Shop\\backend'; .\\gradlew.bat clean compileJava 2>&1\":*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(rm:*)",
+      "Bash(taskkill //F //PID 25248)",
+      "Bash(taskkill:*)",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 16908 -Force -ErrorAction SilentlyContinue; Stop-Process -Id 25248 -Force -ErrorAction SilentlyContinue\")",
+      "Bash(powershell.exe -Command \"Get-Process -Name java -ErrorAction SilentlyContinue | Stop-Process -Force\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
