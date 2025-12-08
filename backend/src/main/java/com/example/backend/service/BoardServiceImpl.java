@@ -81,9 +81,9 @@ public class BoardServiceImpl {
         return map;
     }
 
-    // 글쓰기 (트랜잭션 필수)
+    // 글쓰기 (다중 파일 업로드 지원)
     @Transactional
-    public void write(BoardDTO boardDTO, MultipartFile file, Long userId) throws Exception {
+    public void write(BoardDTO boardDTO, List<MultipartFile> files, Long userId) throws Exception {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -97,23 +97,28 @@ public class BoardServiceImpl {
 
         boardRepository.save(board); // 1. 글 저장
 
-        if (file != null && !file.isEmpty()) { // 2. 파일 있으면 저장
+        // 2. 파일들 있으면 저장
+        if (files != null && !files.isEmpty()) {
             File dir = new File(UPLOAD_PATH);
             if (!dir.exists()) dir.mkdirs();
 
-            String uuid = UUID.randomUUID().toString();
-            String saveName = uuid + "_" + file.getOriginalFilename();
+            for (MultipartFile file : files) {
+                if (file.isEmpty()) continue;
 
-            file.transferTo(new File(UPLOAD_PATH, saveName));
+                String uuid = UUID.randomUUID().toString();
+                String saveName = uuid + "_" + file.getOriginalFilename();
 
-            BoardFile boardFile = BoardFile.builder()
-                    .originFilename(file.getOriginalFilename())
-                    .saveFilename(saveName)
-                    .fileSize(file.getSize())
-                    .fileExt(getFileExtension(file.getOriginalFilename()))
-                    .build();
+                file.transferTo(new File(UPLOAD_PATH, saveName));
 
-            board.addFile(boardFile); // 연관관계 설정 및 저장 (cascade)
+                BoardFile boardFile = BoardFile.builder()
+                        .originFilename(file.getOriginalFilename())
+                        .saveFilename(saveName)
+                        .fileSize(file.getSize())
+                        .fileExt(getFileExtension(file.getOriginalFilename()))
+                        .build();
+
+                board.addFile(boardFile); // 연관관계 설정 및 저장 (cascade)
+            }
         }
     }
 
