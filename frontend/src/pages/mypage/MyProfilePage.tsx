@@ -346,7 +346,7 @@ const MyProfilePage: React.FC = () => {
       <Grid container spacing={3}>
         {/* 프로필 정보 */}
         <Grid item xs={12}>
-          <Paper sx={{ p: 3 }}>
+          <Paper elevation={0} sx={{ p: 3, border: '1px solid #E5E7EB' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography variant="h6" fontWeight="bold">
                 프로필 정보
@@ -417,7 +417,7 @@ const MyProfilePage: React.FC = () => {
 
         {/* 배송지 관리 */}
         <Grid item xs={12}>
-          <Paper sx={{ p: 3 }}>
+          <Paper elevation={0} sx={{ p: 3, border: '1px solid #E5E7EB' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6" fontWeight="bold">
                 배송지 관리
@@ -488,7 +488,7 @@ const MyProfilePage: React.FC = () => {
 
         {/* 비밀번호 변경 */}
         <Grid item xs={12}>
-          <Paper sx={{ p: 3 }}>
+          <Paper elevation={0} sx={{ p: 3, border: '1px solid #E5E7EB' }}>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
               비밀번호 변경
             </Typography>
@@ -536,7 +536,7 @@ const MyProfilePage: React.FC = () => {
 
         {/* 회원 탈퇴 */}
         <Grid item xs={12}>
-          <Paper sx={{ p: 3 }}>
+          <Paper elevation={0} sx={{ p: 3, border: '1px solid #E5E7EB' }}>
             <Typography variant="h6" fontWeight="bold" gutterBottom color="error">
               회원 탈퇴
             </Typography>

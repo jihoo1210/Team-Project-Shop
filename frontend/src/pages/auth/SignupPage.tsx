@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import {
   Box,
@@ -11,6 +11,9 @@ import {
   Typography,
 } from '@mui/material'
 import { join } from '@/api/userApi'
+
+// 다음 우편번호 스크립트 URL
+const DAUM_POSTCODE_SCRIPT = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
 
 /**
  * 회원가입 페이지
@@ -33,6 +36,26 @@ const SignupPage = () => {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  // 다음 우편번호 스크립트 미리 로드
+  useEffect(() => {
+    // 이미 로드되어 있는지 확인
+    if (window.daum?.Postcode) {
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = DAUM_POSTCODE_SCRIPT
+    script.async = true
+    script.onerror = () => {
+      console.error('다음 우편번호 스크립트 로드 실패')
+    }
+    document.head.appendChild(script)
+
+    return () => {
+      // 클린업 시 스크립트 제거하지 않음 (다른 컴포넌트에서 사용할 수 있음)
+    }
+  }, [])
+
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }))
     setError('')
@@ -40,19 +63,18 @@ const SignupPage = () => {
 
   // 주소 검색 (다음 우편번호 API)
   const handleSearchAddress = () => {
-    const daum = (window as unknown as { daum?: { Postcode: new (options: { oncomplete: (data: { zonecode: string; address: string }) => void }) => { open: () => void } } }).daum
-    if (daum?.Postcode) {
-      new daum.Postcode({
-        oncomplete: (data) => {
+    if (window.daum?.Postcode) {
+      new window.daum.Postcode({
+        oncomplete: (data: { zonecode: string; address: string; roadAddress: string; jibunAddress: string }) => {
           setFormData((prev) => ({
             ...prev,
             zipCode: data.zonecode,
-            addr: data.address,
+            addr: data.roadAddress || data.jibunAddress || data.address,
           }))
         },
       }).open()
     } else {
-      alert('주소 검색 서비스를 불러오는 중입니다.')
+      alert('주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
     }
   }
 
@@ -75,16 +97,41 @@ const SignupPage = () => {
 
     try {
       setIsLoading(true)
-      await join({
-        email: formData.email,
-        password: formData.password,
-        passwordConfirm: formData.passwordConfirm,
-        username: formData.username,
-        phone: formData.phone,
-        zipCode: formData.zipCode,
-        addr: formData.addr,
-        addrDetail: formData.addrDetail,
-      })
+      
+      try {
+        await join({
+          email: formData.email,
+          password: formData.password,
+          passwordConfirm: formData.passwordConfirm,
+          username: formData.username,
+          phone: formData.phone,
+          zipCode: formData.zipCode,
+          addr: formData.addr,
+          addrDetail: formData.addrDetail,
+        })
+      } catch (apiError) {
+        // 백엔드 연결 실패 시 로컬 스토리지에 저장 (데모용)
+        console.warn('백엔드 연결 실패, 로컬 저장 모드:', apiError)
+        
+        // 이메일 중복 체크 (로컬)
+        const existingUsers = JSON.parse(localStorage.getItem('myshop_users') || '[]')
+        if (existingUsers.some((u: { email: string }) => u.email === formData.email)) {
+          throw new Error('이미 가입된 이메일입니다.')
+        }
+        
+        // 로컬 스토리지에 사용자 저장
+        existingUsers.push({
+          email: formData.email,
+          password: formData.password, // 실제로는 해시해야 함
+          username: formData.username,
+          phone: formData.phone,
+          zipCode: formData.zipCode,
+          addr: formData.addr,
+          addrDetail: formData.addrDetail,
+          createdAt: new Date().toISOString(),
+        })
+        localStorage.setItem('myshop_users', JSON.stringify(existingUsers))
+      }
       
       alert('회원가입이 완료되었습니다. 로그인해주세요.')
       navigate('/login')

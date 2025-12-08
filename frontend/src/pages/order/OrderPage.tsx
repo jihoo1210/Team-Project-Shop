@@ -32,6 +32,8 @@ interface OrderItem {
   price: number
   quantity: number
   option?: string
+  discountRate?: number // 할인율 (0~100)
+  whopCheckoutUrl?: string // 상품별 Whop 결제 URL
 }
 
 interface ShippingInfo {
@@ -74,9 +76,10 @@ const OrderPage: React.FC = () => {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (location.state?.cartItems) {
+    if (location.state?.cartItems && location.state.cartItems.length > 0) {
       setOrderItems(location.state.cartItems)
     } else {
       // 데모용 mock 데이터
@@ -101,6 +104,7 @@ const OrderPage: React.FC = () => {
       setOrderItems(mockItems)
     }
     fetchUserInfo()
+    setIsLoading(false)
   }, [location.state])
 
   const fetchUserInfo = async () => {
@@ -155,6 +159,39 @@ const OrderPage: React.FC = () => {
     }
   }
 
+  // Whop 결제 페이지 기본 URL
+  const WHOP_BASE_URL = 'https://whop.com/producthiera-gmail-com/myshop-0a/'
+
+  // 할인된 가격 계산 함수
+  const getDiscountedPrice = (item: OrderItem) => {
+    const discountRate = item.discountRate || 0
+    return Math.floor(item.price * (1 - discountRate / 100))
+  }
+
+  // 할인 금액 계산
+  const getDiscountAmount = (item: OrderItem) => {
+    const discountRate = item.discountRate || 0
+    return Math.floor(item.price * (discountRate / 100)) * item.quantity
+  }
+
+  // 상품별 Whop 결제 URL 생성 (이미지 파라미터 포함)
+  const buildWhopCheckoutUrl = (item: OrderItem) => {
+    // 상품별 개별 URL이 있으면 사용, 없으면 기본 URL + 파라미터
+    const baseUrl = item.whopCheckoutUrl || WHOP_BASE_URL
+    const url = new URL(baseUrl)
+
+    // 상품 정보를 URL 파라미터로 전달
+    url.searchParams.set('product_name', item.productName)
+    url.searchParams.set('product_image', item.productImage)
+    url.searchParams.set('quantity', item.quantity.toString())
+    url.searchParams.set('price', getDiscountedPrice(item).toString())
+    if (item.option) {
+      url.searchParams.set('option', item.option)
+    }
+
+    return url.toString()
+  }
+
   const handleSubmit = async () => {
     // 배송 정보 유효성 검사
     if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
@@ -172,6 +209,7 @@ const OrderPage: React.FC = () => {
     setError(null)
 
     try {
+      // 주문 정보 저장 (백엔드에 주문 생성)
       const orderData = {
         addr: shippingInfo.address + ' ' + shippingInfo.addressDetail,
         zipCode: shippingInfo.zipcode,
@@ -180,26 +218,53 @@ const OrderPage: React.FC = () => {
         call: shippingInfo.phone,
       }
 
-      const result = await createOrder(orderData)
-      navigate(`/order/complete?orderId=${result.order_id}`)
+      // 주문 생성 시도 (실패해도 Whop으로 이동)
+      try {
+        await createOrder(orderData)
+      } catch {
+        // 주문 생성 실패해도 결제 진행
+        console.log('주문 정보 저장 실패, 결제 페이지로 이동')
+      }
+
+      // 모든 상품에 대해 Whop 결제 페이지 열기 (각 상품별로 창 열림)
+      orderItems.forEach((item, index) => {
+        // 수량만큼 결제창 열기 (또는 수량을 파라미터로 전달)
+        const checkoutUrl = buildWhopCheckoutUrl(item)
+        // 여러 창이 동시에 열리지 않도록 약간의 딜레이
+        setTimeout(() => {
+          window.open(checkoutUrl, `_blank_${index}`)
+        }, index * 300)
+      })
+
+      // 결제 완료 페이지로 이동 (사용자가 결제 완료 후 돌아올 페이지)
+      navigate('/order/complete?orderId=pending')
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '주문 처리 중 오류가 발생했습니다.'
       setError(errorMessage)
-      // 데모용 - 실패해도 완료 페이지로 이동
-      setTimeout(() => {
-        navigate('/order/complete?orderId=demo-order-001')
-      }, 1000)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  // 원가 합계
+  const originalSubtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  // 할인 금액 합계
+  const totalDiscount = orderItems.reduce((sum, item) => sum + getDiscountAmount(item), 0)
+  // 할인 적용된 상품 금액
+  const subtotal = originalSubtotal - totalDiscount
   const shippingFee = subtotal >= 50000 ? 0 : 3000
   const totalPrice = subtotal + shippingFee
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('ko-KR') + '원'
+  }
+
+  if (isLoading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <Typography>로딩 중...</Typography>
+      </Container>
+    )
   }
 
   if (orderItems.length === 0) {
@@ -257,9 +322,31 @@ const OrderPage: React.FC = () => {
                       <Typography variant="body2" color="text.secondary">
                         수량: {item.quantity}개
                       </Typography>
-                      <Typography fontWeight="bold" color="primary">
-                        {formatPrice(item.price * item.quantity)}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {item.discountRate && item.discountRate > 0 ? (
+                          <>
+                            <Typography
+                              variant="body2"
+                              sx={{ textDecoration: 'line-through', color: 'text.secondary' }}
+                            >
+                              {formatPrice(item.price * item.quantity)}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: 'error.main', fontWeight: 'bold' }}
+                            >
+                              {item.discountRate}%
+                            </Typography>
+                            <Typography fontWeight="bold" color="primary">
+                              {formatPrice(getDiscountedPrice(item) * item.quantity)}
+                            </Typography>
+                          </>
+                        ) : (
+                          <Typography fontWeight="bold" color="primary">
+                            {formatPrice(item.price * item.quantity)}
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
                   </Box>
                 ))}
@@ -431,8 +518,16 @@ const OrderPage: React.FC = () => {
               <Stack spacing={2}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography color="text.secondary">상품 금액</Typography>
-                  <Typography fontWeight={600}>{formatPrice(subtotal)}</Typography>
+                  <Typography fontWeight={600}>{formatPrice(originalSubtotal)}</Typography>
                 </Box>
+                {totalDiscount > 0 && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography color="error.main">할인 금액</Typography>
+                    <Typography fontWeight={600} color="error.main">
+                      -{formatPrice(totalDiscount)}
+                    </Typography>
+                  </Box>
+                )}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography color="text.secondary">배송비</Typography>
                   <Typography fontWeight={600}>

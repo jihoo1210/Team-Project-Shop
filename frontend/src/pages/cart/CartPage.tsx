@@ -33,108 +33,55 @@ import {
   ShoppingCart as CartIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import { fetchCartItems as fetchCartApi, toggleCartItem } from '@/api/itemApi'
+import { useCart, type CartItem } from '@/hooks/useCart'
 
-interface CartItem {
-  cartItemId: string
-  productId: string
-  productName: string
-  productImage: string
-  price: number
-  quantity: number
-  stock: number
+// 선택 상태가 추가된 CartItem
+interface SelectableCartItem extends CartItem {
   selected: boolean
+  stock: number
 }
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate()
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const { cartItems: hookCartItems, loading, removeFromCart, updateQuantity } = useCart()
+  
+  // 선택 상태를 로컬에서 관리
+  const [selectableItems, setSelectableItems] = useState<SelectableCartItem[]>([])
   const [error, setError] = useState<string | null>(null)
   const [selectAll, setSelectAll] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<string | null>(null)
 
+  // hookCartItems가 변경되면 selectableItems 업데이트
   useEffect(() => {
-    loadCartItems()
-  }, [])
-
-  const loadCartItems = async () => {
-    try {
-      setLoading(true)
-      const response = await fetchCartApi()
-      const items: CartItem[] = (response.content || []).map((item: any) => ({
-        cartItemId: item.item_id,
-        productId: item.item_id,
-        productName: item.item_name || item.name || '상품명',
-        productImage: item.main_image || item.image || 'https://placehold.co/100x100/png',
-        price: item.price || 0,
-        quantity: item.quantity || 1,
-        stock: item.stock || 99,
-        selected: true,
-      }))
-      setCartItems(items)
-      setSelectAll(items.length > 0 && items.every((item) => item.selected))
-    } catch {
-      // Mock data for development
-      const mockItems: CartItem[] = [
-        {
-          cartItemId: '1',
-          productId: '1',
-          productName: '프리미엄 무선 이어폰',
-          productImage: 'https://placehold.co/100x100/png',
-          price: 89000,
-          quantity: 1,
-          stock: 50,
-          selected: true,
-        },
-        {
-          cartItemId: '2',
-          productId: '2',
-          productName: '스마트 워치 Pro',
-          productImage: 'https://placehold.co/100x100/png',
-          price: 299000,
-          quantity: 2,
-          stock: 30,
-          selected: true,
-        },
-        {
-          cartItemId: '3',
-          productId: '3',
-          productName: '노이즈 캔슬링 헤드폰',
-          productImage: 'https://placehold.co/100x100/png',
-          price: 199000,
-          quantity: 1,
-          stock: 20,
-          selected: true,
-        },
-      ]
-      setCartItems(mockItems)
-      setSelectAll(true)
-    } finally {
-      setLoading(false)
-    }
-  }
+    const items: SelectableCartItem[] = hookCartItems.map(item => ({
+      ...item,
+      selected: true,
+      stock: 99, // 기본 재고
+    }))
+    setSelectableItems(items)
+    setSelectAll(items.length > 0)
+  }, [hookCartItems])
 
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked)
-    setCartItems((items) => items.map((item) => ({ ...item, selected: checked })))
+    setSelectableItems((items) => items.map((item) => ({ ...item, selected: checked })))
   }
 
-  const handleSelectItem = (cartItemId: string, checked: boolean) => {
-    setCartItems((items) =>
+  const handleSelectItem = (productId: string, checked: boolean) => {
+    setSelectableItems((items) =>
       items.map((item) =>
-        item.cartItemId === cartItemId ? { ...item, selected: checked } : item
+        item.productId === productId ? { ...item, selected: checked } : item
       )
     )
-    const updatedItems = cartItems.map((item) =>
-      item.cartItemId === cartItemId ? { ...item, selected: checked } : item
+    const updatedItems = selectableItems.map((item) =>
+      item.productId === productId ? { ...item, selected: checked } : item
     )
     setSelectAll(updatedItems.every((item) => item.selected))
   }
 
-  const handleQuantityChange = (cartItemId: string, newQuantity: number) => {
-    const item = cartItems.find((i) => i.cartItemId === cartItemId)
+  const handleQuantityChange = (productId: string, newQuantity: number, color?: string, size?: string) => {
+    const item = selectableItems.find((i) => i.productId === productId)
     if (!item) return
 
     if (newQuantity < 1) newQuantity = 1
@@ -143,52 +90,42 @@ const CartPage: React.FC = () => {
       return
     }
 
-    setCartItems((items) =>
+    updateQuantity(productId, newQuantity, color, size)
+    setSelectableItems((items) =>
       items.map((i) =>
-        i.cartItemId === cartItemId ? { ...i, quantity: newQuantity } : i
+        i.productId === productId ? { ...i, quantity: newQuantity } : i
       )
     )
   }
 
-  const handleDeleteClick = (cartItemId: string) => {
-    setItemToDelete(cartItemId)
+  const handleDeleteClick = (productId: string) => {
+    setItemToDelete(productId)
     setDeleteDialogOpen(true)
   }
 
   const handleDeleteConfirm = async () => {
     if (itemToDelete === null) return
 
-    try {
-      await toggleCartItem(itemToDelete)
-      setCartItems((items) => items.filter((item) => item.cartItemId !== itemToDelete))
-    } catch {
-      // Delete locally anyway for demo
-      setCartItems((items) => items.filter((item) => item.cartItemId !== itemToDelete))
-    } finally {
-      setDeleteDialogOpen(false)
-      setItemToDelete(null)
-    }
+    const item = selectableItems.find(i => i.productId === itemToDelete)
+    await removeFromCart(itemToDelete, item?.color, item?.size)
+    setDeleteDialogOpen(false)
+    setItemToDelete(null)
   }
 
   const handleDeleteSelected = async () => {
-    const selectedIds = cartItems.filter((item) => item.selected).map((item) => item.cartItemId)
-    if (selectedIds.length === 0) {
+    const selected = selectableItems.filter((item) => item.selected)
+    if (selected.length === 0) {
       setError('선택된 상품이 없습니다.')
       return
     }
 
-    try {
-      // 선택된 아이템 각각 삭제
-      await Promise.all(selectedIds.map((id) => toggleCartItem(id)))
-      setCartItems((items) => items.filter((item) => !item.selected))
-    } catch {
-      // Delete locally anyway for demo
-      setCartItems((items) => items.filter((item) => !item.selected))
+    for (const item of selected) {
+      await removeFromCart(item.productId, item.color, item.size)
     }
   }
 
   const handleOrder = () => {
-    const selectedItems = cartItems.filter((item) => item.selected)
+    const selectedItems = selectableItems.filter((item) => item.selected)
     if (selectedItems.length === 0) {
       setError('주문할 상품을 선택해주세요.')
       return
@@ -197,7 +134,7 @@ const CartPage: React.FC = () => {
     navigate('/order', { state: { cartItems: selectedItems } })
   }
 
-  const selectedItems = cartItems.filter((item) => item.selected)
+  const selectedItems = selectableItems.filter((item) => item.selected)
   const totalPrice = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const deliveryFee = totalPrice >= 50000 ? 0 : 3000
   const finalPrice = totalPrice + deliveryFee
@@ -233,7 +170,7 @@ const CartPage: React.FC = () => {
         </Alert>
       )}
 
-      {cartItems.length === 0 ? (
+      {selectableItems.length === 0 ? (
         <Paper sx={{ p: 6, textAlign: 'center' }}>
           <CartIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -262,7 +199,7 @@ const CartPage: React.FC = () => {
                     onChange={(e) => handleSelectAll(e.target.checked)}
                   />
                   <Typography>
-                    전체 선택 ({selectedItems.length}/{cartItems.length})
+                    전체 선택 ({selectedItems.length}/{selectableItems.length})
                   </Typography>
                 </Box>
                 <Button
@@ -287,13 +224,13 @@ const CartPage: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {cartItems.map((item) => (
-                      <TableRow key={item.cartItemId} hover>
+                    {selectableItems.map((item) => (
+                      <TableRow key={item.productId} hover>
                         <TableCell padding="checkbox">
                           <Checkbox
                             checked={item.selected}
                             onChange={(e) =>
-                              handleSelectItem(item.cartItemId, e.target.checked)
+                              handleSelectItem(item.productId, e.target.checked)
                             }
                           />
                         </TableCell>
@@ -341,7 +278,7 @@ const CartPage: React.FC = () => {
                             <IconButton
                               size="small"
                               onClick={() =>
-                                handleQuantityChange(item.cartItemId, item.quantity - 1)
+                                handleQuantityChange(item.productId, item.quantity - 1, item.color, item.size)
                               }
                               disabled={item.quantity <= 1}
                             >
@@ -353,7 +290,7 @@ const CartPage: React.FC = () => {
                               onChange={(e) => {
                                 const val = parseInt(e.target.value)
                                 if (!isNaN(val))
-                                  handleQuantityChange(item.cartItemId, val)
+                                  handleQuantityChange(item.productId, val, item.color, item.size)
                               }}
                               inputProps={{
                                 style: { textAlign: 'center', width: 40 },
@@ -365,7 +302,7 @@ const CartPage: React.FC = () => {
                             <IconButton
                               size="small"
                               onClick={() =>
-                                handleQuantityChange(item.cartItemId, item.quantity + 1)
+                                handleQuantityChange(item.productId, item.quantity + 1, item.color, item.size)
                               }
                               disabled={item.quantity >= item.stock}
                             >
@@ -381,7 +318,7 @@ const CartPage: React.FC = () => {
                         <TableCell align="center">
                           <IconButton
                             color="error"
-                            onClick={() => handleDeleteClick(item.cartItemId)}
+                            onClick={() => handleDeleteClick(item.productId)}
                           >
                             <DeleteIcon />
                           </IconButton>

@@ -4,7 +4,7 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 import StarIcon from '@mui/icons-material/Star'
 import FavoriteIcon from '@mui/icons-material/Favorite'
-import { Box, Divider, List, ListItemButton, ListItemIcon, ListItemText, Paper, Stack, Typography } from '@mui/material'
+import { Box, Divider, List, ListItemButton, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material'
 import { NavLink, Outlet } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
@@ -21,38 +21,56 @@ const MyPageLayout = () => {
     <>
       <Header />
       <Box sx={{ px: { xs: 2, md: 6 }, py: 6 }}>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
-          <Paper sx={{ width: { xs: '100%', md: 280 }, p: 2 }}>
-            <Typography variant="h6" fontWeight={700} mb={2}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
+          <Box sx={{ width: { xs: '100%', md: 240 } }}>
+            <Typography variant="h6" fontWeight={700} sx={{ mb: 3, color: '#1a1a1a' }}>
               마이페이지
             </Typography>
-            <List>
+            <List disablePadding>
               {myMenu.map((item) => (
                 <ListItemButton
                   key={item.to}
                   component={NavLink}
                   to={item.to}
-                  sx={{ borderRadius: 2 }}
+                  sx={{
+                    py: 1.5,
+                    px: 0,
+                    '&:hover': { bgcolor: 'transparent', color: '#1a1a1a' },
+                    '&.active': { color: '#1a1a1a', fontWeight: 600 },
+                  }}
                 >
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.label} />
+                  <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: '0.95rem' }} />
                 </ListItemButton>
               ))}
             </List>
-            <Divider sx={{ my: 1 }} />
-            <ListItemButton sx={{ borderRadius: 2 }}>
-              <ListItemIcon>
+            <Divider sx={{ my: 2 }} />
+            <ListItemButton
+              sx={{
+                py: 1.5,
+                px: 0,
+                '&:hover': { bgcolor: 'transparent' },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 36 }}>
                 <CreditCardIcon />
               </ListItemIcon>
-              <ListItemText primary="주소/결제수단" />
+              <ListItemText primary="주소/결제수단" primaryTypographyProps={{ fontSize: '0.95rem' }} />
             </ListItemButton>
-            <ListItemButton sx={{ borderRadius: 2, color: 'error.main' }}>
-              <ListItemIcon>
+            <ListItemButton
+              sx={{
+                py: 1.5,
+                px: 0,
+                color: 'error.main',
+                '&:hover': { bgcolor: 'transparent' },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 36 }}>
                 <LogoutIcon color="error" />
               </ListItemIcon>
-              <ListItemText primary="로그아웃" />
+              <ListItemText primary="로그아웃" primaryTypographyProps={{ fontSize: '0.95rem' }} />
             </ListItemButton>
-          </Paper>
+          </Box>
 
           <Box flex={1}>
             <Outlet />

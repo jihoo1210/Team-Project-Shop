@@ -11,7 +11,7 @@ const WithdrawCompletePage = () => {
 
   return (
     <Container maxWidth="sm" sx={{ py: 8 }}>
-      <Paper sx={{ p: 6, textAlign: 'center' }}>
+      <Paper elevation={0} sx={{ p: 6, textAlign: 'center', border: '1px solid #E5E7EB' }}>
         <SadIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 3 }} />
         
         <Typography variant="h4" fontWeight="bold" gutterBottom>

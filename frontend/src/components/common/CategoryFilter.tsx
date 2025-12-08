@@ -119,9 +119,9 @@ const CategoryFilter = ({ onFilterChange }: CategoryFilterProps) => {
     filters.priceRange[1] !== 500000
 
   return (
-    <Paper sx={{ p: 2, position: 'sticky', top: 80 }}>
-      <Stack spacing={2}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
+    <Paper elevation={0} sx={{ p: 2, position: 'sticky', top: 80, border: '1px solid #E5E7EB' }}>
+      <Stack spacing={0}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ pb: 2, borderBottom: '1px solid #E5E7EB' }}>
           <Typography variant="h6" fontWeight={700}>
             필터
           </Typography>
@@ -131,7 +131,7 @@ const CategoryFilter = ({ onFilterChange }: CategoryFilterProps) => {
         </Box>
 
         {/* 카테고리 필터 */}
-        <Accordion defaultExpanded>
+        <Accordion defaultExpanded elevation={0} disableGutters sx={{ '&:before': { display: 'none' }, borderBottom: '1px solid #E5E7EB' }}>
           <AccordionSummary expandIcon={<ExpandMore />}>
             <Typography fontWeight={600}>카테고리</Typography>
           </AccordionSummary>
@@ -162,7 +162,7 @@ const CategoryFilter = ({ onFilterChange }: CategoryFilterProps) => {
         </Accordion>
 
         {/* 가격 필터 */}
-        <Accordion defaultExpanded>
+        <Accordion defaultExpanded elevation={0} disableGutters sx={{ '&:before': { display: 'none' }, borderBottom: '1px solid #E5E7EB' }}>
           <AccordionSummary expandIcon={<ExpandMore />}>
             <Typography fontWeight={600}>가격</Typography>
           </AccordionSummary>
@@ -190,7 +190,7 @@ const CategoryFilter = ({ onFilterChange }: CategoryFilterProps) => {
         </Accordion>
 
         {/* 브랜드 필터 */}
-        <Accordion>
+        <Accordion elevation={0} disableGutters sx={{ '&:before': { display: 'none' }, borderBottom: '1px solid #E5E7EB' }}>
           <AccordionSummary expandIcon={<ExpandMore />}>
             <Typography fontWeight={600}>브랜드</Typography>
           </AccordionSummary>
@@ -221,7 +221,7 @@ const CategoryFilter = ({ onFilterChange }: CategoryFilterProps) => {
         </Accordion>
 
         {/* 배지 필터 */}
-        <Accordion>
+        <Accordion elevation={0} disableGutters sx={{ '&:before': { display: 'none' } }}>
           <AccordionSummary expandIcon={<ExpandMore />}>
             <Typography fontWeight={600}>상품 태그</Typography>
           </AccordionSummary>
