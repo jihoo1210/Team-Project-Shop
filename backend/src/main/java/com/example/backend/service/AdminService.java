@@ -1,11 +1,16 @@
 package com.example.backend.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import javax.imageio.ImageIO;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.backend.dto.admin.ItemResistraionRequest;
 import com.example.backend.entity.item.Item;
@@ -27,11 +32,14 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class AdminService {
 
+    @Value("${upload-dir}")
+    private String IMAGE_UPLOAD_PATH;
+    private static final String IMAGE_URL_PREFIX = "/product/";
+
     private final ItemRepository itemRepository;
     private final ColorRepostitory colorRepository;
     private final SizeRepository sizeRepository;
     private final ItemImageRepository itemImageRepository;
-    private final WebClient webClient;
 
     private void saveColors(List<String> colorList, Item item) {
         colorRepository.deleteByItem(item);
@@ -73,24 +81,79 @@ public class AdminService {
         }
     }
 
+    /**
+     * 이미지 파일을 /home/pr/www/product/에 저장하고 URL 경로를 반환
+     */
+    private String saveImageFile(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
 
-    public void saveItem(ItemResistraionRequest dto) {
-        // dto의 필드 값이 null일 경우 예외 발생 가능
-        // Item 객체 생성 시 필수값 누락 여부 확인 필요
-        // itemRepository.save(item) 호출 후 반환값 활용 가능 (예: 저장된 item의 id)
-        // saveColors, saveSizes, saveImages에서 각각의 리스트가 null일 경우 NPE 발생 가능
-        // 트랜잭션 처리 필요 시 @Transactional 어노테이션 추가 고려
+        // 디렉토리가 없으면 생성
+        Path uploadPath = Paths.get(IMAGE_UPLOAD_PATH);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // 고유한 파일명 생성 (UUID + 원본 확장자)
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        String newFilename = UUID.randomUUID().toString() + extension;
+
+        // 파일 저장
+        Path filePath = uploadPath.resolve(newFilename);
+        Files.copy(file.getInputStream(), filePath);
+
+        log.info("Image saved: {}", filePath.toString());
+
+        // DB에 저장할 URL 경로 반환
+        return IMAGE_URL_PREFIX + newFilename;
+    }
+
+    /**
+     * 여러 이미지 파일을 저장하고 URL 목록을 반환
+     */
+    private List<String> saveImageFiles(List<MultipartFile> files) throws IOException {
+        List<String> imageUrls = new ArrayList<>();
+        if (files == null || files.isEmpty()) {
+            return imageUrls;
+        }
+
+        for (MultipartFile file : files) {
+            String imageUrl = saveImageFile(file);
+            if (imageUrl != null) {
+                imageUrls.add(imageUrl);
+            }
+        }
+        return imageUrls;
+    }
+
+
+    public void saveItem(ItemResistraionRequest dto, MultipartFile mainImage, List<MultipartFile> images) throws IOException {
         String title = dto.getTitle();
         int price = dto.getPrice();
         int discountPercent = dto.getDiscountPercent();
         String sku = dto.getSku();
         String brand = dto.getBrand();
         String description = dto.getDescription();
-        String mainImageUrl = dto.getMainImageUrl();
         List<String> colorList = dto.getColorList();
         List<String> sizeList = dto.getSizeList();
-        List<String> imageList = dto.getImageList();
-        
+
+        // 메인 이미지 저장
+        String mainImageUrl = saveImageFile(mainImage);
+        if (mainImageUrl == null) {
+            mainImageUrl = dto.getMainImageUrl(); // 파일이 없으면 URL 사용
+        }
+
+        // 추가 이미지 저장
+        List<String> imageList = saveImageFiles(images);
+        if (imageList.isEmpty() && dto.getImageList() != null) {
+            imageList = dto.getImageList(); // 파일이 없으면 URL 목록 사용
+        }
+
         Item item = Item.builder()
                 .title(title)
                 .price(price)
@@ -107,26 +170,30 @@ public class AdminService {
         saveImages(imageList, item);
     }
 
-    public void updateItem(Long itemId, ItemResistraionRequest dto) {
-        // itemId가 실제 DB에 존재하지 않을 경우 예외 발생
-        // dto의 필드 값이 null일 경우 예외 발생 가능
-        // item.update(dto)에서 필드 매핑이 올바르게 되는지 확인 필요
-        // saveColors, saveSizes, saveImages에서 각각의 리스트가 null일 경우 NPE 발생 가능
-        // 트랜잭션 처리 필요 시 @Transactional 어노테이션 추가 고려
-        String title = dto.getTitle();
-        int price = dto.getPrice();
-        int discountPercent = dto.getDiscountPercent();
-        String sku = dto.getSku();
-        String brand = dto.getBrand();
-        String description = dto.getDescription();
-        String mainImageUrl = dto.getMainImageUrl();
-        List<String> colorList = dto.getColorList().stream().map(color -> ColorEnum.valueOf(color).name()).toList();
-        List<String> sizeList = dto.getSizeList().stream().map(size -> SizeEnum.valueOf(size).name()).toList();
-        List<String> imageList = dto.getImageList();
-
+    public void updateItem(Long itemId, ItemResistraionRequest dto, MultipartFile mainImage, List<MultipartFile> images) throws IOException {
+        List<String> colorList = dto.getColorList() != null
+            ? dto.getColorList().stream().map(color -> ColorEnum.valueOf(color).name()).toList()
+            : null;
+        List<String> sizeList = dto.getSizeList() != null
+            ? dto.getSizeList().stream().map(size -> SizeEnum.valueOf(size).name()).toList()
+            : null;
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item not found"));
+
+        // 메인 이미지 저장
+        String mainImageUrl = saveImageFile(mainImage);
+        if (mainImageUrl != null) {
+            item.setMainImageUrl(mainImageUrl);
+        } else if (dto.getMainImageUrl() != null) {
+            item.setMainImageUrl(dto.getMainImageUrl());
+        }
+
+        // 추가 이미지 저장
+        List<String> imageList = saveImageFiles(images);
+        if (imageList.isEmpty() && dto.getImageList() != null) {
+            imageList = dto.getImageList();
+        }
 
         item.update(dto);
         saveColors(colorList, item);
