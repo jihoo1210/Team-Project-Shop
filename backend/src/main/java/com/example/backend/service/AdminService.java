@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.example.backend.dto.admin.ItemResistraionRequest;
-import com.example.backend.dto.item.PlanCreateRequest;
-import com.example.backend.dto.item.PlanResponse;
 import com.example.backend.dto.item.whop.CreateProductRequest;
 import com.example.backend.entity.item.Item;
 import com.example.backend.entity.item.details.Color;
@@ -71,15 +69,6 @@ public class AdminService {
                     .build();
             itemImageRepository.save(itemImage);
         }
-    }
-
-    private CreateProductResponse createProduct(CreateProductRequest dto) {
-        return webClient.post()
-                .uri("products")
-                .bodyValue(dto)
-                .retrieve()
-                .bodyToMono(CreateProductRequest.class)
-                .block();
     }
 
 
