@@ -1,5 +1,10 @@
 package com.example.backend.entity.user;
 
+import java.util.List;
+
+import com.example.backend.entity.item.utility.CartItem;
+import com.example.backend.entity.item.utility.OrderItem;
+
 import jakarta.persistence.*;
 import lombok.*;
 
