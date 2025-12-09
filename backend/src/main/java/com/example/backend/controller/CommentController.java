@@ -2,8 +2,8 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.CommentDTO;
 import com.example.backend.service.CommentService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,18 +11,18 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/comments")
+@RequiredArgsConstructor
 public class CommentController {
 
-    @Autowired
-    private CommentService commentService;
+    private final CommentService commentService;
 
     // 댓글 목록 조회 (게시글별)
     @GetMapping("/board/{boardNo}")
     public ResponseEntity<List<CommentDTO>> getCommentList(
             @PathVariable Long boardNo,
-            HttpSession session) {
-        Long userId = (Long) session.getAttribute("loginUserId");
-        String role = (String) session.getAttribute("loginUserRole");
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        String role = (String) request.getAttribute("role");
         boolean isAdmin = "ADMIN".equals(role);
 
         return ResponseEntity.ok(commentService.getCommentList(boardNo, userId, isAdmin));
@@ -33,13 +33,13 @@ public class CommentController {
     public ResponseEntity<?> writeComment(
             @PathVariable Long boardNo,
             @RequestBody CommentDTO commentDTO,
-            HttpSession session) {
-        Long userId = (Long) session.getAttribute("loginUserId");
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
 
-        String role = (String) session.getAttribute("loginUserRole");
+        String role = (String) request.getAttribute("role");
         boolean isAdmin = "ADMIN".equals(role);
 
         try {
@@ -55,13 +55,13 @@ public class CommentController {
     public ResponseEntity<?> updateComment(
             @PathVariable Long coNo,
             @RequestBody CommentDTO commentDTO,
-            HttpSession session) {
-        Long userId = (Long) session.getAttribute("loginUserId");
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
 
-        String role = (String) session.getAttribute("loginUserRole");
+        String role = (String) request.getAttribute("role");
         boolean isAdmin = "ADMIN".equals(role);
 
         try {
@@ -76,13 +76,13 @@ public class CommentController {
     @DeleteMapping("/{coNo}")
     public ResponseEntity<?> deleteComment(
             @PathVariable Long coNo,
-            HttpSession session) {
-        Long userId = (Long) session.getAttribute("loginUserId");
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
 
-        String role = (String) session.getAttribute("loginUserRole");
+        String role = (String) request.getAttribute("role");
         boolean isAdmin = "ADMIN".equals(role);
 
         try {
@@ -93,4 +93,3 @@ public class CommentController {
         }
     }
 }
-
