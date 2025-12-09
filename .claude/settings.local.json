@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(./gradlew bootRun:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" add frontend/)",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" add -A)"
     ],
     "deny": [],
     "ask": []
