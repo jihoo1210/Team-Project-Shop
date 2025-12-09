@@ -6,7 +6,7 @@ import lombok.*;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "user")
+@Table(name = "users")
 public class User {
 
     @Id
@@ -37,9 +37,14 @@ public class User {
     @Column(name = "phone", length = 20)
     private String phone;
 
+    // 역할 (USER, ADMIN)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private Role role = Role.USER;  // 기본값: USER
+
     @Builder
     public User(String email, String password, String username, 
-                String zipCode, String addr, String addrDetail, String phone) {
+                String zipCode, String addr, String addrDetail, String phone, Role role) {
         this.email = email;
         this.password = password;
         this.username = username;
@@ -47,6 +52,12 @@ public class User {
         this.addr = addr;
         this.addrDetail = addrDetail;
         this.phone = phone;
+        this.role = role != null ? role : Role.USER;
+    }
+
+    // 관리자 여부 확인
+    public boolean isAdmin() {
+        return this.role == Role.ADMIN;
     }
 
     // 회원정보 수정

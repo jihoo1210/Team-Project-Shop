@@ -1,11 +1,19 @@
 package com.example.backend.service;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,10 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.backend.dto.BoardDTO;
+import com.example.backend.dto.BoardFileDTO;
 import com.example.backend.entity.board.Board;
 import com.example.backend.entity.board.BoardFile;
 import com.example.backend.entity.user.User;
 import com.example.backend.repository.BoardRepository;
+import com.example.backend.repository.BoardFileRepository;
 import com.example.backend.repository.CommentRepository;
 import com.example.backend.repository.UserRepository;
 
@@ -26,6 +37,9 @@ public class BoardServiceImpl {
 
     @Autowired
     private BoardRepository boardRepository;
+
+    @Autowired
+    private BoardFileRepository boardFileRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -56,7 +70,7 @@ public class BoardServiceImpl {
 
         // Entity -> DTO 변환
         var list = boardPage.getContent().stream()
-                .map(this::toDTO)
+                .map(board -> toDTO(board))
                 .toList();
 
         Map<String, Object> map = new HashMap<>();
@@ -67,9 +81,9 @@ public class BoardServiceImpl {
         return map;
     }
 
-    // 글쓰기 (트랜잭션 필수)
+    // 글쓰기 (다중 파일 업로드 지원)
     @Transactional
-    public void write(BoardDTO boardDTO, MultipartFile file, Long userId) throws Exception {
+    public void write(BoardDTO boardDTO, List<MultipartFile> files, Long userId) throws Exception {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -83,34 +97,50 @@ public class BoardServiceImpl {
 
         boardRepository.save(board); // 1. 글 저장
 
-        if (file != null && !file.isEmpty()) { // 2. 파일 있으면 저장
+        // 2. 파일들 있으면 저장
+        if (files != null && !files.isEmpty()) {
             File dir = new File(UPLOAD_PATH);
             if (!dir.exists()) dir.mkdirs();
 
-            String uuid = UUID.randomUUID().toString();
-            String saveName = uuid + "_" + file.getOriginalFilename();
+            for (MultipartFile file : files) {
+                if (file.isEmpty()) continue;
 
-            file.transferTo(new File(UPLOAD_PATH, saveName));
+                String uuid = UUID.randomUUID().toString();
+                String saveName = uuid + "_" + file.getOriginalFilename();
 
-            BoardFile boardFile = BoardFile.builder()
-                    .originFilename(file.getOriginalFilename())
-                    .saveFilename(saveName)
-                    .fileSize(file.getSize())
-                    .fileExt(getFileExtension(file.getOriginalFilename()))
-                    .build();
+                file.transferTo(new File(UPLOAD_PATH, saveName));
 
-            board.addFile(boardFile); // 연관관계 설정 및 저장 (cascade)
+                BoardFile boardFile = BoardFile.builder()
+                        .originFilename(file.getOriginalFilename())
+                        .saveFilename(saveName)
+                        .fileSize(file.getSize())
+                        .fileExt(getFileExtension(file.getOriginalFilename()))
+                        .build();
+
+                board.addFile(boardFile); // 연관관계 설정 및 저장 (cascade)
+            }
         }
     }
 
-    // 상세 조회
+    // 상세 조회 (비밀글 권한 체크 포함)
     @Transactional
-    public BoardDTO getBoard(Long boardNo) {
+    public BoardDTO getBoard(Long boardNo, Long userId, boolean isAdmin) {
         Board board = boardRepository.findById(boardNo)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
         if ("Y".equals(board.getDelYn())) {
             throw new IllegalArgumentException("삭제된 게시글입니다.");
+        }
+
+        // 비밀글 권한 체크: 관리자이거나 작성자만 조회 가능
+        if ("Y".equals(board.getSecretYn())) {
+            boolean isWriter = board.getWriter() != null &&
+                               userId != null &&
+                               board.getWriter().getUserId().equals(userId);
+
+            if (!isAdmin && !isWriter) {
+                throw new IllegalArgumentException("비밀글은 작성자만 확인할 수 있습니다.");
+            }
         }
 
         // 조회수 증가
@@ -119,13 +149,13 @@ public class BoardServiceImpl {
         return toDTO(board);
     }
 
-    // 글 수정
+    // 글 수정 (작성자만 가능)
     @Transactional
     public void update(Long boardNo, BoardDTO boardDTO, Long userId) {
         Board board = boardRepository.findById(boardNo)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        // 작성자 확인
+        // 작성자 확인 (관리자도 수정 불가)
         if (!board.getWriter().getUserId().equals(userId)) {
             throw new IllegalArgumentException("수정 권한이 없습니다.");
         }
@@ -134,18 +164,51 @@ public class BoardServiceImpl {
                      boardDTO.getBoardCategory(), boardDTO.getSecretYn());
     }
 
-    // 글 삭제 (소프트 삭제)
+    // 글 삭제 (작성자 또는 관리자 가능)
     @Transactional
-    public void delete(Long boardNo, Long userId) {
+    public void delete(Long boardNo, Long userId, boolean isAdmin) {
         Board board = boardRepository.findById(boardNo)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        // 작성자 확인
-        if (!board.getWriter().getUserId().equals(userId)) {
+        // 작성자이거나 관리자인 경우 삭제 가능
+        boolean isWriter = board.getWriter().getUserId().equals(userId);
+
+        if (!isWriter && !isAdmin) {
             throw new IllegalArgumentException("삭제 권한이 없습니다.");
         }
 
         board.delete();
+    }
+
+    // 파일 다운로드
+    public Resource downloadFile(Long fileNo) throws IOException {
+        BoardFile boardFile = boardFileRepository.findById(fileNo)
+                .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        Path filePath = Paths.get(UPLOAD_PATH + boardFile.getSaveFilename());
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (!resource.exists()) {
+            throw new IllegalArgumentException("파일이 존재하지 않습니다.");
+        }
+
+        return resource;
+    }
+
+    // 파일 정보 조회
+    public BoardFileDTO getFileInfo(Long fileNo) {
+        BoardFile boardFile = boardFileRepository.findById(fileNo)
+                .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        BoardFileDTO dto = new BoardFileDTO();
+        dto.setFileNo(boardFile.getFileNo());
+        dto.setBoardNo(boardFile.getBoard().getBoardNo());
+        dto.setOriginFilename(boardFile.getOriginFilename());
+        dto.setSaveFilename(boardFile.getSaveFilename());
+        dto.setFileSize(boardFile.getFileSize());
+        dto.setFileExt(boardFile.getFileExt());
+        dto.setRegDate(boardFile.getRegDate());
+        return dto;
     }
 
     // Entity -> DTO 변환
@@ -164,6 +227,24 @@ public class BoardServiceImpl {
         dto.setModDate(board.getModDate());
         // 댓글 수 조회
         dto.setCommentCount(commentRepository.countByBoard_BoardNoAndDelYn(board.getBoardNo(), "N"));
+        // 첨부파일 목록
+        List<BoardFileDTO> files = board.getFiles().stream()
+                .map(this::toFileDTO)
+                .collect(Collectors.toList());
+        dto.setFiles(files);
+        return dto;
+    }
+
+    // BoardFile Entity -> DTO 변환
+    private BoardFileDTO toFileDTO(BoardFile file) {
+        BoardFileDTO dto = new BoardFileDTO();
+        dto.setFileNo(file.getFileNo());
+        dto.setBoardNo(file.getBoard().getBoardNo());
+        dto.setOriginFilename(file.getOriginFilename());
+        dto.setSaveFilename(file.getSaveFilename());
+        dto.setFileSize(file.getFileSize());
+        dto.setFileExt(file.getFileExt());
+        dto.setRegDate(file.getRegDate());
         return dto;
     }
 

@@ -31,6 +31,9 @@ public class Comment {
     @Column(name = "co_comment", columnDefinition = "TEXT")
     private String coComment;
 
+    @Column(name = "secret_yn", length = 1, columnDefinition = "CHAR(1) DEFAULT 'N'")
+    private String secretYn = "N";
+
     @Column(name = "del_yn", length = 1, columnDefinition = "CHAR(1) DEFAULT 'N'")
     private String delYn = "N";
 
@@ -43,9 +46,15 @@ public class Comment {
     private LocalDateTime coModDate;
 
     @Builder
-    public Comment(User writer, String coComment) {
+    public Comment(User writer, String coComment, String secretYn) {
         this.writer = writer;
         this.coComment = coComment;
+        this.secretYn = secretYn != null ? secretYn : "N";
+    }
+
+    // 비밀 댓글 여부 getter (JPA ddl-auto로 자동 생성됨)
+    public String getSecretYn() {
+        return this.secretYn;
     }
 
     // Board 연관관계 설정
