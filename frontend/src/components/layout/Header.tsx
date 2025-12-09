@@ -81,14 +81,17 @@ const Header = () => {
             </Typography>
           </Box>
 
-          {/* 중앙: 검색창 */}
+          {/* 검색창 - 완전 가운데 */}
           <Box
             component="form"
             onSubmit={handleSearch}
             sx={{
-              flex: 1,
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '100%',
               maxWidth: 500,
-              mx: { xs: 2, md: 4 },
+              px: 2,
               display: { xs: 'none', sm: 'block' },
             }}
           >
@@ -140,14 +143,6 @@ const Header = () => {
                   sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
                 >
                   게시판
-                </Button>
-                <Button
-                  component={Link}
-                  to="/mypage"
-                  size="small"
-                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
-                >
-                  마이페이지
                 </Button>
                 <Button
                   onClick={handleLogout}

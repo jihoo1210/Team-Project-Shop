@@ -1,107 +1,237 @@
-import { Box, Container, Divider, Link as MuiLink, Stack, Typography } from '@mui/material'
+import { Box, Grid, Link as MuiLink, Stack, Typography, IconButton } from '@mui/material'
 import { Link } from 'react-router-dom'
+import { YouTube, Facebook, Instagram, LinkedIn } from '@mui/icons-material'
+
+// X(Twitter) 아이콘 커스텀
+const XIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+)
+
+const footerLinks = {
+  Resources: [
+    { label: 'FAQ', path: '/faq' },
+    { label: '배송 안내', path: '/shipping' },
+    { label: '교환/반품', path: '/returns' },
+    { label: '제휴 문의', path: '/partnership' },
+  ],
+  Community: [
+    { label: '자유게시판', path: '/board/free' },
+    { label: '스타일 공유', path: '/board/style' },
+    { label: '질문과 답변', path: '/board/qna' },
+    { label: '공지사항', path: '/board/notice' },
+  ],
+  Company: [
+    { label: '회사 소개', path: '/about' },
+    { label: '채용', path: '/careers' },
+    { label: '고객센터', path: '/support' },
+    { label: '문의하기', path: '/contact' },
+  ],
+  Legal: [
+    { label: '이용약관', path: '/terms' },
+    { label: '개인정보처리방침', path: '/privacy' },
+  ],
+}
 
 /**
  * 공통 푸터 컴포넌트
- * SPEC: 회사 정보, 약관, 개인정보처리방침, 고객센터
+ * SPEC: bubble.io 스타일 푸터
  */
 const Footer = () => {
   return (
     <Box
       component="footer"
       sx={{
-        bgcolor: 'background.paper',
-        borderTop: 1,
-        borderColor: 'divider',
-        py: 6,
+        bgcolor: '#ffffff',
+        pt: { xs: 6, md: 8 },
+        pb: { xs: 4, md: 6 },
         mt: 'auto',
+        position: 'relative',
+        overflow: 'hidden',
+        borderTop: '1px solid #e5e7eb',
       }}
     >
-      <Container maxWidth="lg">
-        <Stack spacing={3}>
-          {/* 로고 & 설명 */}
-          <Box>
-            <Typography variant="h6" fontWeight={800} gutterBottom>
+      <Box sx={{ maxWidth: 1400, mx: 'auto', px: { xs: 3, md: 6 }, position: 'relative', zIndex: 1 }}>
+        <Grid container spacing={{ xs: 4, md: 8 }}>
+          {/* 로고 & 소셜 */}
+          <Grid item xs={12} md={3}>
+            <Typography
+              component={Link}
+              to="/"
+              sx={{
+                fontWeight: 800,
+                fontSize: '1.8rem',
+                color: '#111827',
+                textDecoration: 'none',
+                display: 'block',
+                mb: 3,
+                fontFamily: '"Inter", sans-serif',
+                letterSpacing: '-0.02em',
+              }}
+            >
               MyShop
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              이커머스 & 커뮤니티 통합 쇼핑몰
+            <Stack direction="row" spacing={0.5} sx={{ mt: 4 }}>
+              <IconButton
+                size="small"
+                sx={{
+                  color: 'rgba(0,0,0,0.5)',
+                  '&:hover': { color: '#111827' },
+                  p: 0.8,
+                }}
+                aria-label="YouTube"
+              >
+                <YouTube sx={{ fontSize: 20 }} />
+              </IconButton>
+              <IconButton
+                size="small"
+                sx={{
+                  color: 'rgba(0,0,0,0.5)',
+                  '&:hover': { color: '#111827' },
+                  p: 0.8,
+                }}
+                aria-label="X"
+              >
+                <XIcon />
+              </IconButton>
+              <IconButton
+                size="small"
+                sx={{
+                  color: 'rgba(0,0,0,0.5)',
+                  '&:hover': { color: '#111827' },
+                  p: 0.8,
+                }}
+                aria-label="Facebook"
+              >
+                <Facebook sx={{ fontSize: 20 }} />
+              </IconButton>
+              <IconButton
+                size="small"
+                sx={{
+                  color: 'rgba(0,0,0,0.5)',
+                  '&:hover': { color: '#111827' },
+                  p: 0.8,
+                }}
+                aria-label="Instagram"
+              >
+                <Instagram sx={{ fontSize: 20 }} />
+              </IconButton>
+              <IconButton
+                size="small"
+                sx={{
+                  color: 'rgba(0,0,0,0.5)',
+                  '&:hover': { color: '#111827' },
+                  p: 0.8,
+                }}
+                aria-label="LinkedIn"
+              >
+                <LinkedIn sx={{ fontSize: 20 }} />
+              </IconButton>
+            </Stack>
+          </Grid>
+
+          {/* Resources */}
+          <Grid item xs={6} sm={3} md={2}>
+            <Typography sx={{ color: '#111827', fontWeight: 600, fontSize: '0.875rem', mb: 2.5 }}>
+              Resources
             </Typography>
-          </Box>
+            <Stack spacing={1.5}>
+              {footerLinks.Resources.map((link) => (
+                <MuiLink
+                  key={link.path}
+                  component={Link}
+                  to={link.path}
+                  sx={{
+                    color: '#6b7280',
+                    fontSize: '0.8rem',
+                    textDecoration: 'none',
+                    transition: 'color 0.2s',
+                    '&:hover': { color: '#111827' },
+                  }}
+                >
+                  {link.label}
+                </MuiLink>
+              ))}
+            </Stack>
+          </Grid>
 
-          <Divider />
-
-          {/* 링크 섹션 */}
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={{ xs: 1, sm: 3 }}
-            flexWrap="wrap"
-          >
-            <MuiLink
-              component={Link}
-              to="/terms"
-              color="text.secondary"
-              underline="hover"
-              variant="body2"
-            >
-              이용약관
-            </MuiLink>
-            <MuiLink
-              component={Link}
-              to="/privacy"
-              color="text.secondary"
-              underline="hover"
-              variant="body2"
-              fontWeight={600}
-            >
-              개인정보처리방침
-            </MuiLink>
-            <MuiLink
-              component={Link}
-              to="/board/notice"
-              color="text.secondary"
-              underline="hover"
-              variant="body2"
-            >
-              공지사항
-            </MuiLink>
-            <MuiLink
-              component={Link}
-              to="/support"
-              color="text.secondary"
-              underline="hover"
-              variant="body2"
-            >
-              고객센터
-            </MuiLink>
-          </Stack>
-
-          <Divider />
-
-          {/* 회사 정보 */}
-          <Stack spacing={0.5}>
-            <Typography variant="body2" color="text.secondary">
-              상호명: (주)마이샵 | 대표: 홍길동
+          {/* Community */}
+          <Grid item xs={6} sm={3} md={2}>
+            <Typography sx={{ color: '#111827', fontWeight: 600, fontSize: '0.875rem', mb: 2.5 }}>
+              Community
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              사업자등록번호: 123-45-67890 | 통신판매업신고: 2025-서울강남-12345
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              주소: 서울특별시 강남구 테헤란로 123 (역삼동)
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              고객센터: 1588-0000 | 이메일: support@myshop.com
-            </Typography>
-          </Stack>
+            <Stack spacing={1.5}>
+              {footerLinks.Community.map((link) => (
+                <MuiLink
+                  key={link.path}
+                  component={Link}
+                  to={link.path}
+                  sx={{
+                    color: '#6b7280',
+                    fontSize: '0.8rem',
+                    textDecoration: 'none',
+                    transition: 'color 0.2s',
+                    '&:hover': { color: '#111827' },
+                  }}
+                >
+                  {link.label}
+                </MuiLink>
+              ))}
+            </Stack>
+          </Grid>
 
-          <Divider />
+          {/* Company */}
+          <Grid item xs={6} sm={3} md={2}>
+            <Typography sx={{ color: '#111827', fontWeight: 600, fontSize: '0.875rem', mb: 2.5 }}>
+              Company
+            </Typography>
+            <Stack spacing={1.5}>
+              {footerLinks.Company.map((link) => (
+                <MuiLink
+                  key={link.path}
+                  component={Link}
+                  to={link.path}
+                  sx={{
+                    color: '#6b7280',
+                    fontSize: '0.8rem',
+                    textDecoration: 'none',
+                    transition: 'color 0.2s',
+                    '&:hover': { color: '#111827' },
+                  }}
+                >
+                  {link.label}
+                </MuiLink>
+              ))}
+            </Stack>
+          </Grid>
 
-          {/* 저작권 */}
-          <Typography variant="body2" color="text.secondary" align="center">
-            © 2025 MyShop. All rights reserved.
-          </Typography>
-        </Stack>
-      </Container>
+          {/* Legal */}
+          <Grid item xs={6} sm={3} md={2}>
+            <Typography sx={{ color: '#111827', fontWeight: 600, fontSize: '0.875rem', mb: 2.5 }}>
+              Legal
+            </Typography>
+            <Stack spacing={1.5}>
+              {footerLinks.Legal.map((link) => (
+                <MuiLink
+                  key={link.path}
+                  component={Link}
+                  to={link.path}
+                  sx={{
+                    color: '#6b7280',
+                    fontSize: '0.8rem',
+                    textDecoration: 'none',
+                    transition: 'color 0.2s',
+                    '&:hover': { color: '#111827' },
+                  }}
+                >
+                  {link.label}
+                </MuiLink>
+              ))}
+            </Stack>
+          </Grid>
+        </Grid>
+      </Box>
     </Box>
   )
 }

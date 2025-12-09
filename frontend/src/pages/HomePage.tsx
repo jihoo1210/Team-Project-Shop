@@ -1,20 +1,53 @@
 import { useState, useEffect } from 'react'
-import { Box, Button, Grid, Typography, CircularProgress, Stack, IconButton, TextField, Snackbar, Alert } from '@mui/material'
-import { AutoAwesome, KeyboardArrowUp } from '@mui/icons-material'
+import { Box, Button, Grid, Typography, CircularProgress, Stack, IconButton, TextField, Snackbar, Alert, Dialog, DialogContent, DialogActions } from '@mui/material'
+import {
+  AutoAwesome,
+  KeyboardArrowUp,
+  AcUnit,
+  LocalOffer,
+  Explore,
+  LocalMall,
+  Timer,
+  LiveTv,
+  EmojiEvents,
+  Apps,
+  ChevronLeft,
+  ChevronRight,
+} from '@mui/icons-material'
 import { Link, useNavigate } from 'react-router-dom'
 import ProductCard from '@/components/common/ProductCard'
 import { fetchItems } from '@/api/itemApi'
-import { useAiRecommend } from '@/hooks/useAiRecommend'
+import { useAiRecommend, type AiRecommendWithProduct } from '@/hooks/useAiRecommend'
 import type { ProductSummary } from '@/types/product'
 
 // 히어로 섹션 캐러셀 카드 데이터 (회전용)
+// 좌측: 남성 (1-3), 우측: 여성 (4-6)
 const carouselCards = [
-  { id: 1, image: 'https://picsum.photos/id/1005/400/500', title: 'MEINE' },
-  { id: 2, image: 'https://picsum.photos/id/1012/400/500', title: 'DOUBT' },
-  { id: 3, image: 'https://picsum.photos/id/1027/400/500', title: 'CLASSIC' },
-  { id: 4, image: 'https://picsum.photos/id/1035/400/500', title: 'WINTER' },
-  { id: 5, image: 'https://picsum.photos/id/1074/400/500', title: 'STREET' },
-  { id: 6, image: 'https://picsum.photos/id/1082/400/500', title: 'CASUAL' },
+  { id: 1, image: '/images/carousel-man-1.jpg', title: 'STREET' },
+  { id: 2, image: '/images/carousel-man-2.jpg', title: 'MINIMAL' },
+  { id: 3, image: '/images/carousel-man-3.jpg', title: 'CASUAL' },
+  { id: 4, image: '/images/carousel-woman-1.jpg', title: 'STREET' },
+  { id: 5, image: '/images/carousel-woman-2.jpg', title: 'MINIMAL' },
+  { id: 6, image: '/images/carousel-woman-3.jpg', title: 'CASUAL' },
+]
+
+// 메인 배너 슬라이더 데이터
+const bannerSlides = [
+  [
+    { id: 1, image: '/images/banner-1.jpg', fallback: 'https://picsum.photos/id/400/600/800', label: '2025\n결 산\n빅세일', brand: 'vunque', title: '인기 브랜드 백팩 발매', subtitle: '분크', link: '/products?category=bag' },
+    { id: 2, image: '/images/banner-2.jpg', fallback: 'https://picsum.photos/id/401/600/800', label: '2025\n결 산\n빅세일', brand: '', title: '잡화 브랜드데이 최대 25% 쿠폰', subtitle: '락피쉬웨더웨어, 도씨 외', link: '/products?category=shoes' },
+    { id: 3, image: '/images/banner-3.jpg', fallback: 'https://picsum.photos/id/402/600/800', label: '2025\n결 산\n빅세일', brand: 'Poète', title: '25 겨울 발매 최대 10% 할인', subtitle: '포에트서울', link: '/products?category=knit' },
+  ],
+  [
+    { id: 4, image: '/images/banner-4.jpg', fallback: 'https://picsum.photos/id/403/600/800', label: 'WINTER\nSALE', brand: 'NIKE', title: '나이키 윈터 컬렉션', subtitle: '최대 40% 할인', link: '/products?brand=nike' },
+    { id: 5, image: '/images/banner-5.jpg', fallback: 'https://picsum.photos/id/404/600/800', label: 'NEW\nARRIVAL', brand: 'ADIDAS', title: '아디다스 신상품 입고', subtitle: '한정 수량 특가', link: '/products?brand=adidas' },
+    { id: 6, image: '/images/banner-6.jpg', fallback: 'https://picsum.photos/id/405/600/800', label: 'BEST\nITEM', brand: 'ZARA', title: '자라 베스트 아이템', subtitle: '이번 주 인기상품', link: '/products?brand=zara' },
+  ],
+  [
+    { id: 7, image: '/images/banner-7.jpg', fallback: 'https://picsum.photos/id/406/600/800', label: 'PREMIUM\nBRAND', brand: 'GUCCI', title: '프리미엄 브랜드 특가', subtitle: '명품 최대 30% 할인', link: '/products?category=premium' },
+    { id: 8, image: '/images/banner-8.jpg', fallback: 'https://picsum.photos/id/407/600/800', label: 'OUTER\nFESTIVAL', brand: 'MONCLER', title: '아우터 페스티벌', subtitle: '겨울 필수템 모음', link: '/products?category=outer' },
+    { id: 9, image: '/images/banner-9.jpg', fallback: 'https://picsum.photos/id/408/600/800', label: 'STREET\nWEAR', brand: 'SUPREME', title: '스트릿 웨어 특집', subtitle: '힙한 스타일링', link: '/products?category=street' },
+  ],
 ]
 
 // 상품 이미지 - picsum
@@ -47,18 +80,36 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true)
   const [aiPrompt, setAiPrompt] = useState('')
   const [carouselIndex, setCarouselIndex] = useState(0)
+  const [bannerSlideIndex, setBannerSlideIndex] = useState(0)
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
     severity: 'success'
   })
-  const { getRecommendation, loading: isAiLoading } = useAiRecommend()
+  const [productPreview, setProductPreview] = useState<{
+    open: boolean
+    product: ProductSummary | null
+    aiResult: AiRecommendWithProduct | null
+  }>({
+    open: false,
+    product: null,
+    aiResult: null
+  })
+  const { getRecommendation, loading: isAiLoading, error: aiError } = useAiRecommend()
 
   // 캐러셀 자동 회전
   useEffect(() => {
     const interval = setInterval(() => {
       setCarouselIndex((prev) => (prev + 1) % carouselCards.length)
     }, 3000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // 배너 슬라이더 자동 회전
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBannerSlideIndex((prev) => (prev + 1) % bannerSlides.length)
+    }, 5000)
     return () => clearInterval(interval)
   }, [])
 
@@ -91,26 +142,41 @@ const HomePage = () => {
       const result = await getRecommendation(aiPrompt)
 
       if (result) {
-        // AI 추천 결과로 상품 검색 페이지로 이동
-        const searchParams = new URLSearchParams()
-        searchParams.set('ai', encodeURIComponent(aiPrompt))
-        if (result.keywords.length > 0) {
-          searchParams.set('keywords', result.keywords.join(','))
-        }
-        if (result.category) {
-          searchParams.set('category', result.category)
-        }
+        // 매칭된 상품이 있으면 미리보기 다이얼로그 표시
+        if (result.matchedProduct) {
+          setProductPreview({
+            open: true,
+            product: result.matchedProduct,
+            aiResult: result
+          })
+        } else {
+          // 매칭된 상품이 없으면 바로 검색 결과로 이동
+          const searchParams = new URLSearchParams()
+          searchParams.set('ai', encodeURIComponent(aiPrompt))
+          if (result.keywords.length > 0) {
+            searchParams.set('keywords', result.keywords.join(','))
+          }
+          if (result.category) {
+            searchParams.set('category', result.category)
+          }
 
+          setSnackbar({
+            open: true,
+            message: result.description || 'AI 추천이 완료되었습니다!',
+            severity: 'success'
+          })
+
+          setTimeout(() => {
+            navigate(`/products?${searchParams.toString()}`)
+          }, 1000)
+        }
+      } else {
+        // result가 null인 경우 (API 키 오류 등)
         setSnackbar({
           open: true,
-          message: result.description || 'AI 추천이 완료되었습니다!',
-          severity: 'success'
+          message: aiError || 'AI 서비스에 연결할 수 없습니다. API 키를 확인해주세요.',
+          severity: 'error'
         })
-
-        // 잠시 후 페이지 이동
-        setTimeout(() => {
-          navigate(`/products?${searchParams.toString()}`)
-        }, 1000)
       }
     } catch {
       setSnackbar({
@@ -119,6 +185,35 @@ const HomePage = () => {
         severity: 'error'
       })
     }
+  }
+
+  // 상품 미리보기에서 상품 페이지로 이동
+  const handleGoToProduct = () => {
+    if (productPreview.product) {
+      setProductPreview({ open: false, product: null, aiResult: null })
+      navigate(`/products/${productPreview.product.id}`)
+    }
+  }
+
+  // 미리보기 닫고 검색 결과로 이동
+  const handleGoToSearch = () => {
+    if (productPreview.aiResult) {
+      const searchParams = new URLSearchParams()
+      searchParams.set('ai', encodeURIComponent(aiPrompt))
+      if (productPreview.aiResult.keywords.length > 0) {
+        searchParams.set('keywords', productPreview.aiResult.keywords.join(','))
+      }
+      if (productPreview.aiResult.category) {
+        searchParams.set('category', productPreview.aiResult.category)
+      }
+      setProductPreview({ open: false, product: null, aiResult: null })
+      navigate(`/products?${searchParams.toString()}`)
+    }
+  }
+
+  // 미리보기 닫기
+  const handleClosePreview = () => {
+    setProductPreview({ open: false, product: null, aiResult: null })
   }
 
   if (loading) {
@@ -137,8 +232,8 @@ const HomePage = () => {
 
     // 부채꼴 모양 - 위에서 아래로 내려가면서 펼침
     const positions = [
-      { x: -100, y: -60, rotate: -18, scale: 0.75, zIndex: 1, opacity: 0.5 },
-      { x: -45, y: -25, rotate: -9, scale: 0.88, zIndex: 2, opacity: 0.75 },
+      { x: -100, y: 60, rotate: -18, scale: 0.75, zIndex: 1, opacity: 0.5 },
+      { x: -45, y: 25, rotate: -9, scale: 0.88, zIndex: 2, opacity: 0.75 },
       { x: 0, y: 0, rotate: 0, scale: 1, zIndex: 3, opacity: 1 },
     ]
     const style = positions[adjustedIndex]
@@ -159,7 +254,7 @@ const HomePage = () => {
           opacity: style.opacity,
           boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
           right: '100%',
-          mr: 4,
+          mr: 0,
           top: '50%',
           marginTop: { xs: '-70px', sm: '-85px', md: '-105px' },
         }}
@@ -198,8 +293,8 @@ const HomePage = () => {
     // 좌측과 대칭 - 부채꼴 모양 위에서 아래로 내려가면서 펼침
     const positions = [
       { x: 0, y: 0, rotate: 0, scale: 1, zIndex: 3, opacity: 1 },
-      { x: 45, y: -25, rotate: 9, scale: 0.88, zIndex: 2, opacity: 0.75 },
-      { x: 100, y: -60, rotate: 18, scale: 0.75, zIndex: 1, opacity: 0.5 },
+      { x: 45, y: 25, rotate: 9, scale: 0.88, zIndex: 2, opacity: 0.75 },
+      { x: 100, y: 60, rotate: 18, scale: 0.75, zIndex: 1, opacity: 0.5 },
     ]
     const style = positions[posIndex]
 
@@ -219,7 +314,7 @@ const HomePage = () => {
           opacity: style.opacity,
           boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
           left: '100%',
-          ml: 4,
+          ml: 0,
           top: '50%',
           marginTop: { xs: '-70px', sm: '-85px', md: '-105px' },
         }}
@@ -296,6 +391,7 @@ const HomePage = () => {
               bgcolor: 'white',
               borderRadius: 2,
               p: 2.5,
+              mx: { xs: 2, sm: 3 },
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
               border: '1px solid #e8e8e8',
             }}
@@ -350,15 +446,24 @@ const HomePage = () => {
                 disabled={isAiLoading || aiPrompt.length < 25}
                 size="small"
                 sx={{
-                  bgcolor: aiPrompt.length >= 25 ? '#6366F1' : '#f5f5f5',
-                  color: aiPrompt.length >= 25 ? 'white' : '#ccc',
-                  width: 28,
-                  height: 28,
-                  '&:hover': { bgcolor: aiPrompt.length >= 25 ? '#4F46E5' : '#eee' },
-                  '&.Mui-disabled': { color: '#ccc', bgcolor: '#f5f5f5' },
+                  bgcolor: aiPrompt.length >= 25 ? '#6366F1' : '#e0e0e0',
+                  color: aiPrompt.length >= 25 ? 'white' : '#999',
+                  width: 32,
+                  height: 32,
+                  transition: 'all 0.2s ease',
+                  cursor: aiPrompt.length >= 25 ? 'pointer' : 'not-allowed',
+                  '&:hover': {
+                    bgcolor: aiPrompt.length >= 25 ? '#4F46E5' : '#d0d0d0',
+                    transform: aiPrompt.length >= 25 ? 'scale(1.05)' : 'none',
+                  },
+                  '&.Mui-disabled': {
+                    color: '#999',
+                    bgcolor: '#e0e0e0',
+                    pointerEvents: 'auto',
+                  },
                 }}
               >
-                {isAiLoading ? <CircularProgress size={14} color="inherit" /> : <KeyboardArrowUp sx={{ fontSize: 18 }} />}
+                {isAiLoading ? <CircularProgress size={16} color="inherit" /> : <KeyboardArrowUp sx={{ fontSize: 20 }} />}
               </IconButton>
             </Box>
           </Box>
@@ -404,7 +509,244 @@ const HomePage = () => {
         </Stack>
       </Box>
 
-      {/* 오늘의 추천 - 넓은 마진 */}
+      {/* 메인 배너 슬라이더 (좌우 슬라이드) */}
+      <Box sx={{ bgcolor: '#1a1a1a', py: { xs: 2, md: 3 }, position: 'relative' }}>
+        {/* 좌측 화살표 - 화면 끝 */}
+        <IconButton
+          onClick={() => setBannerSlideIndex((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
+          sx={{
+            position: 'absolute',
+            left: { xs: 8, md: 24 },
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 10,
+            bgcolor: 'rgba(255,255,255,0.9)',
+            '&:hover': { bgcolor: 'white' },
+            boxShadow: 2,
+            width: { xs: 36, md: 48 },
+            height: { xs: 36, md: 48 },
+          }}
+        >
+          <ChevronLeft sx={{ fontSize: { xs: 24, md: 32 } }} />
+        </IconButton>
+
+        {/* 우측 화살표 - 화면 끝 */}
+        <IconButton
+          onClick={() => setBannerSlideIndex((prev) => (prev + 1) % bannerSlides.length)}
+          sx={{
+            position: 'absolute',
+            right: { xs: 8, md: 24 },
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 10,
+            bgcolor: 'rgba(255,255,255,0.9)',
+            '&:hover': { bgcolor: 'white' },
+            boxShadow: 2,
+            width: { xs: 36, md: 48 },
+            height: { xs: 36, md: 48 },
+          }}
+        >
+          <ChevronRight sx={{ fontSize: { xs: 24, md: 32 } }} />
+        </IconButton>
+
+        <Box sx={{ maxWidth: 1400, mx: 'auto', px: { xs: 1, md: 4 } }}>
+
+          {/* 배너 카드들 */}
+          <Box sx={{ overflow: 'hidden' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                transition: 'transform 0.5s ease-in-out',
+                transform: `translateX(-${bannerSlideIndex * 100}%)`,
+              }}
+            >
+              {bannerSlides.map((slideGroup, groupIndex) => (
+                <Box
+                  key={groupIndex}
+                  sx={{
+                    minWidth: '100%',
+                    display: 'flex',
+                    gap: 1.5,
+                    px: 0.5,
+                  }}
+                >
+                  {slideGroup.map((banner) => (
+                    <Box
+                      key={banner.id}
+                      component={Link}
+                      to={banner.link}
+                      sx={{
+                        flex: 1,
+                        display: 'block',
+                        position: 'relative',
+                        height: { xs: 320, md: 480 },
+                        borderRadius: 1,
+                        overflow: 'hidden',
+                        textDecoration: 'none',
+                        '&:hover img': { transform: 'scale(1.03)' },
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src={banner.image}
+                        alt={banner.title}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          transition: 'transform 0.5s ease',
+                        }}
+                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                          e.currentTarget.src = banner.fallback
+                        }}
+                      />
+                      {/* 좌상단 라벨 */}
+                      <Box sx={{ position: 'absolute', top: 20, left: 20, color: 'white' }}>
+                        <Typography sx={{ fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.3, whiteSpace: 'pre-line' }}>
+                          {banner.label}
+                        </Typography>
+                      </Box>
+                      {/* 우상단 브랜드 */}
+                      {banner.brand && (
+                        <Typography
+                          sx={{
+                            position: 'absolute',
+                            top: 20,
+                            right: 20,
+                            color: 'white',
+                            fontSize: '1.2rem',
+                            fontWeight: 300,
+                            fontStyle: 'italic',
+                          }}
+                        >
+                          {banner.brand}
+                        </Typography>
+                      )}
+                      {/* 하단 텍스트 */}
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                          p: 2.5,
+                          pt: 6,
+                        }}
+                      >
+                        <Typography sx={{ color: 'white', fontWeight: 700, fontSize: '1.1rem', mb: 0.5 }}>
+                          {banner.title}
+                        </Typography>
+                        <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>
+                          {banner.subtitle}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+
+          {/* 인디케이터 점 */}
+          <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 2 }}>
+            {bannerSlides.map((_, index) => (
+              <Box
+                key={index}
+                onClick={() => setBannerSlideIndex(index)}
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: index === bannerSlideIndex ? 'white' : 'rgba(255,255,255,0.4)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.8)' },
+                }}
+              />
+            ))}
+          </Stack>
+        </Box>
+      </Box>
+
+      {/* 퀵 메뉴 - 심플한 아이콘 */}
+      <Box sx={{ bgcolor: '#fff', py: 3, borderBottom: '1px solid #eee' }}>
+        <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 4 } }}>
+          <Stack
+            direction="row"
+            spacing={{ xs: 2, md: 4 }}
+            alignItems="flex-start"
+            justifyContent="center"
+            sx={{
+              overflowX: 'auto',
+              pb: 1,
+              '&::-webkit-scrollbar': { display: 'none' },
+            }}
+          >
+            {[
+              { icon: AcUnit, label: '겨울 컬렉션', path: '/products?category=outer' },
+              { icon: LocalOffer, label: '특가', path: '/products?sort=sale' },
+              { icon: Explore, label: '신상품', path: '/products?sort=new' },
+              { icon: LocalMall, label: '베스트', path: '/products?sort=best' },
+              { icon: Timer, label: '타임세일', path: '/products?timesale=true' },
+              { icon: LiveTv, label: '라이브', path: '/live' },
+              { icon: EmojiEvents, label: '랭킹', path: '/products?sort=rank' },
+              { icon: Apps, label: '전체', path: '/products' },
+            ].map((item) => {
+              const IconComponent = item.icon
+              return (
+                <Box
+                  key={item.label}
+                  component={Link}
+                  to={item.path}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    minWidth: 60,
+                    textDecoration: 'none',
+                    transition: 'transform 0.2s ease',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: '50%',
+                      mb: 1,
+                      bgcolor: '#f5f5f5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        bgcolor: '#e8e8e8',
+                      },
+                    }}
+                  >
+                    <IconComponent sx={{ fontSize: 24, color: '#333' }} />
+                  </Box>
+                  <Typography
+                    sx={{
+                      fontSize: '0.75rem',
+                      color: '#555',
+                      textAlign: 'center',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {item.label}
+                  </Typography>
+                </Box>
+              )
+            })}
+          </Stack>
+        </Box>
+      </Box>
+
+      {/* 오늘의 추천 */}
       <Box sx={{ py: { xs: 6, md: 12 }, px: { xs: 3, md: 12 }, maxWidth: 1600, mx: 'auto' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 4, md: 6 } }}>
           <Box>
@@ -428,6 +770,192 @@ const HomePage = () => {
         </Grid>
       </Box>
 
+      {/* 셀프 웨딩 비디오 섹션 */}
+      <Box
+        sx={{
+          position: 'relative',
+          height: { xs: 400, md: 500 },
+          overflow: 'hidden',
+        }}
+      >
+        {/* 배경 비디오 */}
+        <Box
+          component="video"
+          autoPlay
+          loop
+          muted
+          playsInline
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            minWidth: '100%',
+            minHeight: '100%',
+            width: 'auto',
+            height: 'auto',
+            objectFit: 'cover',
+          }}
+        >
+          <source src="/videos/wedding.mp4" type="video/mp4" />
+        </Box>
+
+        {/* 오버레이 */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.5) 100%)',
+          }}
+        />
+
+        {/* 콘텐츠 */}
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            px: { xs: 3, md: 10 },
+            maxWidth: 1400,
+            mx: 'auto',
+          }}
+        >
+          {/* 태그 */}
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1,
+              bgcolor: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(10px)',
+              px: 2,
+              py: 0.8,
+              borderRadius: 5,
+              width: 'fit-content',
+              mb: 2,
+            }}
+          >
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                bgcolor: '#f472b6',
+              }}
+            />
+            <Typography sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.05em' }}>
+              WEDDING COLLECTION
+            </Typography>
+          </Box>
+
+          {/* 메인 타이틀 */}
+          <Typography
+            sx={{
+              color: 'white',
+              fontWeight: 800,
+              fontSize: { xs: '2rem', md: '3.5rem' },
+              lineHeight: 1.2,
+              mb: 2,
+              textShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            }}
+          >
+            셀프 웨딩도<br />
+            마이샵에서 준비하세요!
+          </Typography>
+
+          {/* 서브 타이틀 */}
+          <Typography
+            sx={{
+              color: 'rgba(255,255,255,0.9)',
+              fontSize: { xs: '1rem', md: '1.2rem' },
+              mb: 1,
+              maxWidth: 500,
+            }}
+          >
+            드레스부터 악세서리까지 전 품목 최대 50% 할인
+          </Typography>
+          <Typography
+            sx={{
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: { xs: '0.9rem', md: '1rem' },
+              mb: 4,
+            }}
+          >
+            특별한 날을 위한 완벽한 준비, 지금 시작하세요
+          </Typography>
+
+          {/* CTA 버튼 */}
+          <Stack direction="row" spacing={2}>
+            <Button
+              component={Link}
+              to="/products?category=wedding"
+              variant="contained"
+              sx={{
+                bgcolor: 'white',
+                color: '#1a1a1a',
+                px: 4,
+                py: 1.5,
+                fontWeight: 700,
+                fontSize: '0.95rem',
+                borderRadius: 2,
+                '&:hover': {
+                  bgcolor: '#f0f0f0',
+                  transform: 'translateY(-2px)',
+                },
+                transition: 'all 0.3s ease',
+              }}
+            >
+              웨딩 컬렉션 보기
+            </Button>
+            <Button
+              component={Link}
+              to="/products?category=wedding&sort=best"
+              variant="outlined"
+              sx={{
+                borderColor: 'rgba(255,255,255,0.5)',
+                color: 'white',
+                px: 3,
+                py: 1.5,
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                borderRadius: 2,
+                '&:hover': {
+                  borderColor: 'white',
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                },
+              }}
+            >
+              베스트 아이템
+            </Button>
+          </Stack>
+
+          {/* 하단 혜택 정보 */}
+          <Stack
+            direction="row"
+            spacing={4}
+            sx={{ mt: 5, flexWrap: 'wrap', gap: 2 }}
+          >
+            {[
+              { label: '무료 배송', icon: '🚚' },
+              { label: '무료 수선', icon: '✂️' },
+              { label: '30일 반품', icon: '📦' },
+            ].map((item) => (
+              <Box key={item.label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography sx={{ fontSize: '1.2rem' }}>{item.icon}</Typography>
+                <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontWeight: 500 }}>
+                  {item.label}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
+      </Box>
       {/* 다크 섹션 - 카테고리 쇼케이스 (풀폭으로 임팩트) */}
       <Box sx={{ bgcolor: '#1a1a1a', py: { xs: 8, md: 12 }, px: { xs: 2, md: 8 } }}>
         <Grid container spacing={3}>
@@ -620,58 +1148,137 @@ const HomePage = () => {
         </Grid>
       </Box>
 
-      {/* 타임세일 배너 */}
+      {/* 타임세일 배너 + 쿠폰 */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #C0C0C0 0%, #E8E8E8 12.5%, #A8A8A8 25%, #F5F5F5 37.5%, #C0C0C0 50%, #E8E8E8 62.5%, #A8A8A8 75%, #F5F5F5 100%)',
+          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 25%, #1a1a1a 50%, #3a3a3a 75%, #1a1a1a 100%)',
           py: 6,
           px: { xs: 2, md: 6 },
         }}
       >
         <Stack
-          direction={{ xs: 'column', md: 'row' }}
+          direction={{ xs: 'column', lg: 'row' }}
           justifyContent="space-between"
           alignItems="center"
-          spacing={3}
+          spacing={4}
         >
-          <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+          {/* 왼쪽: 텍스트 영역 */}
+          <Box sx={{ textAlign: { xs: 'center', lg: 'left' }, flex: '0 0 auto' }}>
             <Box
               sx={{
                 display: 'inline-block',
-                bgcolor: 'rgba(0,0,0,0.15)',
+                bgcolor: 'rgba(255,255,255,0.15)',
                 px: 2,
                 py: 0.5,
                 borderRadius: 5,
                 mb: 2,
               }}
             >
-              <Typography sx={{ color: '#1a1a1a', fontWeight: 600, fontSize: '0.85rem' }}>
+              <Typography sx={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem' }}>
                 LIMITED TIME OFFER
               </Typography>
             </Box>
-            <Typography sx={{ color: '#1a1a1a', fontWeight: 800, fontSize: { xs: '1.8rem', md: '2.5rem' } }}>
+            <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: { xs: '1.8rem', md: '2.5rem' } }}>
               지금 딱! 오늘만 특가
             </Typography>
-            <Typography sx={{ color: 'rgba(0,0,0,0.7)', fontSize: '1rem', mt: 1 }}>
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '1rem', mt: 1 }}>
               최대 78% 할인 + 추가 쿠폰 혜택
             </Typography>
+            <Button
+              component={Link}
+              to="/products?sort=sale"
+              variant="contained"
+              sx={{
+                mt: 3,
+                bgcolor: '#fff',
+                color: '#1a1a1a',
+                px: 5,
+                py: 1.5,
+                fontWeight: 700,
+                fontSize: '1rem',
+                '&:hover': { bgcolor: '#f0f0f0' },
+              }}
+            >
+              쇼핑하러 가기
+            </Button>
           </Box>
-          <Button
-            component={Link}
-            to="/products?sort=sale"
-            variant="contained"
-            sx={{
-              bgcolor: '#1a1a1a',
-              color: 'white',
-              px: 5,
-              py: 1.5,
-              fontWeight: 700,
-              fontSize: '1rem',
-              '&:hover': { bgcolor: '#333' },
-            }}
+
+          {/* 오른쪽: 쿠폰 이미지 2장 */}
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{ flex: '0 0 auto' }}
           >
-            쇼핑하러 가기
-          </Button>
+            {/* VIP 50% 골드 쿠폰 */}
+            <Box
+              component="button"
+              onClick={() => {
+                setSnackbar({ open: true, message: 'VIP 50% 할인 쿠폰이 발급되었습니다!', severity: 'success' })
+              }}
+              sx={{
+                border: 'none',
+                background: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                width: { xs: 140, sm: 180, md: 200 },
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                },
+                '&:hover img': {
+                  boxShadow: '0 12px 30px rgba(255,255,255,0.2)',
+                },
+              }}
+            >
+              <Box
+                component="img"
+                src="/images/coupon-vip-gold.png"
+                alt="VIP 50% 할인 쿠폰"
+                sx={{
+                  width: '100%',
+                  height: 'auto',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                  transition: 'box-shadow 0.3s ease',
+                }}
+              />
+            </Box>
+
+            {/* SPECIAL 25% 실버 쿠폰 */}
+            <Box
+              component="button"
+              onClick={() => {
+                setSnackbar({ open: true, message: 'SPECIAL 25% 할인 쿠폰이 발급되었습니다!', severity: 'success' })
+              }}
+              sx={{
+                border: 'none',
+                background: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                width: { xs: 140, sm: 180, md: 200 },
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                },
+                '&:hover img': {
+                  boxShadow: '0 12px 30px rgba(255,255,255,0.2)',
+                },
+              }}
+            >
+              <Box
+                component="img"
+                src="/images/coupon-special-silver.png"
+                alt="SPECIAL 25% 할인 쿠폰"
+                sx={{
+                  width: '100%',
+                  height: 'auto',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                  transition: 'box-shadow 0.3s ease',
+                }}
+              />
+            </Box>
+          </Stack>
         </Stack>
       </Box>
 
@@ -769,6 +1376,179 @@ const HomePage = () => {
           ))}
         </Grid>
       </Box>
+
+      {/* AI 추천 상품 미리보기 다이얼로그 */}
+      <Dialog
+        open={productPreview.open}
+        onClose={handleClosePreview}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            overflow: 'hidden',
+          }
+        }}
+      >
+        <DialogContent sx={{ p: 0 }}>
+          {productPreview.product && (
+            <Box>
+              {/* 상품 이미지 */}
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: '100%',
+                  height: { xs: 280, sm: 350 },
+                  bgcolor: '#f5f5f5',
+                }}
+              >
+                <Box
+                  component="img"
+                  src={productPreview.product.mainImage || 'https://picsum.photos/400/500'}
+                  alt={productPreview.product.title}
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    e.currentTarget.src = 'https://picsum.photos/400/500'
+                  }}
+                />
+                {/* AI 추천 배지 */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 16,
+                    left: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    bgcolor: 'rgba(99, 102, 241, 0.95)',
+                    color: 'white',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 5,
+                  }}
+                >
+                  <AutoAwesome sx={{ fontSize: 16 }} />
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                    AI 추천
+                  </Typography>
+                </Box>
+                {/* 할인율 배지 */}
+                {productPreview.product.discountPercent && productPreview.product.discountPercent > 0 && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 16,
+                      right: 16,
+                      bgcolor: '#ff4444',
+                      color: 'white',
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 1,
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    {productPreview.product.discountPercent}% OFF
+                  </Box>
+                )}
+              </Box>
+
+              {/* 상품 정보 */}
+              <Box sx={{ p: 3 }}>
+                {/* AI 설명 */}
+                {productPreview.aiResult?.description && (
+                  <Box
+                    sx={{
+                      bgcolor: '#f8f8ff',
+                      border: '1px solid #e8e8ff',
+                      borderRadius: 2,
+                      p: 2,
+                      mb: 2,
+                    }}
+                  >
+                    <Typography sx={{ fontSize: '0.9rem', color: '#555', lineHeight: 1.6 }}>
+                      {productPreview.aiResult.description}
+                    </Typography>
+                  </Box>
+                )}
+
+                <Typography sx={{ fontSize: '0.85rem', color: '#888', mb: 0.5 }}>
+                  {productPreview.product.brand}
+                </Typography>
+                <Typography sx={{ fontSize: '1.2rem', fontWeight: 700, color: '#1a1a1a', mb: 1.5 }}>
+                  {productPreview.product.title}
+                </Typography>
+
+                {/* 가격 */}
+                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                  {productPreview.product.discountPercent && productPreview.product.discountPercent > 0 ? (
+                    <>
+                      <Typography
+                        sx={{
+                          fontSize: '1.3rem',
+                          fontWeight: 700,
+                          color: '#ff4444',
+                        }}
+                      >
+                        {Math.round(productPreview.product.price * (1 - productPreview.product.discountPercent / 100)).toLocaleString()}원
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: '0.95rem',
+                          color: '#aaa',
+                          textDecoration: 'line-through',
+                        }}
+                      >
+                        {productPreview.product.price.toLocaleString()}원
+                      </Typography>
+                    </>
+                  ) : (
+                    <Typography sx={{ fontSize: '1.3rem', fontWeight: 700, color: '#1a1a1a' }}>
+                      {productPreview.product.price.toLocaleString()}원
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0, gap: 1 }}>
+          <Button
+            onClick={handleGoToSearch}
+            variant="outlined"
+            sx={{
+              flex: 1,
+              py: 1.5,
+              borderColor: '#ddd',
+              color: '#666',
+              '&:hover': {
+                borderColor: '#bbb',
+                bgcolor: '#f5f5f5',
+              },
+            }}
+          >
+            다른 상품 더보기
+          </Button>
+          <Button
+            onClick={handleGoToProduct}
+            variant="contained"
+            sx={{
+              flex: 1,
+              py: 1.5,
+              bgcolor: '#6366F1',
+              '&:hover': {
+                bgcolor: '#4F46E5',
+              },
+            }}
+          >
+            이 상품 보러가기
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* AI 추천 결과 알림 */}
       <Snackbar

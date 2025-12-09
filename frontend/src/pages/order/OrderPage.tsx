@@ -159,22 +159,27 @@ const OrderPage: React.FC = () => {
     }
   }
 
-  // Whop 결제 페이지 기본 URL
-  const WHOP_BASE_URL = 'https://whop.com/producthiera-gmail-com/myshop-0a/'
+  // Whop 결제 설정 (환경변수에서 로드)
+  const WHOP_BASE_URL = import.meta.env.VITE_WHOP_BASE_URL || ''
 
-  // 할인된 가격 계산 함수
+  // 할인된 가격 계산 함수 (단가)
   const getDiscountedPrice = (item: OrderItem) => {
     const discountRate = item.discountRate || 0
     return Math.floor(item.price * (1 - discountRate / 100))
   }
 
-  // 할인 금액 계산
+  // 할인 금액 계산 (수량 포함)
   const getDiscountAmount = (item: OrderItem) => {
     const discountRate = item.discountRate || 0
     return Math.floor(item.price * (discountRate / 100)) * item.quantity
   }
 
-  // 상품별 Whop 결제 URL 생성 (이미지 파라미터 포함)
+  // 상품별 최종 결제 금액 (수량 포함)
+  const getItemTotalPrice = (item: OrderItem) => {
+    return getDiscountedPrice(item) * item.quantity
+  }
+
+  // 상품별 Whop 결제 URL 생성 (이미지, 할인가, 최종금액 포함)
   const buildWhopCheckoutUrl = (item: OrderItem) => {
     // 상품별 개별 URL이 있으면 사용, 없으면 기본 URL + 파라미터
     const baseUrl = item.whopCheckoutUrl || WHOP_BASE_URL
@@ -182,9 +187,14 @@ const OrderPage: React.FC = () => {
 
     // 상품 정보를 URL 파라미터로 전달
     url.searchParams.set('product_name', item.productName)
-    url.searchParams.set('product_image', item.productImage)
+    url.searchParams.set('product_image', item.productImage) // 선택한 상품 이미지
     url.searchParams.set('quantity', item.quantity.toString())
-    url.searchParams.set('price', getDiscountedPrice(item).toString())
+    url.searchParams.set('unit_price', getDiscountedPrice(item).toString()) // 할인 적용된 단가
+    url.searchParams.set('total_price', getItemTotalPrice(item).toString()) // 최종 결제 금액
+    url.searchParams.set('original_price', item.price.toString()) // 원가
+    if (item.discountRate && item.discountRate > 0) {
+      url.searchParams.set('discount_rate', item.discountRate.toString()) // 할인율
+    }
     if (item.option) {
       url.searchParams.set('option', item.option)
     }

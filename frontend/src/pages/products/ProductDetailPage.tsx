@@ -35,19 +35,6 @@ import { useCart } from '@/hooks/useCart'
 import ReviewSection from '@/components/review/ReviewSection'
 import type { ItemDetail, ReviewListItem } from '@/types/api'
 
-/**
- * 상품 상세 페이지
- * SPEC: /products/{id}
- * - 상품 이미지 슬라이더
- * - 기본 정보 영역 (상품명, 가격, 옵션, 수량)
- * - 액션 버튼 (장바구니 담기, 바로구매)
- * - 탭 구성 (상세설명, 리뷰, Q&A)
- * 
- * [중요 UX 규칙]
- * "바로구매" 버튼 클릭 시 /order로 직접 이동하지 않고,
- * 선택된 옵션/수량으로 장바구니에 담은 후 /cart 페이지로 이동한다.
- */
-
 interface TabPanelProps {
   children?: React.ReactNode
   index: number
@@ -259,16 +246,6 @@ const ProductDetailPage = () => {
     }
   }
 
-  // 가격 계산 헬퍼
-  const calculateFinalPrice = () => {
-    if (!product) return 0
-    const productPrice = product.price ?? 0
-    const discountPercent = product.discount_percent ?? 0
-    return discountPercent > 0
-      ? productPrice * (1 - discountPercent / 100)
-      : productPrice
-  }
-
   // 장바구니 담기
   const handleAddToCart = async () => {
     if (!id || !product) return
@@ -286,14 +263,16 @@ const ProductDetailPage = () => {
     }
     try {
       // useCart 훅을 사용하여 장바구니에 추가
+      // 원가와 할인율을 별도로 저장하여 Whop 결제 시 정확한 정보 전달
       const cartItem = {
         productId: id,
         productName: product.title,
         productImage: product.imageList?.[0] || 'https://placehold.co/100x100/png',
-        price: calculateFinalPrice(),
+        price: product.price ?? 0, // 원가
         quantity: quantity,
         color: selectedColor || undefined,
         size: selectedSize || undefined,
+        discountRate: product.discount_percent ?? 0, // 할인율
       }
       await addToCart(cartItem)
       alert('장바구니에 담았습니다.')
@@ -321,14 +300,16 @@ const ProductDetailPage = () => {
     }
     try {
       // useCart 훅을 사용하여 장바구니에 추가 후 이동
+      // 원가와 할인율을 별도로 저장하여 Whop 결제 시 정확한 정보 전달
       const cartItem = {
         productId: id,
         productName: product.title,
         productImage: product.imageList?.[0] || 'https://placehold.co/100x100/png',
-        price: calculateFinalPrice(),
+        price: product.price ?? 0, // 원가
         quantity: quantity,
         color: selectedColor || undefined,
         size: selectedSize || undefined,
+        discountRate: product.discount_percent ?? 0, // 할인율
       }
       await addToCart(cartItem)
       navigate('/cart')

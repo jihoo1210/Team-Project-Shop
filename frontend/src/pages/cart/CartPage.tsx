@@ -41,6 +41,12 @@ interface SelectableCartItem extends CartItem {
   stock: number
 }
 
+// 할인된 가격 계산 함수
+const getDiscountedPrice = (price: number, discountRate?: number) => {
+  const rate = discountRate || 0
+  return Math.floor(price * (1 - rate / 100))
+}
+
 const CartPage: React.FC = () => {
   const navigate = useNavigate()
   const { cartItems: hookCartItems, loading, removeFromCart, updateQuantity } = useCart()
@@ -135,7 +141,15 @@ const CartPage: React.FC = () => {
   }
 
   const selectedItems = selectableItems.filter((item) => item.selected)
-  const totalPrice = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  // 원가 합계
+  const originalTotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  // 할인 적용된 합계
+  const totalPrice = selectedItems.reduce(
+    (sum, item) => sum + getDiscountedPrice(item.price, item.discountRate) * item.quantity,
+    0
+  )
+  // 총 할인 금액
+  const totalDiscount = originalTotal - totalPrice
   const deliveryFee = totalPrice >= 50000 ? 0 : 3000
   const finalPrice = totalPrice + deliveryFee
 
@@ -261,9 +275,20 @@ const CartPage: React.FC = () => {
                               >
                                 {item.productName}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {formatPrice(item.price)}
-                              </Typography>
+                              {item.discountRate && item.discountRate > 0 ? (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography variant="body2" sx={{ textDecoration: 'line-through', color: 'text.secondary' }}>
+                                    {formatPrice(item.price)}
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ color: 'error.main', fontWeight: 'bold' }}>
+                                    {item.discountRate}%
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                  {formatPrice(item.price)}
+                                </Typography>
+                              )}
                             </Box>
                           </Box>
                         </TableCell>
@@ -311,9 +336,20 @@ const CartPage: React.FC = () => {
                           </Box>
                         </TableCell>
                         <TableCell align="right">
-                          <Typography fontWeight="bold">
-                            {formatPrice(item.price * item.quantity)}
-                          </Typography>
+                          {item.discountRate && item.discountRate > 0 ? (
+                            <Box>
+                              <Typography variant="body2" sx={{ textDecoration: 'line-through', color: 'text.secondary' }}>
+                                {formatPrice(item.price * item.quantity)}
+                              </Typography>
+                              <Typography fontWeight="bold" color="primary">
+                                {formatPrice(getDiscountedPrice(item.price, item.discountRate) * item.quantity)}
+                              </Typography>
+                            </Box>
+                          ) : (
+                            <Typography fontWeight="bold">
+                              {formatPrice(item.price * item.quantity)}
+                            </Typography>
+                          )}
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
@@ -341,8 +377,16 @@ const CartPage: React.FC = () => {
                 <Stack spacing={2}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography color="text.secondary">상품 금액</Typography>
-                    <Typography>{formatPrice(totalPrice)}</Typography>
+                    <Typography>{formatPrice(originalTotal)}</Typography>
                   </Box>
+                  {totalDiscount > 0 && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography color="error.main">할인 금액</Typography>
+                      <Typography color="error.main" fontWeight="bold">
+                        -{formatPrice(totalDiscount)}
+                      </Typography>
+                    </Box>
+                  )}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography color="text.secondary">배송비</Typography>
                     <Typography>

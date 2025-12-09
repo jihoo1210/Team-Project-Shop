@@ -10,6 +10,7 @@ export interface CartItem {
   option?: string
   color?: string
   size?: string
+  discountRate?: number // 할인율 (0~100)
 }
 
 // API 응답 아이템 타입
@@ -24,6 +25,8 @@ interface CartApiItem {
   option?: string
   color?: string
   size?: string
+  discount_percent?: number
+  discountRate?: number
 }
 
 const CART_STORAGE_KEY = 'myshop_cart'
@@ -78,6 +81,7 @@ export const useCart = () => {
         option: item.option,
         color: item.color,
         size: item.size,
+        discountRate: item.discount_percent || item.discountRate || 0,
       }))
 
       // 백엔드에 데이터가 있으면 백엔드 데이터 사용
