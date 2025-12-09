@@ -1,5 +1,9 @@
 package com.example.backend.security;
 
+// =====================================================
+// [종혁 코드] - 원본 그대로 복사
+// =====================================================
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -92,4 +96,3 @@ public class JwtTokenProvider {
                 .getPayload();
     }
 }
-
