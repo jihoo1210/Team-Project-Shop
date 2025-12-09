@@ -1,14 +1,9 @@
 package com.example.backend.entity.item.utility;
 
-import java.util.List;
-
 import com.example.backend.entity.item.Item;
 import com.example.backend.entity.item.enums.ColorEnum;
 import com.example.backend.entity.item.enums.SizeEnum;
-import com.example.backend.entity.user.User;
-import com.example.backend.entity.utility.BaseEntity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,12 +12,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Value;
 
 @Builder
 @NoArgsConstructor
@@ -30,26 +23,24 @@ import lombok.Value;
 @Getter
 
 @Entity
-public class OrderItem extends BaseEntity {
+public class OrderItemList {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItemList> itemList;
+    @ManyToOne
+    private OrderItem orderItem;
 
     @ManyToOne
-    private User user;
+    private Item item;
+
+    @Enumerated(EnumType.STRING)
+    private ColorEnum color;
+
+    @Enumerated(EnumType.STRING)
+    private SizeEnum size;
 
     @Column
-    private String addr;
+    private Integer number;
 
-    @Column
-    private String call;
-
-    @Column
-    private String zipcode;
-
-    @Column
-    private Integer totalPrice;
 }

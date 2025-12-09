@@ -1,5 +1,6 @@
 package com.example.backend.entity.review;
 
+import com.example.backend.dto.review.ReviewCreateRequest;
 import com.example.backend.entity.item.Item;
 import com.example.backend.entity.user.User;
 import com.example.backend.entity.utility.BaseEntity;
@@ -11,9 +12,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -34,4 +37,13 @@ public class Review extends BaseEntity {
 
     @ManyToOne
     private Item item;
+
+    public void update(ReviewCreateRequest dto) {
+        if(!this.content.equals(dto.getContent()) && dto.getContent() != null) {
+            this.content = dto.getContent();
+        }
+        if(!this.score.equals(dto.getScore())) {
+            this.score = dto.getScore();
+        }
+    }
 }

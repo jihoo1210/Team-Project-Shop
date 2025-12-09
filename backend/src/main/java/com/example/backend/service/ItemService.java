@@ -83,15 +83,15 @@ public class ItemService {
     }
 
     public void toggleFavoriteItem(Long itemId, User user) {
-        User savedUser = userRepository.findById(user.getId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + user.getId()));
+        User savedUser = userRepository.findById(user.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + user.getUserId()));
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item not found with id: " + itemId));
 
         boolean exists = favoriteItemRepository.existsByItemAndUser(item, savedUser);
         if (exists) {
             FavoriteItem favoriteItem = favoriteItemRepository.findByItemAndUser(item, savedUser)
-                    .orElseThrow(() -> new RuntimeException("FavoriteItem not found for item id: " + itemId + " and user id: " + savedUser.getId()));
+                    .orElseThrow(() -> new RuntimeException("FavoriteItem not found for item id: " + itemId + " and user id: " + savedUser.getUserId()));
             favoriteItemRepository.delete(favoriteItem);
         } else {
             FavoriteItem favoriteItem = new FavoriteItem();
@@ -102,8 +102,8 @@ public class ItemService {
     }
 
     public void toggleCartItem(Long itemId, User user) {
-        User savedUser = userRepository.findById(user.getId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + user.getId()));
+        User savedUser = userRepository.findById(user.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + user.getUserId()));
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item not found with id: " + itemId));
 
@@ -114,6 +114,7 @@ public class ItemService {
             CartItem cartItem = new CartItem();
             cartItem.setItem(item);
             cartItem.setUser(savedUser);
+            cartItem.setNumber(1);
             cartItemRepository.save(cartItem);
         }
     }

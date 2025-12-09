@@ -14,10 +14,11 @@ import com.example.backend.entity.item.enums.MiddleCategoryEnum;
 import com.example.backend.entity.item.enums.SubcategoryEnum;
 import com.example.backend.entity.item.utility.CartItem;
 import com.example.backend.entity.item.utility.FavoriteItem;
-import com.example.backend.entity.item.utility.OrderItem;
+import com.example.backend.entity.item.utility.OrderItemList;
 import com.example.backend.entity.item.utility.ViewedItem;
 import com.example.backend.entity.review.Review;
 import com.example.backend.entity.utility.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -80,14 +81,19 @@ public class Item extends BaseEntity {
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Size> sizeList = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviewList;
+    @JsonIgnore
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> cartItemList;
+    @JsonIgnore
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FavoriteItem> favoriteItemList;
+    @JsonIgnore
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItemList;
+    private List<OrderItemList> orderItemList;
+    @JsonIgnore
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ViewedItem> viewedItemList;
 
@@ -113,6 +119,10 @@ public class Item extends BaseEntity {
         if(!this.mainImageUrl.equals(dto.getMainImageUrl()) && dto.getMainImageUrl() != null) {
             this.mainImageUrl = dto.getMainImageUrl();
         }
+    }
+
+    public int getRealPrice() {
+        return this.price - this.price * discountPercent / 100;
     }
 }
 
