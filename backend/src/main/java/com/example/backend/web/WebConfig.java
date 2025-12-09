@@ -15,7 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
     private String whopKey;
 
     @Bean
-    public WebClient WebClient() {
+    public WebClient webClient() {
         return WebClient.builder()
         .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer" + whopKey)
         .baseUrl("https://api.whop.com/api/v1")
