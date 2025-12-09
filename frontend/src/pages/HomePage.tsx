@@ -135,10 +135,10 @@ const HomePage = () => {
     const adjustedIndex = (index - carouselIndex + carouselCards.length) % carouselCards.length
     if (adjustedIndex >= 3) return null
 
-    // 더 펼쳐진 스택: 뒤에서 앞으로
+    // 부채꼴 모양 - 위에서 아래로 내려가면서 펼침
     const positions = [
-      { x: -60, y: 0, rotate: -12, scale: 0.8, zIndex: 1, opacity: 0.5 },
-      { x: -30, y: 0, rotate: -6, scale: 0.9, zIndex: 2, opacity: 0.75 },
+      { x: -100, y: -60, rotate: -18, scale: 0.75, zIndex: 1, opacity: 0.5 },
+      { x: -45, y: -25, rotate: -9, scale: 0.88, zIndex: 2, opacity: 0.75 },
       { x: 0, y: 0, rotate: 0, scale: 1, zIndex: 3, opacity: 1 },
     ]
     const style = positions[adjustedIndex]
@@ -154,7 +154,7 @@ const HomePage = () => {
           overflow: 'hidden',
           cursor: 'pointer',
           transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-          transform: `translateX(${style.x}%) rotate(${style.rotate}deg) scale(${style.scale})`,
+          transform: `translate(${style.x}%, ${style.y}%) rotate(${style.rotate}deg) scale(${style.scale})`,
           zIndex: style.zIndex,
           opacity: style.opacity,
           boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
@@ -195,11 +195,11 @@ const HomePage = () => {
     if (adjustedIndex < 3) return null
 
     const posIndex = adjustedIndex - 3
-    // 좌측과 대칭 (반대 방향으로 펼침)
+    // 좌측과 대칭 - 부채꼴 모양 위에서 아래로 내려가면서 펼침
     const positions = [
       { x: 0, y: 0, rotate: 0, scale: 1, zIndex: 3, opacity: 1 },
-      { x: 30, y: 0, rotate: 6, scale: 0.9, zIndex: 2, opacity: 0.75 },
-      { x: 60, y: 0, rotate: 12, scale: 0.8, zIndex: 1, opacity: 0.5 },
+      { x: 45, y: -25, rotate: 9, scale: 0.88, zIndex: 2, opacity: 0.75 },
+      { x: 100, y: -60, rotate: 18, scale: 0.75, zIndex: 1, opacity: 0.5 },
     ]
     const style = positions[posIndex]
 
@@ -214,7 +214,7 @@ const HomePage = () => {
           overflow: 'hidden',
           cursor: 'pointer',
           transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-          transform: `translateX(${style.x}%) rotate(${style.rotate}deg) scale(${style.scale})`,
+          transform: `translate(${style.x}%, ${style.y}%) rotate(${style.rotate}deg) scale(${style.scale})`,
           zIndex: style.zIndex,
           opacity: style.opacity,
           boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
