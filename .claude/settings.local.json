@@ -4,7 +4,16 @@
       "Bash(./gradlew bootRun:*)",
       "mcp__ide__getDiagnostics",
       "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" add frontend/)",
-      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" add -A)"
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" add -A)",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" commit -m \"Merge origin/dev into jihoo (keep dev content)\")",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" log --oneline origin/jihoo -10)",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" log --oneline origin/dev -10)",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" show --stat 3210ff5)",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" log --oneline --all --source -- \"backend/src/main/java/com/example/backend/dto/admin/ItemResistraionRequest.java\")",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" log --oneline --all --source -- \"backend/src/main/java/com/example/backend/repository/item/ItemRepository.java\")",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" show add9931 --stat)",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" add backend/src/main/java/com/example/backend/dto/ backend/src/main/java/com/example/backend/entity/item/details/ backend/src/main/java/com/example/backend/entity/item/enums/ backend/src/main/java/com/example/backend/repository/item/ backend/src/main/java/com/example/backend/service/CommentService.java backend/src/main/java/com/example/backend/service/search/utility/ backend/build.gradle)",
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" commit -m \"Restore missing DTO, Entity, Repository files and add webflux dependency\")"
     ],
     "deny": [],
     "ask": []

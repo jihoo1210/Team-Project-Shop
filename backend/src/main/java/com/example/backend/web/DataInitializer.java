@@ -21,14 +21,16 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     @Override
     public void run(String... args) throws Exception {
-        
+
+
+
         // 1️⃣ 관리자 계정 생성
         {
             String email = "admin@test.com";
             if (!userRepository.existsByEmail(email)) {
                 User admin = User.builder()
                         .email(email)
-                        .username("관리자")
+                        .username("Admin")
                         .password(passwordEncoder.encode("admin123"))
                         .role(Role.ADMIN)
                         .build();
@@ -43,7 +45,7 @@ public class DataInitializer implements CommandLineRunner {
             if (!userRepository.existsByEmail(email)) {
                 User user = User.builder()
                         .email(email)
-                        .username("테스트유저")
+                        .username("TestUser")
                         .password(passwordEncoder.encode("user123"))
                         .role(Role.USER)
                         .build();
@@ -53,4 +55,3 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 }
-

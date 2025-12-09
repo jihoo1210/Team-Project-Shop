@@ -44,7 +44,7 @@ public class OrderItem extends BaseEntity {
     @Column
     private String addr;
 
-    @Column
+    @Column(name = "phone_number")
     private String call;
 
     @Column
