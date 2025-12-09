@@ -105,11 +105,7 @@ const AdminBoardPage = () => {
   const handleDelete = async (post: BoardListItem) => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return
     try {
-      await deleteBoard({
-        board_no: post.board_no,
-        writer_id: 'admin',
-        role: 'Admin',
-      })
+      await deleteBoard(post.board_no)
       alert('삭제되었습니다.')
       // 새로고침
       const data = await fetchBoardList({ category, page: page - 1, size: 15 })

@@ -2,11 +2,7 @@ import axiosClient from './axiosClient'
 import type {
   BoardWriteRequest,
   BoardUpdateRequest,
-  BoardDeleteRequest,
   BoardListItem,
-  CommentWriteRequest,
-  CommentUpdateRequest,
-  CommentDeleteRequest,
   CommentListItem,
   PaginatedResponse,
   PageableQuery,
@@ -43,28 +39,32 @@ export const fetchBoardDetail = (boardNo: string) =>
 export const createBoard = (data: BoardWriteRequest) =>
   axiosClient.post<{ board_no: string }>('/api/board/write', data).then((res) => res.data)
 
-// 게시글 수정 - POST /api/board/update
-export const updateBoard = (data: BoardUpdateRequest) =>
-  axiosClient.post<void>('/api/board/update', data).then((res) => res.data)
+// 게시글 수정 - PUT /api/board/{boardNo}
+export const updateBoard = (boardNo: string, data: Omit<BoardUpdateRequest, 'board_no'>) =>
+  axiosClient.put<void>(`/api/board/${boardNo}`, data).then((res) => res.data)
 
-// 게시글 삭제 - POST /api/board/delete
-export const deleteBoard = (data: BoardDeleteRequest) =>
-  axiosClient.post<void>('/api/board/delete', data).then((res) => res.data)
+// 게시글 삭제 - DELETE /api/board/{boardNo}
+export const deleteBoard = (boardNo: string) =>
+  axiosClient.delete<void>(`/api/board/${boardNo}`).then((res) => res.data)
 
-/* 댓글 API - SPEC: /api/comment */
+// 파일 다운로드 - GET /api/board/file/{fileNo}
+export const downloadBoardFile = (fileNo: string) =>
+  axiosClient.get<Blob>(`/api/board/file/${fileNo}`, { responseType: 'blob' }).then((res) => res.data)
 
-// 댓글 목록 조회 - GET /api/comment/list?boardNo=
+/* 댓글 API - SPEC: /api/comments */
+
+// 댓글 목록 조회 - GET /api/comments/board/{boardNo}
 export const fetchComments = (boardNo: string) =>
-  axiosClient.get<CommentListItem[]>('/api/comment/list', { params: { boardNo } }).then((res) => res.data)
+  axiosClient.get<CommentListItem[]>(`/api/comments/board/${boardNo}`).then((res) => res.data)
 
-// 댓글 작성 - POST /api/comment/write
-export const createComment = (data: CommentWriteRequest) =>
-  axiosClient.post<void>('/api/comment/write', data).then((res) => res.data)
+// 댓글 작성 - POST /api/comments/board/{boardNo}
+export const createComment = (boardNo: string, data: { coComment: string; secretYn?: boolean }) =>
+  axiosClient.post<CommentListItem>(`/api/comments/board/${boardNo}`, data).then((res) => res.data)
 
-// 댓글 수정 - POST /api/comment/update
-export const updateComment = (data: CommentUpdateRequest) =>
-  axiosClient.post<void>('/api/comment/update', data).then((res) => res.data)
+// 댓글 수정 - PUT /api/comments/{coNo}
+export const updateComment = (coNo: string, data: { coComment: string }) =>
+  axiosClient.put<CommentListItem>(`/api/comments/${coNo}`, data).then((res) => res.data)
 
-// 댓글 삭제 - POST /api/comment/delete
-export const deleteComment = (data: CommentDeleteRequest) =>
-  axiosClient.post<void>('/api/comment/delete', data).then((res) => res.data)
+// 댓글 삭제 - DELETE /api/comments/{coNo}
+export const deleteComment = (coNo: string) =>
+  axiosClient.delete<void>(`/api/comments/${coNo}`).then((res) => res.data)

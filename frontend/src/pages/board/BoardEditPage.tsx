@@ -32,13 +32,6 @@ interface AttachedFile {
   preview?: string
 }
 
-/**
- * 게시글 수정 페이지
- * - 기존 게시글 데이터 로드
- * - 제목/내용 수정
- * - 파일 첨부 기능
- * - 수정 완료 후 상세 페이지로 이동
- */
 const BoardEditPage = () => {
   const { category, id } = useParams<{ category: string; id: string }>()
   const navigate = useNavigate()
@@ -167,8 +160,7 @@ const BoardEditPage = () => {
 
     setSubmitting(true)
     try {
-      await updateBoard({
-        board_no: id!,
+      await updateBoard(id!, {
         writer_id: currentUserId,
         title: title.trim(),
         content: content.trim(),

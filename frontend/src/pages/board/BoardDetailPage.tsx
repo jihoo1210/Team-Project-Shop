@@ -68,11 +68,7 @@ const BoardDetailPage = () => {
   const handleDelete = async () => {
     if (!post || !window.confirm('정말 삭제하시겠습니까?')) return
     try {
-      await deleteBoard({
-        board_no: post.board_no,
-        writer_id: currentUserId,
-        role: currentUserRole as 'Admin' | 'User',
-      })
+      await deleteBoard(post.board_no)
       alert('삭제되었습니다.')
       navigate(`/board/${category}`)
     } catch (error) {
@@ -85,11 +81,7 @@ const BoardDetailPage = () => {
     if (!newComment.trim() || !id) return
     setSubmitting(true)
     try {
-      await createComment({
-        board_no: id,
-        writer_id: currentUserId,
-        co_content: newComment,
-      })
+      await createComment(id, { coComment: newComment })
       setNewComment('')
       // 댓글 새로고침
       const commentsData = await fetchComments(id)
@@ -105,11 +97,7 @@ const BoardDetailPage = () => {
   const handleDeleteComment = async (coNo: string) => {
     if (!window.confirm('댓글을 삭제하시겠습니까?')) return
     try {
-      await deleteComment({
-        co_no: coNo,
-        writer_id: currentUserId,
-        role: currentUserRole as 'Admin' | 'User',
-      })
+      await deleteComment(coNo)
       // 댓글 새로고침
       if (id) {
         const commentsData = await fetchComments(id)
@@ -137,11 +125,7 @@ const BoardDetailPage = () => {
     if (!editingCommentId || !editingCommentContent.trim()) return
     setEditSubmitting(true)
     try {
-      await updateComment({
-        co_no: editingCommentId,
-        writer_id: currentUserId,
-        co_content: editingCommentContent.trim(),
-      })
+      await updateComment(editingCommentId, { coComment: editingCommentContent.trim() })
       // 댓글 새로고침
       if (id) {
         const commentsData = await fetchComments(id)
