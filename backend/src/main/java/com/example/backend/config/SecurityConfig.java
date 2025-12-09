@@ -9,6 +9,7 @@ import com.example.backend.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -68,6 +69,8 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/error").permitAll()
                 .requestMatchers("/login/success", "/login/failure").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()  // OAuth2 관련 경로
+                .requestMatchers(HttpMethod.GET, "/api/item/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/review/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()  // [종혁 코드] 인증 API
                 .requestMatchers("/h2-console/**").permitAll()  // [종혁 코드] H2 콘솔
                 .anyRequest().authenticated()
