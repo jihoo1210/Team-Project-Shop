@@ -14,6 +14,7 @@ const axiosClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // ( BE / FE Cookie인증 자동 전송)
 })
 
 export const getAccessToken = () => localStorage.getItem(ACCESS_TOKEN_KEY)
