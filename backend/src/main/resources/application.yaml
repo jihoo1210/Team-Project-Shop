@@ -84,3 +84,6 @@ upload-dir: ./uploads/product
 
 whop:
   key: ${WHOP_KEY:your-default-key-here}
+
+openai:
+  api-key: ${OPENAI_API_KEY:your-default-api-key-here}

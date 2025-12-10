@@ -2,6 +2,7 @@ package com.example.backend.config;
 
 // =====================================================
 // [종혁 코드] + [진용 코드] 통합
+// 기존 보안 설정 + AI 프록시 공개 및 CORS 오리진 추가
 // =====================================================
 
 import com.example.backend.oauth.OAuth2SuccessHandler;
@@ -34,7 +35,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     // =====================================================
-    // [진용 추가] - OAuth2 성공 핸들러 주입
+    // [진용 코드] - OAuth2 핸들러 주입
     // =====================================================
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
@@ -49,61 +50,60 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // =====================================================
-            // [종혁 코드] - CORS 설정
-            // =====================================================
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
+                // =====================================================
+                // [종혁 코드] - CORS 설정
+                // =====================================================
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
 
-            // =====================================================
-            // [종혁 코드] - 세션 사용 안함 (JWT 사용)
-            // =====================================================
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+                // =====================================================
+                // [종혁 코드] - 세션 미사용 설정 (JWT 사용)
+                // =====================================================
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // =====================================================
-            // [진용 코드] - 접근 권한 설정 (기존 + 종혁 코드 참고)
-            // =====================================================
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/error").permitAll()
-                .requestMatchers("/login/success", "/login/failure").permitAll()
-                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()  // OAuth2 관련 경로
-                .requestMatchers(HttpMethod.GET, "/api/item/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/review/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()  // [종혁 코드] 인증 API
-                .requestMatchers("/h2-console/**").permitAll()  // [종혁 코드] H2 콘솔
-                .anyRequest().authenticated()
-            )
+                // =====================================================
+                // [진용 코드] - 접근 권한 설정 (기존 + 종혁 코드 참고) + AI 프록시 permitAll
+                // =====================================================
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/login", "/error").permitAll()
+                        .requestMatchers("/login/success", "/login/failure").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/item/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/review/**").permitAll()
+                        .requestMatchers("/api/ai/proxy").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .anyRequest().authenticated()
+                )
 
-            // =====================================================
-            // [진용 코드] - OAuth2 로그인 설정 (JWT 발급 핸들러 연결)
-            // =====================================================
-            .oauth2Login(oauth2 -> oauth2
-                .successHandler(oAuth2SuccessHandler)  // JWT 토큰 발급
-                .failureUrl("/login/failure")
-            )
+                // =====================================================
+                // [진용 코드] - OAuth2 로그인 설정 (JWT 발급 핸들러 연결)
+                // =====================================================
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureUrl("/login/failure")
+                )
 
-            // =====================================================
-            // [종혁 코드] - 폼 로그인, HTTP Basic 비활성화
-            // =====================================================
-            .headers(headers -> headers.frameOptions(frame -> frame.disable()))
-            .formLogin(form -> form.disable())
-            .httpBasic(basic -> basic.disable())
+                // =====================================================
+                // [종혁 코드] - 기타 로그인 HTTP Basic 비활성화
+                // =====================================================
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
 
-            // =====================================================
-            // [종혁 코드] - JWT 필터 추가
-            // =====================================================
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // =====================================================
+                // [종혁 코드] - JWT 필터 추가
+                // =====================================================
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
-            // =====================================================
-            // [진용 코드] - 로그아웃 설정
-            // =====================================================
-            .logout(logout -> logout
-                .logoutSuccessUrl("/")
-                .deleteCookies("accessToken", "refreshToken")  // JWT 쿠키 삭제
-                .permitAll()
-            );
+                // =====================================================
+                // [진용 코드] - 로그아웃 설정
+                // =====================================================
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/")
+                        .deleteCookies("accessToken", "refreshToken")
+                        .permitAll()
+                );
 
         return http.build();
     }
@@ -114,7 +114,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:5174"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
