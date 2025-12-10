@@ -1,9 +1,11 @@
 package com.example.backend.entity.user;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.example.backend.entity.item.utility.CartItem;
 import com.example.backend.entity.item.utility.OrderItem;
+import com.example.backend.entity.user.details.Address;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -57,6 +59,13 @@ public class User {
 
     @Column(name = "provider_id")
     private String providerId;  // 소셜 플랫폼의 고유 ID
+
+    // =====================================================
+    // 배송지 목록
+    // =====================================================
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses = new ArrayList<>();
 
     // =====================================================
     // [종혁 코드] - 기존 빌더 (수정됨)
