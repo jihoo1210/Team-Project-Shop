@@ -52,18 +52,10 @@ const BoardListPage = () => {
         setBoardData(data)
       } catch (error) {
         console.error('게시판 목록 로드 실패:', error)
-        // Mock 데이터
-        const mockPosts: BoardListItem[] = [
-          { board_no: '1', title: '환영합니다! MyShop 오픈 안내', writer_id: '관리자', view: 150 },
-          { board_no: '2', title: '배송 관련 공지사항', writer_id: '관리자', view: 89 },
-          { board_no: '3', title: '회원 등급별 혜택 안내', writer_id: '관리자', view: 234 },
-          { board_no: '4', title: '개인정보 처리방침 변경 안내', writer_id: '관리자', view: 67 },
-          { board_no: '5', title: '고객센터 운영시간 안내', writer_id: '관리자', view: 45 },
-        ]
         setBoardData({
-          content: mockPosts,
-          totalElements: mockPosts.length,
-          totalPages: 1,
+          content: [],
+          totalElements: 0,
+          totalPages: 0,
           size: 15,
           number: 0,
         })

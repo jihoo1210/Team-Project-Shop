@@ -81,27 +81,6 @@ const OrderPage: React.FC = () => {
   useEffect(() => {
     if (location.state?.cartItems && location.state.cartItems.length > 0) {
       setOrderItems(location.state.cartItems)
-    } else {
-      // 데모용 mock 데이터
-      const mockItems: OrderItem[] = [
-        {
-          productId: 1,
-          productName: '프리미엄 무선 이어폰',
-          productImage: 'https://via.placeholder.com/80',
-          price: 89000,
-          quantity: 1,
-          option: '블랙 / M',
-        },
-        {
-          productId: 2,
-          productName: '스마트 워치 Pro',
-          productImage: 'https://via.placeholder.com/80',
-          price: 299000,
-          quantity: 2,
-          option: '실버 / L',
-        },
-      ]
-      setOrderItems(mockItems)
     }
     fetchUserInfo()
     setIsLoading(false)
