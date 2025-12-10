@@ -67,13 +67,8 @@ const AdminBannerPage: React.FC = () => {
       const response = await axiosClient.get('/api/admin/banners');
       setBanners(response.data);
     } catch (err) {
-      // Mock data for development
-      const mockBanners: Banner[] = [
-        { id: 1, title: '신년 세일 이벤트', imageUrl: 'https://via.placeholder.com/1200x400', linkUrl: '/event/newyear', order: 1, is_active: true, startDate: '2024-01-01', endDate: '2024-01-31' },
-        { id: 2, title: '겨울 시즌 특가', imageUrl: 'https://via.placeholder.com/1200x400', linkUrl: '/event/winter', order: 2, is_active: true, startDate: '2024-01-01', endDate: '2024-02-28' },
-        { id: 3, title: '회원가입 이벤트', imageUrl: 'https://via.placeholder.com/1200x400', linkUrl: '/signup', order: 3, is_active: false, startDate: '2024-01-01', endDate: '2024-12-31' },
-      ];
-      setBanners(mockBanners);
+      console.error('배너 로드 실패:', err);
+      setBanners([]);
     } finally {
       setLoading(false);
     }

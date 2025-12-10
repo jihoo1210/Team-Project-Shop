@@ -96,19 +96,13 @@ const AdminDashboardPage: React.FC = () => {
       const response = await axiosClient.get('/api/admin/dashboard');
       setStats(response.data);
     } catch (err) {
-      // Mock data for development
+      console.error('대시보드 로드 실패:', err);
       setStats({
-        totalUsers: 1234,
-        totalOrders: 567,
-        totalProducts: 89,
-        todaySales: 2450000,
-        recentOrders: [
-          { id: 1001, customerName: '홍길동', totalAmount: 189000, status: 'paid', createdAt: '2024-01-15 14:30' },
-          { id: 1002, customerName: '김철수', totalAmount: 89000, status: 'shipping', createdAt: '2024-01-15 13:20' },
-          { id: 1003, customerName: '이영희', totalAmount: 299000, status: 'delivered', createdAt: '2024-01-15 12:00' },
-          { id: 1004, customerName: '박민수', totalAmount: 59000, status: 'paid', createdAt: '2024-01-15 11:45' },
-          { id: 1005, customerName: '최수진', totalAmount: 149000, status: 'pending', createdAt: '2024-01-15 10:30' },
-        ],
+        totalUsers: 0,
+        totalOrders: 0,
+        totalProducts: 0,
+        todaySales: 0,
+        recentOrders: [],
       });
     } finally {
       setLoading(false);

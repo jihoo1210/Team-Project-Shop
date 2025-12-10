@@ -98,17 +98,10 @@ const AdminProductListPage: React.FC = () => {
       });
       setProducts(response.data.content);
       setTotalPages(response.data.totalPages);
-    } catch {
-      // Mock data for development
-      const mockProducts: Product[] = [
-        { id: 1, name: '프리미엄 무선 이어폰', brand: 'TechBrand', price: 89000, stock: 50, status: 'active', category: '전자기기', createdAt: '2024-01-15' },
-        { id: 2, name: '스마트 워치 Pro', brand: 'SmartLife', price: 299000, stock: 30, status: 'active', category: '전자기기', createdAt: '2024-01-10' },
-        { id: 3, name: '노이즈 캔슬링 헤드폰', brand: 'AudioMax', price: 199000, stock: 0, status: 'soldout', category: '전자기기', createdAt: '2024-01-05' },
-        { id: 4, name: '블루투스 스피커', brand: 'SoundWave', price: 79000, stock: 100, status: 'active', category: '전자기기', createdAt: '2024-01-01' },
-        { id: 5, name: '무선 충전기', brand: 'ChargePlus', price: 35000, stock: 200, status: 'active', category: '액세서리', createdAt: '2023-12-20' },
-      ];
-      setProducts(mockProducts);
-      setTotalPages(3);
+    } catch (err) {
+      console.error('상품 목록 로드 실패:', err);
+      setProducts([]);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }

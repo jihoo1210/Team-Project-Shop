@@ -47,100 +47,6 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => (
   </Box>
 )
 
-// Mock 상품 데이터 (백엔드 미실행 시 fallback용)
-const mockProducts: Record<string, ItemDetail> = {
-  'SKU-1001': {
-    sku: 'SKU-1001',
-    title: '에센셜 후드 티셔츠',
-    price: 89000,
-    discount_percent: 15,
-    brand: 'MyShop Originals',
-    description: '부드러운 코튼 소재의 에센셜 후드 티셔츠입니다. 편안한 착용감과 세련된 디자인으로 일상에서 편하게 입을 수 있습니다.',
-    colorList: ['블랙', '화이트', '그레이'],
-    sizeList: ['S', 'M', 'L', 'XL'],
-    imageList: ['https://placehold.co/600x600/png', 'https://placehold.co/600x601/png', 'https://placehold.co/600x602/png'],
-    reviewList: [],
-    savedInLikes: false,
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01',
-  },
-  'SKU-1002': {
-    sku: 'SKU-1002',
-    title: '클래식 체크 코트',
-    price: 219000,
-    discount_percent: 10,
-    brand: 'Premium Line',
-    description: '클래식한 체크 패턴의 고급스러운 코트입니다. 겨울철 따뜻하게 입을 수 있는 보온성 좋은 소재로 제작되었습니다.',
-    colorList: ['베이지', '브라운'],
-    sizeList: ['S', 'M', 'L'],
-    imageList: ['https://placehold.co/600x600/png', 'https://placehold.co/600x601/png'],
-    reviewList: [],
-    savedInLikes: false,
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01',
-  },
-  'SKU-1003': {
-    sku: 'SKU-1003',
-    title: '데일리 스니커즈',
-    price: 129000,
-    discount_percent: 0,
-    brand: 'Flexfit',
-    description: '편안한 착화감의 데일리 스니커즈입니다. 가볍고 쿠션감이 좋아 오래 걸어도 편안합니다.',
-    colorList: ['화이트', '블랙'],
-    sizeList: ['230', '240', '250', '260', '270', '280'],
-    imageList: ['https://placehold.co/600x600/png'],
-    reviewList: [],
-    savedInLikes: false,
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01',
-  },
-  'SKU-1004': {
-    sku: 'SKU-1004',
-    title: '미니멀 백팩',
-    price: 79000,
-    discount_percent: 20,
-    brand: 'Urban Style',
-    description: '심플하고 실용적인 미니멀 백팩입니다. 넉넉한 수납공간과 편안한 착용감을 제공합니다.',
-    colorList: ['블랙', '네이비', '그레이'],
-    sizeList: [],
-    imageList: ['https://placehold.co/600x600/png'],
-    reviewList: [],
-    savedInLikes: false,
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01',
-  },
-  'SKU-1005': {
-    sku: 'SKU-1005',
-    title: '프리미엄 청바지',
-    price: 159000,
-    discount_percent: 0,
-    brand: 'Denim Pro',
-    description: '프리미엄 데님 소재의 청바지입니다. 편안한 핏과 내구성이 뛰어납니다.',
-    colorList: ['인디고', '라이트블루'],
-    sizeList: ['28', '30', '32', '34', '36'],
-    imageList: ['https://placehold.co/600x600/png'],
-    reviewList: [],
-    savedInLikes: false,
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01',
-  },
-  'SKU-1006': {
-    sku: 'SKU-1006',
-    title: '캐주얼 스웨터',
-    price: 69000,
-    discount_percent: 25,
-    brand: 'Cozy Wear',
-    description: '부드러운 니트 소재의 캐주얼 스웨터입니다. 따뜻하고 포근한 착용감을 제공합니다.',
-    colorList: ['크림', '베이지', '차콜'],
-    sizeList: ['S', 'M', 'L', 'XL'],
-    imageList: ['https://placehold.co/600x600/png'],
-    reviewList: [],
-    savedInLikes: false,
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01',
-  },
-}
-
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -200,22 +106,8 @@ const ProductDetailPage = () => {
         setSelectedSize(data.sizeList[0])
       }
     } catch (err) {
-      console.error('API 에러:', err)
-      // Mock 데이터로 fallback (백엔드 미실행 시)
-      const mockData = mockProducts[id]
-      if (mockData) {
-        setProduct(mockData)
-        setIsFavorite(mockData.savedInLikes ?? false)
-        setReviews([])
-        if (mockData.colorList?.length > 0) {
-          setSelectedColor(mockData.colorList[0])
-        }
-        if (mockData.sizeList?.length > 0) {
-          setSelectedSize(mockData.sizeList[0])
-        }
-      } else {
-        setError('상품 정보를 불러오는데 실패했습니다.')
-      }
+      console.error('상품 로드 실패:', err)
+      setError('상품 정보를 불러오는데 실패했습니다.')
     } finally {
       setLoading(false)
     }

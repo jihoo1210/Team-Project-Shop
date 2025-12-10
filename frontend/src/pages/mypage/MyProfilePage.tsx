@@ -133,34 +133,9 @@ const MyProfilePage: React.FC = () => {
           isDefault: true,
         }])
       }
-    } catch {
-      // Mock data for development
-      const mockProfile: UserProfile = {
-        userId: 1,
-        email: 'user@example.com',
-        username: '홍길동',
-        phone: '010-1234-5678',
-        zipCode: '06241',
-        addr: '서울시 강남구 역삼동 123-45',
-        addrDetail: '101동 202호',
-        role: 'USER',
-      }
-      setProfile(mockProfile)
-      setEditedProfile({
-        name: mockProfile.username || '',
-        phone: mockProfile.phone || '',
-        email: mockProfile.email || '',
-      })
-      setAddresses([{
-        id: '1',
-        label: '집',
-        name: '홍길동',
-        phone: '010-1234-5678',
-        zipcode: '06241',
-        address: '서울시 강남구 역삼동 123-45',
-        addressDetail: '101동 202호',
-        isDefault: true,
-      }])
+    } catch (error) {
+      console.error('프로필 로드 실패:', error)
+      setSnackbar({ open: true, message: '프로필을 불러오는데 실패했습니다.', severity: 'error' })
     } finally {
       setLoading(false)
     }
@@ -245,17 +220,13 @@ const MyProfilePage: React.FC = () => {
 
     if (editingAddress) {
       // 수정
-      setAddresses(prev => prev.map(addr => 
-        addr.id === editingAddress.id 
+      setAddresses(prev => prev.map(addr =>
+        addr.id === editingAddress.id
           ? { ...addr, ...newAddress }
           : addr
       ))
     } else {
-      // 추가 (최대 3개)
-      if (addresses.length >= 3) {
-        setSnackbar({ open: true, message: '배송지는 최대 3개까지 등록할 수 있습니다.', severity: 'error' })
-        return
-      }
+      // 추가
       const newAddr: Address = {
         id: Date.now().toString(),
         ...newAddress,
@@ -426,13 +397,12 @@ const MyProfilePage: React.FC = () => {
                 variant="outlined"
                 startIcon={<AddIcon />}
                 onClick={() => handleOpenAddressDialog()}
-                disabled={addresses.length >= 3}
               >
                 배송지 추가
               </Button>
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              최대 3개의 배송지를 등록할 수 있습니다. (집 / 직장 / 학교)
+              배송지를 등록하고 관리할 수 있습니다.
             </Typography>
             <Divider sx={{ mb: 2 }} />
 

@@ -62,18 +62,6 @@ const FASHION_IMAGES = {
   shirt: 'https://picsum.photos/id/177/400/500',
 }
 
-// Mock data
-const mockProducts: ProductSummary[] = [
-  { id: 'SKU-1001', title: 'Black Hoodie', brand: 'MyShop', price: 65000, discountPercent: 20, mainImage: FASHION_IMAGES.hoodie },
-  { id: 'SKU-1002', title: 'Beige Knit', brand: 'MyShop', price: 45000, mainImage: FASHION_IMAGES.sweater },
-  { id: 'SKU-1003', title: 'Wide Trousers', brand: 'MyShop', price: 55000, discountPercent: 15, mainImage: FASHION_IMAGES.trousers },
-  { id: 'SKU-1004', title: 'Basic Tshirt', brand: 'MyShop', price: 25000, mainImage: FASHION_IMAGES.tshirt },
-  { id: 'SKU-1005', title: 'Long Dress', brand: 'MyShop', price: 89000, discountPercent: 30, mainImage: FASHION_IMAGES.dress },
-  { id: 'SKU-1006', title: 'Denim Jacket', brand: 'MyShop', price: 79000, mainImage: FASHION_IMAGES.jacket },
-  { id: 'SKU-1007', title: 'Wool Coat', brand: 'MyShop', price: 159000, discountPercent: 25, mainImage: FASHION_IMAGES.coat },
-  { id: 'SKU-1008', title: 'Stripe Shirt', brand: 'MyShop', price: 49000, mainImage: FASHION_IMAGES.shirt },
-]
-
 const HomePage = () => {
   const navigate = useNavigate()
   const [products, setProducts] = useState<ProductSummary[]>([])
@@ -125,9 +113,10 @@ const HomePage = () => {
           discountPercent: item.discount_percent,
           mainImage: item.main_image || Object.values(FASHION_IMAGES)[index % 8],
         }))
-        setProducts(mapped.length > 0 ? mapped : mockProducts)
-      } catch {
-        setProducts(mockProducts)
+        setProducts(mapped)
+      } catch (err) {
+        console.error('상품 로드 실패:', err)
+        setProducts([])
       } finally {
         setLoading(false)
       }

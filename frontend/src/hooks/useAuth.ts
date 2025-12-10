@@ -50,7 +50,9 @@ export const useAuth = () => {
     localStorage.removeItem('email')
     localStorage.removeItem('username')
     localStorage.removeItem('role')
+    localStorage.removeItem('myshop_access_token')
     setUser(null)
+    window.dispatchEvent(new Event('auth:logout'))
   }, [])
 
   // 초기 로드 및 이벤트 리스너
@@ -63,7 +65,7 @@ export const useAuth = () => {
     }
 
     window.addEventListener(AUTH_EVENTS.UNAUTHORIZED, handleUnauthorized)
-    
+
     // storage 이벤트 (다른 탭에서 로그아웃 시 동기화)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'userId' || e.key === 'email') {
@@ -72,9 +74,18 @@ export const useAuth = () => {
     }
     window.addEventListener('storage', handleStorageChange)
 
+    // 같은 탭 내 로그인/로그아웃 이벤트 감지
+    const handleAuthChange = () => {
+      loadUser()
+    }
+    window.addEventListener('auth:login', handleAuthChange)
+    window.addEventListener('auth:logout', handleAuthChange)
+
     return () => {
       window.removeEventListener(AUTH_EVENTS.UNAUTHORIZED, handleUnauthorized)
       window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('auth:login', handleAuthChange)
+      window.removeEventListener('auth:logout', handleAuthChange)
     }
   }, [loadUser, logout])
 
