@@ -90,4 +90,9 @@ whop:
   key: ${WHOP_KEY:your-default-key-here}
 
 openai:
-  api-key: ${OPENAI_API_KEY:your-default-api-key-here}
+  api-key: ${OPENAI_API_KEY:your-openai-api-key-here}
+
+# 토스페이먼츠 설정
+toss:
+  payments:
+    secret-key: ${TOSS_SECRET_KEY:test_sk_5OWRapdA8dQxLpWZNaXY3o1zEqZK}

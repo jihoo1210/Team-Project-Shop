@@ -10,7 +10,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline'
 import CloseIcon from '@mui/icons-material/Close'
 import SendIcon from '@mui/icons-material/Send'
 import { supportFaqs, type SupportFaq } from './supportFaq'
@@ -113,8 +112,10 @@ const SupportChatWidget = () => {
       if (!res.ok) {
         throw new Error('API 응답 오류')
       }
-      const data = (await res.json()) as { content?: string }
-      return data.content?.trim()
+      const data = (await res.json()) as { success?: boolean; data?: { content?: string }; content?: string }
+      // ResponseController.success() 형식 또는 직접 content 형식 모두 지원
+      const content = data.data?.content ?? data.content
+      return content?.trim()
     } catch (error) {
       console.error('SupportChatWidget API error:', error)
       return null
@@ -309,30 +310,157 @@ const SupportChatWidget = () => {
         </Paper>
       )}
 
-      <Button
-        variant="contained"
-        color="primary"
+      {/* 귀여운 파스텔 로봇 */}
+      <Box
         onClick={handleToggle}
         aria-label="고객센터 챗봇 열기"
-        startIcon={<ChatBubbleOutlineIcon />}
         sx={{
-          width: 56,
-          height: 56,
-          minWidth: 56,
-          borderRadius: '50%',
-          boxShadow: 6,
-          '&:hover': {
-            boxShadow: 10,
-            transform: 'translateY(-2px)',
-          },
-          transition: 'all 0.15s ease',
-          p: 0,
           cursor: 'pointer',
           position: 'relative',
+          width: 70,
+          height: 82,
+          '&:hover .robot-body': {
+            transform: 'scale(1.1)',
+          },
         }}
       >
-        CS
-      </Button>
+        {isOpen ? (
+          <Box
+            sx={{
+              width: 52,
+              height: 52,
+              borderRadius: '50%',
+              bgcolor: '#7EC8E3',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 15px rgba(126, 200, 227, 0.4)',
+              ml: 'auto',
+              mt: 'auto',
+            }}
+          >
+            <CloseIcon sx={{ color: '#fff', fontSize: 22 }} />
+          </Box>
+        ) : (
+          <Box
+            className="robot-body"
+            sx={{
+              position: 'relative',
+              transition: 'transform 0.2s ease',
+              width: 70,
+              height: 82,
+            }}
+          >
+            {/* 왼쪽 팔 */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 42,
+                left: 5,
+                width: 12,
+                height: 20,
+                zIndex: 1,
+                bgcolor: '#7EC8E3',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(126, 200, 227, 0.3)',
+              }}
+            />
+
+            {/* 오른쪽 팔 */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 42,
+                right: 5,
+                width: 12,
+                height: 20,
+                zIndex: 1,
+                bgcolor: '#7EC8E3',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(126, 200, 227, 0.3)',
+              }}
+            />
+
+            {/* 몸통 */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 40,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 36,
+                height: 34,
+                zIndex: 2,
+                bgcolor: '#7EC8E3',
+                borderRadius: '12px 12px 18px 18px',
+                boxShadow: '0 4px 12px rgba(126, 200, 227, 0.35)',
+              }}
+            />
+
+            {/* 머리 */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 50,
+                height: 46,
+                zIndex: 10,
+                bgcolor: '#7EC8E3',
+                borderRadius: '16px',
+                boxShadow: '0 4px 15px rgba(126, 200, 227, 0.4)',
+              }}
+            >
+              {/* 얼굴 화면 */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 7,
+                  left: 5,
+                  right: 5,
+                  height: 32,
+                  bgcolor: '#1a1a2e',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {/* 눈 */}
+                <Box sx={{ display: 'flex', gap: '10px', mb: 0.5 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      bgcolor: '#fff',
+                      borderRadius: '50%',
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      bgcolor: '#fff',
+                      borderRadius: '50%',
+                    }}
+                  />
+                </Box>
+                {/* 미소 */}
+                <Box
+                  sx={{
+                    width: 12,
+                    height: 6,
+                    borderBottom: '2px solid #fff',
+                    borderRadius: '0 0 6px 6px',
+                  }}
+                />
+              </Box>
+            </Box>
+          </Box>
+        )}
+      </Box>
     </Box>
   )
 }

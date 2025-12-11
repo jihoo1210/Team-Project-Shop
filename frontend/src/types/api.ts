@@ -78,6 +78,11 @@ export type ItemListQuery = PageableQuery & {
   searchTerm?: string
   keyword?: string
   category?: string
+  majorCategory?: string
+  middleCategory?: string
+  subcategory?: string
+  color?: string
+  size?: string
   minPrice?: number
   maxPrice?: number
   sortBy?: string

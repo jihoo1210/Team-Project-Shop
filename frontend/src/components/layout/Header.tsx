@@ -21,18 +21,17 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 
-// 카테고리 메뉴 데이터
+// 카테고리 메뉴 데이터 (백엔드 MajorCategoryEnum 기준)
 const categoryMenus = [
-  { label: '홀리데이', link: '/products?category=holiday', isHot: true },
-  { label: '베스트', link: '/products?sort=best' },
-  { label: '세일', link: '/products?sort=sale' },
+  { label: '베스트', link: '/products?sort=best', isHot: true },
   { label: '신상', link: '/products?sort=new' },
-  { label: '단독', link: '/products?category=exclusive' },
-  { label: '추천', link: '/products?sort=recommend' },
-  { label: '여성', link: '/products?category=women' },
-  { label: '남성', link: '/products?category=men' },
-  { label: '라이프', link: '/products?category=life', isNew: true },
-  { label: '뷰티', link: '/products?category=beauty' },
+  { label: '세일', link: '/products?sort=sale' },
+  { label: '여성', link: '/products?category=WOMEN' },
+  { label: '남성', link: '/products?category=MEN' },
+  { label: '키즈', link: '/products?category=KIDS' },
+  { label: '슈즈', link: '/products?category=SHOES' },
+  { label: '가방', link: '/products?category=BAGS' },
+  { label: '액세서리', link: '/products?category=ACCESSORIES' },
 ]
 
 const Header = () => {
