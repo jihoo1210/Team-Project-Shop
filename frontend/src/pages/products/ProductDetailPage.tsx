@@ -34,6 +34,7 @@ import { fetchItemDetail, toggleFavoriteItem } from '@/api/itemApi'
 import { useCart } from '@/hooks/useCart'
 import ReviewSection from '@/components/review/ReviewSection'
 import type { ItemDetail, ReviewListItem } from '@/types/api'
+import { COLORS, type ColorKey } from '@/constants/colors'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -404,11 +405,25 @@ const ProductDetailPage = () => {
                 label="색상"
                 onChange={(e) => setSelectedColor(e.target.value)}
               >
-                {product.colorList.map((color) => (
-                  <MenuItem key={color} value={color}>
-                    {color}
-                  </MenuItem>
-                ))}
+                {product.colorList.map((color) => {
+                  const colorInfo = COLORS[color as ColorKey]
+                  return (
+                    <MenuItem key={color} value={color}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box
+                          sx={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            backgroundColor: colorInfo?.hex || '#ccc',
+                            border: '1px solid #ddd',
+                          }}
+                        />
+                        {colorInfo?.name || color}
+                      </Box>
+                    </MenuItem>
+                  )
+                })}
               </Select>
             </FormControl>
           )}
