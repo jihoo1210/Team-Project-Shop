@@ -55,13 +55,14 @@ const WishlistPage = () => {
   }
 
   // 개별 선택 토글
-  const handleSelectItem = (itemId: string) => {
+  const handleSelectItem = (itemId: number) => {
+    const idStr = String(itemId)
     setSelectedItems((prev) => {
       const newSet = new Set(prev)
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId)
+      if (newSet.has(idStr)) {
+        newSet.delete(idStr)
       } else {
-        newSet.add(itemId)
+        newSet.add(idStr)
       }
       return newSet
     })
@@ -72,18 +73,19 @@ const WishlistPage = () => {
     if (selectedItems.size === wishlistItems.length) {
       setSelectedItems(new Set())
     } else {
-      setSelectedItems(new Set(wishlistItems.map((item) => item.item_id)))
+      setSelectedItems(new Set(wishlistItems.map((item) => String(item.id))))
     }
   }
 
   // 즐겨찾기에서 삭제
-  const handleRemoveItem = async (itemId: string) => {
+  const handleRemoveItem = async (itemId: number) => {
+    const idStr = String(itemId)
     try {
-      await toggleFavoriteItem(itemId)
-      setWishlistItems((prev) => prev.filter((item) => item.item_id !== itemId))
+      await toggleFavoriteItem(idStr)
+      setWishlistItems((prev) => prev.filter((item) => item.id !== itemId))
       setSelectedItems((prev) => {
         const newSet = new Set(prev)
-        newSet.delete(itemId)
+        newSet.delete(idStr)
         return newSet
       })
     } catch (error) {
@@ -102,7 +104,7 @@ const WishlistPage = () => {
 
     try {
       await Promise.all(Array.from(selectedItems).map((id) => toggleFavoriteItem(id)))
-      setWishlistItems((prev) => prev.filter((item) => !selectedItems.has(item.item_id)))
+      setWishlistItems((prev) => prev.filter((item) => !selectedItems.has(String(item.id))))
       setSelectedItems(new Set())
     } catch (error) {
       console.error('삭제 실패:', error)
@@ -139,8 +141,8 @@ const WishlistPage = () => {
 
   // 할인가 계산
   const getDiscountedPrice = (item: ItemSummary) => {
-    if ((item.discount_percent ?? 0) > 0) {
-      return item.price * (1 - (item.discount_percent ?? 0) / 100)
+    if ((item.discountPercent ?? 0) > 0) {
+      return item.price * (1 - (item.discountPercent ?? 0) / 100)
     }
     return item.price
   }
@@ -246,14 +248,14 @@ const WishlistPage = () => {
           {/* 상품 목록 */}
           <Grid container spacing={3}>
             {wishlistItems.map((item) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={item.item_id}>
+              <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
                 <Card
                   sx={{
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     position: 'relative',
-                    border: selectedItems.has(item.item_id)
+                    border: selectedItems.has(String(item.id))
                       ? `2px solid ${brandColors.primary}`
                       : '1px solid #E5E7EB',
                     transition: 'all 0.2s',
@@ -265,15 +267,15 @@ const WishlistPage = () => {
                   {/* 선택 체크박스 */}
                   <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 1 }}>
                     <Checkbox
-                      checked={selectedItems.has(item.item_id)}
-                      onChange={() => handleSelectItem(item.item_id)}
+                      checked={selectedItems.has(String(item.id))}
+                      onChange={() => handleSelectItem(item.id)}
                       sx={{ bgcolor: 'white', borderRadius: 1 }}
                     />
                   </Box>
 
                   {/* 삭제 버튼 */}
                   <IconButton
-                    onClick={() => handleRemoveItem(item.item_id)}
+                    onClick={() => handleRemoveItem(item.id)}
                     sx={{
                       position: 'absolute',
                       top: 8,
@@ -286,9 +288,9 @@ const WishlistPage = () => {
                   </IconButton>
 
                   {/* 할인 뱃지 */}
-                  {(item.discount_percent ?? 0) > 0 && (
+                  {(item.discountPercent ?? 0) > 0 && (
                     <Chip
-                      label={`${item.discount_percent}%`}
+                      label={`${item.discountPercent}%`}
                       color="error"
                       size="small"
                       sx={{
@@ -304,9 +306,9 @@ const WishlistPage = () => {
                   <CardMedia
                     component="img"
                     height={200}
-                    image={item.thumbnailUrl || '/placeholder.jpg'}
+                    image={item.mainImageUrl || '/placeholder.jpg'}
                     alt={item.title}
-                    onClick={() => navigate(`/products/${item.item_id}`)}
+                    onClick={() => navigate(`/products/${item.id}`)}
                     sx={{ cursor: 'pointer', objectFit: 'cover' }}
                   />
 
@@ -322,7 +324,7 @@ const WishlistPage = () => {
                     <Typography
                       variant="body1"
                       fontWeight={600}
-                      onClick={() => navigate(`/products/${item.item_id}`)}
+                      onClick={() => navigate(`/products/${item.id}`)}
                       sx={{
                         cursor: 'pointer',
                         overflow: 'hidden',
@@ -339,7 +341,7 @@ const WishlistPage = () => {
 
                     {/* 가격 */}
                     <Box sx={{ mt: 1 }}>
-                      {(item.discount_percent ?? 0) > 0 && (
+                      {(item.discountPercent ?? 0) > 0 && (
                         <Typography
                           variant="body2"
                           color="text.secondary"
@@ -360,7 +362,7 @@ const WishlistPage = () => {
                       fullWidth
                       variant="outlined"
                       startIcon={<ShoppingCartIcon />}
-                      onClick={() => handleAddToCart(item.item_id)}
+                      onClick={() => handleAddToCart(String(item.id))}
                       sx={{
                         borderColor: brandColors.primary,
                         color: brandColors.primary,
