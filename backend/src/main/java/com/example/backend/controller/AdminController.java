@@ -46,7 +46,7 @@ public class AdminController {
             return ResponseController.success(null);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -69,7 +69,7 @@ public class AdminController {
             return ResponseController.success(null);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
     
@@ -86,7 +86,7 @@ public class AdminController {
             return ResponseController.success(null);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 }

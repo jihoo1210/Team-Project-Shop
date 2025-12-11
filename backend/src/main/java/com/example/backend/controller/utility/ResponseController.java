@@ -8,18 +8,19 @@ public class ResponseController {
 
     public static <T> ResponseEntity<ResponseDto<T>> success(T data) {
         ResponseDto<T> responseDto = ResponseDto.<T>builder()
-                .data(data)
+                .result(data)
                 .success(true)
                 .build();
         return ResponseEntity.ok(responseDto);
     }
 
-    public static ResponseEntity<ResponseDto> error(Exception e) {
+    public static ResponseEntity<ResponseDto> fail(Exception e) {
         ResponseDto responseDto = ResponseDto.builder()
-                .data(null)
+                .result(null)
                 .message(e.getMessage())
                 .success(false)
                 .build();
         return ResponseEntity.badRequest().body(responseDto);
     }
+
 }

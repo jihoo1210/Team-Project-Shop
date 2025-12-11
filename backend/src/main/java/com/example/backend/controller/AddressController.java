@@ -28,7 +28,7 @@ public class AddressController {
             List<AddressResponse> addresses = addressService.getMyAddresses(user);
             return ResponseController.success(addresses);
         } catch (Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -40,7 +40,7 @@ public class AddressController {
             addressService.addAddress(request, user);
             return ResponseController.success(null);
         } catch (Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -53,7 +53,7 @@ public class AddressController {
             addressService.updateAddress(addrNo, request, user);
             return ResponseController.success(null);
         } catch (Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -65,7 +65,7 @@ public class AddressController {
             addressService.deleteAddress(addrNo, user);
             return ResponseController.success(null);
         } catch (Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -77,7 +77,7 @@ public class AddressController {
             addressService.setDefaultAddress(addrNo, user);
             return ResponseController.success(null);
         } catch (Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 }

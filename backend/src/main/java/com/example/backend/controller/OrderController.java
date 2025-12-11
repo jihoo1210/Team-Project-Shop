@@ -36,7 +36,7 @@ public class OrderController {
             orderService.order(dto, user);
             return ResponseController.success(null);
         } catch (Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
             
         }
     }
@@ -47,7 +47,7 @@ public class OrderController {
             OrderDetailResponse response = orderService.getDetail(orderId);
             return ResponseController.success(response);
         } catch (Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
     
