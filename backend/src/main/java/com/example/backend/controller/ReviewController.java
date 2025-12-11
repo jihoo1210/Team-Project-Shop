@@ -40,7 +40,7 @@ public class ReviewController {
             List<IndexReviewResponse> response = reviewService.indexReview(itemId);
             return ResponseController.success(response);
         } catch (Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -51,7 +51,7 @@ public class ReviewController {
             reviewService.createReview(itemId, dto, user);
             return ResponseController.success(null);
         } catch (Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -61,7 +61,7 @@ public class ReviewController {
             reviewService.updateReview(reviewId, dto);
             return ResponseController.success(null);
         } catch(Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -71,7 +71,7 @@ public class ReviewController {
             reviewService.deleteReview(reviewId);
             return ResponseController.success(null);
         } catch(Exception e) {
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
     

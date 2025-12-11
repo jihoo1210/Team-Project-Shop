@@ -62,7 +62,7 @@ public class ItemController {
             return ResponseController.success(response);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -86,7 +86,7 @@ public class ItemController {
             return ResponseController.success(response);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -101,7 +101,7 @@ public class ItemController {
             return ResponseController.success(response);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
     
@@ -120,7 +120,7 @@ public class ItemController {
             return ResponseController.success(item);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
 
@@ -139,7 +139,7 @@ public class ItemController {
             return ResponseController.success(null);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
     
@@ -158,7 +158,7 @@ public class ItemController {
             return ResponseController.success(null);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseController.error(e);
+            return ResponseController.fail(e);
         }
     }
     
