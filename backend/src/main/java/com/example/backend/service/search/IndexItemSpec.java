@@ -14,7 +14,7 @@ import jakarta.persistence.criteria.Predicate;
 
 public class IndexItemSpec {
 
-    public static Specification<Item> search(String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory) {
+    public static Specification<Item> search(String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory, String color, String size, Integer maxPrice) {
         return (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
             String pattern = "";
@@ -25,12 +25,16 @@ public class IndexItemSpec {
             }
 
             Filter.addCategoryPredicates(builder, root, predicates, majorCategory, middleCategory, subcategory);
+            Filter.addColorPredicate(builder, root, predicates, color);
+            Filter.addSizePredicate(builder, root, predicates, size);
+            Filter.addPricePredicate(builder, root, predicates, maxPrice);
 
+            query.distinct(true);
             return builder.and(predicates.toArray(new Predicate[0]));
         };
     }
 
-    public static Specification<FavoriteItem> searchFavorites(String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory) {
+    public static Specification<FavoriteItem> searchFavorites(String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory, String color, String size, Integer maxPrice) {
         return (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (searchTerm != null && !searchTerm.isEmpty()) {
@@ -40,12 +44,16 @@ public class IndexItemSpec {
             }
 
             Filter.addCategoryPredicates(builder, root, predicates, majorCategory, middleCategory, subcategory);
+            Filter.addColorPredicate(builder, root, predicates, color);
+            Filter.addSizePredicate(builder, root, predicates, size);
+            Filter.addPricePredicate(builder, root, predicates, maxPrice);
 
+            query.distinct(true);
             return builder.and(predicates.toArray(new Predicate[0]));
         };
     }
 
-    public static Specification<CartItem> searchCart(String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory) {
+    public static Specification<CartItem> searchCart(String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory, String color, String size, Integer maxPrice) {
         return (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (searchTerm != null && !searchTerm.isEmpty()) {
@@ -55,7 +63,11 @@ public class IndexItemSpec {
             }
 
             Filter.addCategoryPredicates(builder, root, predicates, majorCategory, middleCategory, subcategory);
+            Filter.addColorPredicate(builder, root, predicates, color);
+            Filter.addSizePredicate(builder, root, predicates, size);
+            Filter.addPricePredicate(builder, root, predicates, maxPrice);
 
+            query.distinct(true);
             return builder.and(predicates.toArray(new Predicate[0]));
         };
     }
