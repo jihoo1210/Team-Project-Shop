@@ -23,4 +23,12 @@ public class ResponseController {
         return ResponseEntity.badRequest().body(responseDto);
     }
 
+    public static ResponseEntity<ResponseDto> fail(String message) {
+        ResponseDto responseDto = ResponseDto.builder()
+                .result(null)
+                .message(message)
+                .success(false)
+                .build();
+        return ResponseEntity.badRequest().body(responseDto);
+    }
 }
