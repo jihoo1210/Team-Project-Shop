@@ -21,7 +21,7 @@ export const useAiRecommend = () => {
     category?: string | null,
   ): Promise<ProductSummary | undefined> => {
     try {
-      const params: { page: number; size: number; category?: string; keyword?: string } = { page: 0, size: 10 }
+      const params: Parameters<typeof fetchItems>[0] = { page: 0, size: 10 }
       if (category) {
         params.category = category
       }
@@ -38,7 +38,7 @@ export const useAiRecommend = () => {
 
         for (const item of items) {
           let score = 0
-          const title = (item.item_name || item.title || '').toLowerCase()
+          const title = (item.title || '').toLowerCase()
           const brand = (item.brand || '').toLowerCase()
           for (const keyword of keywords) {
             const lowerKeyword = keyword.toLowerCase()
@@ -53,12 +53,12 @@ export const useAiRecommend = () => {
 
         const matchedItem = bestMatch || items[0]
         return {
-          id: matchedItem.item_id,
-          title: matchedItem.item_name || matchedItem.title || '',
+          id: matchedItem.id,
+          title: matchedItem.title || '',
           brand: matchedItem.brand || 'MyShop',
           price: matchedItem.price,
-          discountPercent: matchedItem.discount_percent,
-          mainImage: matchedItem.main_image || matchedItem.main_image_url || matchedItem.thumbnailUrl || '',
+          discountPercent: matchedItem.discountPercent,
+          mainImage: matchedItem.mainImageUrl || '',
         }
       }
       return undefined

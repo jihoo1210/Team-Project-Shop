@@ -17,7 +17,13 @@ const axiosClient = axios.create({
   withCredentials: true, // ( BE / FE Cookie인증 자동 전송)
 })
 
-export const getAccessToken = () => localStorage.getItem(ACCESS_TOKEN_KEY)
+export const getAccessToken = () => {
+  try {
+    return localStorage.getItem(ACCESS_TOKEN_KEY)
+  } catch {
+    return null
+  }
+}
 
 axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken()
@@ -31,7 +37,11 @@ axiosClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiErrorResponse>) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem(ACCESS_TOKEN_KEY)
+      try {
+        localStorage.removeItem(ACCESS_TOKEN_KEY)
+      } catch {
+        // localStorage 접근 실패 무시
+      }
       window.dispatchEvent(new Event(AUTH_EVENTS.UNAUTHORIZED))
     }
 
@@ -47,11 +57,19 @@ axiosClient.interceptors.response.use(
 )
 
 export const setAccessToken = (token: string) => {
-  localStorage.setItem(ACCESS_TOKEN_KEY, token)
+  try {
+    localStorage.setItem(ACCESS_TOKEN_KEY, token)
+  } catch {
+    // localStorage 접근 실패 무시
+  }
 }
 
 export const clearAccessToken = () => {
-  localStorage.removeItem(ACCESS_TOKEN_KEY)
+  try {
+    localStorage.removeItem(ACCESS_TOKEN_KEY)
+  } catch {
+    // localStorage 접근 실패 무시
+  }
 }
 
 export default axiosClient

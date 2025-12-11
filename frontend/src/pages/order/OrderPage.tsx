@@ -8,12 +8,6 @@ import {
   TextField,
   Button,
   Divider,
-  Radio,
-  RadioGroup,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  Checkbox,
   Stack,
   Alert,
   Card,
@@ -24,7 +18,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { createOrder } from '@/api/orderApi'
 import { fetchUser } from '@/api/userApi'
 import { useDaumPostcode } from '@/hooks/useDaumPostcode'
-import { loadTossPayments, TossPaymentsWidgets } from '@tosspayments/tosspayments-sdk'
+import { loadTossPayments, type TossPaymentsWidgets } from '@tosspayments/tosspayments-sdk'
 
 // 토스페이먼츠 클라이언트 키 (테스트)
 const TOSS_CLIENT_KEY = 'test_ck_GjLJoQ1aVZqN6WzpK0j53w6KYe2R'
@@ -63,13 +57,6 @@ const OrderPage: React.FC = () => {
     address: '',
     addressDetail: '',
     memo: '',
-  })
-  const [paymentMethod, setPaymentMethod] = useState('CARD')
-  const [agreements, setAgreements] = useState({
-    all: false,
-    terms: false,
-    privacy: false,
-    payment: false,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -128,11 +115,23 @@ const OrderPage: React.FC = () => {
     const renderWidgets = async () => {
       if (!widgets || orderItems.length === 0) return
 
+      // 총 금액 계산
+      const calcTotalPrice = () => {
+        const originalSubtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        const totalDiscount = orderItems.reduce((sum, item) => {
+          const discountRate = item.discountRate || 0
+          return sum + Math.floor(item.price * (discountRate / 100)) * item.quantity
+        }, 0)
+        const subtotal = originalSubtotal - totalDiscount
+        const shippingFee = subtotal >= 50000 ? 0 : 3000
+        return subtotal + shippingFee
+      }
+
       try {
         // 금액 설정
         await widgets.setAmount({
           currency: 'KRW',
-          value: totalPrice,
+          value: calcTotalPrice(),
         })
 
         // 결제 수단 위젯 렌더링
@@ -158,7 +157,7 @@ const OrderPage: React.FC = () => {
     }
 
     renderWidgets()
-  }, [widgets, totalPrice])
+  }, [widgets, orderItems])
 
   const fetchUserInfo = async () => {
     try {

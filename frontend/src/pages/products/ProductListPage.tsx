@@ -204,8 +204,9 @@ const ProductListPage = () => {
       }
 
       // 사이즈 필터 (첫 번째 선택된 사이즈만 전달)
+      // 주의: 'size'는 Spring Pageable의 페이지 크기 파라미터와 충돌하므로 'itemSize' 사용
       if (selectedSizes.length > 0) {
-        filterParams.size = selectedSizes[0]
+        filterParams.itemSize = selectedSizes[0]
       }
 
       // 가격 필터 (최대 가격이 50만원 미만일 때만 전달)
@@ -215,17 +216,16 @@ const ProductListPage = () => {
 
       const response = await fetchItems(filterParams)
 
+      // 백엔드 응답 필드명: id, title, brand, price, discountPercent, realPrice, mainImageUrl, favorite, cart
       const mappedProducts: ProductSummary[] = (response.content || []).map((item) => ({
-        id: item.item_id,
-        title: item.item_name || item.title || '상품명',
+        id: item.id,
+        title: item.title || '상품명',
         brand: item.brand || '',
         price: item.price,
-        discountPercent: item.discount_percent,
-        scoreAverage: item.score_average || item.scoreAverage,
-        reviewCount: item.review_count || item.reviewCount,
-        likeCount: item.like_count || item.likeCount,
-        mainImage: item.main_image || item.main_image_url || 'https://placehold.co/400x500/png',
-        badges: item.badges,
+        discountPercent: item.discountPercent,
+        mainImage: item.mainImageUrl || 'https://placehold.co/400x500/png',
+        favorite: item.favorite,
+        cart: item.cart,
       }))
 
       setProducts(mappedProducts)

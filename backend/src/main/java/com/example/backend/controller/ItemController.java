@@ -52,7 +52,7 @@ public class ItemController {
             String middleCategory = searchParams.getMiddleCategory();
             String subcategory = searchParams.getSubcategory();
             String color = searchParams.getColor();
-            String size = searchParams.getSize();
+            String size = searchParams.getItemSize();
             Integer maxPrice = searchParams.getMaxPrice();
             User user = userService.checkLoginAndGetUser();
             // customUserDetails null 체크 필요

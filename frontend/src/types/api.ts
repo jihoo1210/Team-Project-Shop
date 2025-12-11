@@ -82,7 +82,8 @@ export type ItemListQuery = PageableQuery & {
   middleCategory?: string
   subcategory?: string
   color?: string
-  size?: string
+  // 'size'는 PageableQuery의 페이지 크기와 충돌하므로 'itemSize' 사용
+  itemSize?: string
   minPrice?: number
   maxPrice?: number
   sortBy?: string
@@ -97,30 +98,15 @@ export type ReviewSummary = {
 }
 
 export type ItemSummary = {
-  item_id: string
-  item_name?: string
-  status: string
-  discount_percent?: number
-  colorList?: string[]
-  likeCount?: number
-  like_count?: number
-  savedInLikes?: boolean
+  id: number
+  title: string
+  brand: string
   price: number
-  scoreAverage?: number
-  score_average?: number
-  savedInCart?: boolean
-  main_image_url?: string
-  main_image?: string
-  thumbnailUrl?: string
-  brand?: string
-  title?: string
-  reviewCount?: number
-  review_count?: number
-  sku?: string
-  sizeList?: string[]
-  badges?: string[]
-  quantity?: number
-  stock?: number
+  discountPercent: number
+  realPrice: number
+  mainImageUrl: string
+  favorite: boolean
+  cart: boolean
 }
 
 export type ItemDetail = {

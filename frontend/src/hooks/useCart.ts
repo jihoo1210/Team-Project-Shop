@@ -13,20 +13,21 @@ export interface CartItem {
   discountRate?: number // 할인율 (0~100)
 }
 
-// API 응답 아이템 타입
+// API 응답 아이템 타입 (백엔드 camelCase 형식)
 interface CartApiItem {
-  item_id: string
-  item_name?: string
-  name?: string
-  main_image?: string
-  image?: string
-  price?: number
+  id: number
+  title: string
+  brand: string
+  price: number
+  discountPercent: number
+  realPrice: number
+  mainImageUrl: string
+  favorite: boolean
+  cart: boolean
   quantity?: number
   option?: string
   color?: string
   size?: string
-  discount_percent?: number
-  discountRate?: number
 }
 
 const CART_STORAGE_KEY = 'myshop_cart'
@@ -73,15 +74,15 @@ export const useCart = () => {
     try {
       const response = await fetchCartItems()
       const backendItems: CartItem[] = (response.content || []).map((item: CartApiItem) => ({
-        productId: item.item_id,
-        productName: item.item_name || item.name || '상품명',
-        productImage: item.main_image || item.image || 'https://placehold.co/100x100/png',
+        productId: String(item.id),
+        productName: item.title || '상품명',
+        productImage: item.mainImageUrl || 'https://placehold.co/100x100/png',
         price: item.price || 0,
         quantity: item.quantity || 1,
         option: item.option,
         color: item.color,
         size: item.size,
-        discountRate: item.discount_percent || item.discountRate || 0,
+        discountRate: item.discountPercent || 0,
       }))
 
       // 백엔드에 데이터가 있으면 백엔드 데이터 사용
