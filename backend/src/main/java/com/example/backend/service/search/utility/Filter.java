@@ -3,6 +3,8 @@ package com.example.backend.service.search.utility;
 import java.util.List;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -51,6 +53,27 @@ public class Filter {
         }
     }
 
+    public static <T> void addColorPredicate(CriteriaBuilder builder, Root<T> root, List<Predicate> predicates, String color) {
+        if (color != null && !color.isEmpty()) {
+            Join<?, ?> colorJoin = getItemJoin(root, "colorList");
+            predicates.add(builder.equal(colorJoin.get("color"), color));
+        }
+    }
+
+    public static <T> void addSizePredicate(CriteriaBuilder builder, Root<T> root, List<Predicate> predicates, String size) {
+        if (size != null && !size.isEmpty()) {
+            Join<?, ?> sizeJoin = getItemJoin(root, "sizeList");
+            predicates.add(builder.equal(sizeJoin.get("size"), size));
+        }
+    }
+
+    public static <T> void addPricePredicate(CriteriaBuilder builder, Root<T> root, List<Predicate> predicates, Integer maxPrice) {
+        if (maxPrice != null && maxPrice > 0) {
+            Path<Integer> pricePath = getItemPath(root, "price");
+            predicates.add(builder.lessThanOrEqualTo(pricePath, maxPrice));
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private static <T, Y> Path<Y> getItemPath(Root<T> root, String field) {
         // FavoriteItem, CartItem 등의 경우 item을 통해 접근
@@ -59,6 +82,17 @@ public class Filter {
         } catch (IllegalArgumentException e) {
             // Item 엔티티인 경우 직접 접근
             return (Path<Y>) root.get(field);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Join<?, ?> getItemJoin(Root<T> root, String collection) {
+        // FavoriteItem, CartItem 등의 경우 item을 통해 접근
+        try {
+            return root.join("item", JoinType.LEFT).join(collection, JoinType.LEFT);
+        } catch (IllegalArgumentException e) {
+            // Item 엔티티인 경우 직접 접근
+            return root.join(collection, JoinType.LEFT);
         }
     }
 }

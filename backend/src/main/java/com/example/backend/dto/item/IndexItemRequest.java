@@ -17,4 +17,7 @@ public class IndexItemRequest {
     private String majorCategory;
     private String middleCategory;
     private String subcategory;
+    private String color;
+    private String size;
+    private Integer maxPrice;
 }
