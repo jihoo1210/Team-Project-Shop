@@ -204,8 +204,9 @@ const ProductListPage = () => {
       }
 
       // 사이즈 필터 (첫 번째 선택된 사이즈만 전달)
+      // 주의: 'size'는 Spring Pageable의 페이지 크기 파라미터와 충돌하므로 'itemSize' 사용
       if (selectedSizes.length > 0) {
-        filterParams.size = selectedSizes[0]
+        filterParams.itemSize = selectedSizes[0]
       }
 
       // 가격 필터 (최대 가격이 50만원 미만일 때만 전달)

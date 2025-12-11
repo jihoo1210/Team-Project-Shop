@@ -21,19 +21,24 @@ export const useAuth = () => {
 
   // 사용자 정보 로드
   const loadUser = useCallback(() => {
-    const userId = localStorage.getItem('userId')
-    const email = localStorage.getItem('email')
-    const username = localStorage.getItem('username')
-    const role = localStorage.getItem('role')
+    try {
+      const userId = localStorage.getItem('userId')
+      const email = localStorage.getItem('email')
+      const username = localStorage.getItem('username')
+      const role = localStorage.getItem('role')
 
-    if (userId && email && username) {
-      setUser({
-        userId: Number(userId),
-        email: email,
-        username: username,
-        role: role || 'USER',
-      })
-    } else {
+      if (userId && email && username) {
+        setUser({
+          userId: Number(userId),
+          email: email,
+          username: username,
+          role: role || 'USER',
+        })
+      } else {
+        setUser(null)
+      }
+    } catch {
+      // localStorage 접근 실패 시 로그인 안 된 상태로 처리
       setUser(null)
     }
     setIsLoading(false)
@@ -46,11 +51,15 @@ export const useAuth = () => {
     } catch {
       // 서버 로그아웃 실패해도 로컬 정리
     }
-    localStorage.removeItem('userId')
-    localStorage.removeItem('email')
-    localStorage.removeItem('username')
-    localStorage.removeItem('role')
-    localStorage.removeItem('myshop_access_token')
+    try {
+      localStorage.removeItem('userId')
+      localStorage.removeItem('email')
+      localStorage.removeItem('username')
+      localStorage.removeItem('role')
+      localStorage.removeItem('myshop_access_token')
+    } catch {
+      // localStorage 접근 실패 무시
+    }
     setUser(null)
     window.dispatchEvent(new Event('auth:logout'))
   }, [])

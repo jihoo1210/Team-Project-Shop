@@ -18,6 +18,7 @@ public class IndexItemRequest {
     private String middleCategory;
     private String subcategory;
     private String color;
-    private String size;
+    // 'size'는 Spring Pageable의 페이지 크기 파라미터와 충돌하므로 'itemSize' 사용
+    private String itemSize;
     private Integer maxPrice;
 }
