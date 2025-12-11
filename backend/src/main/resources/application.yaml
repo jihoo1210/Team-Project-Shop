@@ -6,9 +6,9 @@ spring:
     name: backend
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://weindb.c9acki6gcwpa.ap-southeast-2.rds.amazonaws.com:3306/teampr
-    username: musicart
-    password: "!good6617"
+    url: ${DB_URL:jdbc:mariadb://localhost:3306/teampr}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -76,7 +76,7 @@ spring:
 # [종혁 코드] - JWT 설정
 # =====================================================
 jwt:
-  secret: VGhpc0lzQVZlcnlMb25nU2VjcmV0S2V5Rm9ySldUQXV0aGVudGljYXRpb25JblNwcmluZ0Jvb3RBcHBsaWNhdGlvbjIwMjQ=
+  secret: ${JWT_SECRET:your-jwt-secret-key-here}
   access-token-validity: 3600000
   refresh-token-validity: 604800000
 
