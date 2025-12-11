@@ -82,7 +82,7 @@ public class SecurityConfig {
                 // =====================================================
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2SuccessHandler)
-                        .failureUrl("/login/failure")
+                        .failureUrl("http://localhost:5173/login?result=failure")
                 )
 
                 // =====================================================

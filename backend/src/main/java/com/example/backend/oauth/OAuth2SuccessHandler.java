@@ -89,7 +89,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(refreshTokenCookie);
 
         // 로그인 성공 후 리다이렉트 (프론트엔드 URL로 변경 가능)
-        getRedirectStrategy().sendRedirect(request, response, "/login/success");
+        getRedirectStrategy().sendRedirect(request, response, "http://localhost:5173/login?result=success");
     }
 
     private User findOrCreateUser(String provider, String providerId, String email, String name) {
