@@ -89,11 +89,11 @@ const LoginPage = () => {
         fontWeight={400}
         textAlign="center"
         sx={{
+          mt: 6,
           mb: 4,
-          color: '#8B6914',
-          textDecoration: 'underline',
-          textUnderlineOffset: '8px',
-          letterSpacing: '4px',
+          fontWeight: 'semibold',
+          color: '#000',
+          letterSpacing: '10px',
         }}
       >
         LOGIN
@@ -224,7 +224,7 @@ const LoginPage = () => {
         }}
       >
         <Typography>
-          지금 가입하면 <strong style={{ color: '#8B6914' }}>최대 40% 웰컴 패키지</strong> 지급
+          지금 가입하면 <strong style={{ color: 'orange' }}>최대 40% 웰컴 패키지</strong> 지급
         </Typography>
         <Button
           component={RouterLink}
