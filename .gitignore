@@ -4,6 +4,7 @@ backend/bin/
 backend/.gradle/
 backend/gradle.properties
 backend/*.txt
+backend/src/main/resources/application.yaml
 
 # IDE
 .idea/
