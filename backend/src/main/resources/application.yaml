@@ -4,18 +4,22 @@ server:
 spring:
   application:
     name: backend
-  # datasource:
-  #   driver-class-name: org.mariadb.jdbc.Driver
-  #   url: jdbc:mariadb://weindb.c9acki6gcwpa.ap-southeast-2.rds.amazonaws.com/teampr
-  #   username: musicart
-  #   password: "!good6617"
-  # h2:
-  #   console:
-  #     enabled: true
-  # jpa:
-  #   hibernate:
-  #     ddl-auto: create-drop
-  #   show-sql: true
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://weindb.c9acki6gcwpa.ap-southeast-2.rds.amazonaws.com:3306/teampr
+    username: musicart
+    password: "!good6617"
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
 
   security:
     oauth2:
@@ -50,23 +54,23 @@ spring:
 # =====================================================
 # [종혁 코드] - H2 데이터베이스 설정
 # =====================================================
-  datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    database-platform: org.hibernate.dialect.H2Dialect
-    properties:
-      hibernate:
-        format_sql: true
+  # datasource:
+  #   driver-class-name: org.h2.Driver
+  #   url: jdbc:h2:mem:testdb;
+  #   username: sa
+  #   password:
+  # h2:
+  #   console:
+  #     enabled: true
+  #     path: /h2-console
+  # jpa:
+  #   hibernate:
+  #     ddl-auto: create-drop
+  #   show-sql: true
+  #   database-platform: org.hibernate.dialect.H2Dialect
+  #   properties:
+  #     hibernate:
+  #       format_sql: true
 
 # =====================================================
 # [종혁 코드] - JWT 설정
@@ -84,3 +88,11 @@ upload-dir: ./uploads/product
 
 whop:
   key: ${WHOP_KEY:your-default-key-here}
+
+openai:
+  api-key: ${OPENAI_API_KEY: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}
+    
+# 토스페이먼츠 설정
+toss:
+  payments:
+    secret-key: ${TOSS_SECRET_KEY:test_sk_5OWRapdA8dQxLpWZNaXY3o1zEqZK}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   Box,
   Container,
@@ -24,6 +24,10 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { createOrder } from '@/api/orderApi'
 import { fetchUser } from '@/api/userApi'
 import { useDaumPostcode } from '@/hooks/useDaumPostcode'
+import { loadTossPayments, TossPaymentsWidgets } from '@tosspayments/tosspayments-sdk'
+
+// 토스페이먼츠 클라이언트 키 (테스트)
+const TOSS_CLIENT_KEY = 'test_ck_GjLJoQ1aVZqN6WzpK0j53w6KYe2R'
 
 interface OrderItem {
   productId: number
@@ -32,8 +36,9 @@ interface OrderItem {
   price: number
   quantity: number
   option?: string
-  discountRate?: number // 할인율 (0~100)
-  whopCheckoutUrl?: string // 상품별 Whop 결제 URL
+  discountRate?: number
+  color?: string
+  size?: string
 }
 
 interface ShippingInfo {
@@ -45,14 +50,6 @@ interface ShippingInfo {
   memo: string
 }
 
-/**
- * 주문서/결제 페이지
- * SPEC: /order
- * - 주문 상품 요약
- * - 배송지 정보 (다음 우편번호 API 연동)
- * - 결제수단 선택
- * - 최종 결제 금액 및 약관 동의
- */
 const OrderPage: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -67,7 +64,7 @@ const OrderPage: React.FC = () => {
     addressDetail: '',
     memo: '',
   })
-  const [paymentMethod, setPaymentMethod] = useState('card')
+  const [paymentMethod, setPaymentMethod] = useState('CARD')
   const [agreements, setAgreements] = useState({
     all: false,
     terms: false,
@@ -78,6 +75,20 @@ const OrderPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // 토스페이먼츠 위젯
+  const [widgets, setWidgets] = useState<TossPaymentsWidgets | null>(null)
+  const [isWidgetReady, setIsWidgetReady] = useState(false)
+  const paymentWidgetRef = useRef<HTMLDivElement>(null)
+  const agreementWidgetRef = useRef<HTMLDivElement>(null)
+
+  // 주문 ID 생성
+  const generateOrderId = () => {
+    const now = new Date()
+    const timestamp = now.getTime()
+    const random = Math.random().toString(36).substring(2, 8)
+    return `ORDER_${timestamp}_${random}`
+  }
+
   useEffect(() => {
     if (location.state?.cartItems && location.state.cartItems.length > 0) {
       setOrderItems(location.state.cartItems)
@@ -85,6 +96,69 @@ const OrderPage: React.FC = () => {
     fetchUserInfo()
     setIsLoading(false)
   }, [location.state])
+
+  // 토스페이먼츠 위젯 초기화
+  useEffect(() => {
+    const initTossPayments = async () => {
+      try {
+        const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY)
+
+        // 회원 결제일 경우 customerKey 사용, 비회원이면 ANONYMOUS
+        const userId = localStorage.getItem('userId')
+        const customerKey = userId ? `customer_${userId}` : 'ANONYMOUS'
+
+        const widgetsInstance = tossPayments.widgets({
+          customerKey: customerKey === 'ANONYMOUS' ? customerKey : customerKey,
+        })
+
+        setWidgets(widgetsInstance)
+      } catch (err) {
+        console.error('토스페이먼츠 초기화 실패:', err)
+        setError('결제 시스템 초기화에 실패했습니다.')
+      }
+    }
+
+    if (orderItems.length > 0) {
+      initTossPayments()
+    }
+  }, [orderItems])
+
+  // 위젯 렌더링
+  useEffect(() => {
+    const renderWidgets = async () => {
+      if (!widgets || orderItems.length === 0) return
+
+      try {
+        // 금액 설정
+        await widgets.setAmount({
+          currency: 'KRW',
+          value: totalPrice,
+        })
+
+        // 결제 수단 위젯 렌더링
+        if (paymentWidgetRef.current) {
+          await widgets.renderPaymentMethods({
+            selector: '#payment-widget',
+            variantKey: 'DEFAULT',
+          })
+        }
+
+        // 약관 위젯 렌더링
+        if (agreementWidgetRef.current) {
+          await widgets.renderAgreement({
+            selector: '#agreement-widget',
+            variantKey: 'AGREEMENT',
+          })
+        }
+
+        setIsWidgetReady(true)
+      } catch (err) {
+        console.error('위젯 렌더링 실패:', err)
+      }
+    }
+
+    renderWidgets()
+  }, [widgets, totalPrice])
 
   const fetchUserInfo = async () => {
     try {
@@ -107,7 +181,6 @@ const OrderPage: React.FC = () => {
     setShippingInfo(prev => ({ ...prev, [field]: e.target.value }))
   }
 
-  // 다음 우편번호 API 연동
   const handleSearchAddress = () => {
     openPostcode((result) => {
       setShippingInfo(prev => ({
@@ -118,121 +191,15 @@ const OrderPage: React.FC = () => {
     })
   }
 
-  // 약관 동의 처리
-  const handleAgreementChange = (field: keyof typeof agreements) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const checked = e.target.checked
-
-    if (field === 'all') {
-      setAgreements({
-        all: checked,
-        terms: checked,
-        privacy: checked,
-        payment: checked,
-      })
-    } else {
-      const newAgreements = { ...agreements, [field]: checked }
-      newAgreements.all = newAgreements.terms && newAgreements.privacy && newAgreements.payment
-      setAgreements(newAgreements)
-    }
-  }
-
-  // Whop 결제 설정 (환경변수에서 로드)
-  const WHOP_BASE_URL = import.meta.env.VITE_WHOP_BASE_URL || ''
-
-  // 할인된 가격 계산 함수 (단가)
+  // 할인된 가격 계산 함수
   const getDiscountedPrice = (item: OrderItem) => {
     const discountRate = item.discountRate || 0
     return Math.floor(item.price * (1 - discountRate / 100))
   }
 
-  // 할인 금액 계산 (수량 포함)
   const getDiscountAmount = (item: OrderItem) => {
     const discountRate = item.discountRate || 0
     return Math.floor(item.price * (discountRate / 100)) * item.quantity
-  }
-
-  // 상품별 최종 결제 금액 (수량 포함)
-  const getItemTotalPrice = (item: OrderItem) => {
-    return getDiscountedPrice(item) * item.quantity
-  }
-
-  // 상품별 Whop 결제 URL 생성 (이미지, 할인가, 최종금액 포함)
-  const buildWhopCheckoutUrl = (item: OrderItem) => {
-    // 상품별 개별 URL이 있으면 사용, 없으면 기본 URL + 파라미터
-    const baseUrl = item.whopCheckoutUrl || WHOP_BASE_URL
-    const url = new URL(baseUrl)
-
-    // 상품 정보를 URL 파라미터로 전달
-    url.searchParams.set('product_name', item.productName)
-    url.searchParams.set('product_image', item.productImage) // 선택한 상품 이미지
-    url.searchParams.set('quantity', item.quantity.toString())
-    url.searchParams.set('unit_price', getDiscountedPrice(item).toString()) // 할인 적용된 단가
-    url.searchParams.set('total_price', getItemTotalPrice(item).toString()) // 최종 결제 금액
-    url.searchParams.set('original_price', item.price.toString()) // 원가
-    if (item.discountRate && item.discountRate > 0) {
-      url.searchParams.set('discount_rate', item.discountRate.toString()) // 할인율
-    }
-    if (item.option) {
-      url.searchParams.set('option', item.option)
-    }
-
-    return url.toString()
-  }
-
-  const handleSubmit = async () => {
-    // 배송 정보 유효성 검사
-    if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
-      setError('배송 정보를 모두 입력해주세요.')
-      return
-    }
-
-    // 약관 동의 검사
-    if (!agreements.terms || !agreements.privacy || !agreements.payment) {
-      setError('필수 약관에 모두 동의해주세요.')
-      return
-    }
-
-    setIsSubmitting(true)
-    setError(null)
-
-    try {
-      // 주문 정보 저장 (백엔드에 주문 생성)
-      const orderData = {
-        addr: shippingInfo.address + ' ' + shippingInfo.addressDetail,
-        zipCode: shippingInfo.zipcode,
-        username: shippingInfo.name,
-        orderDetail: shippingInfo.memo,
-        call: shippingInfo.phone,
-      }
-
-      // 주문 생성 시도 (실패해도 Whop으로 이동)
-      try {
-        await createOrder(orderData)
-      } catch {
-        // 주문 생성 실패해도 결제 진행
-        console.log('주문 정보 저장 실패, 결제 페이지로 이동')
-      }
-
-      // 모든 상품에 대해 Whop 결제 페이지 열기 (각 상품별로 창 열림)
-      orderItems.forEach((item, index) => {
-        // 수량만큼 결제창 열기 (또는 수량을 파라미터로 전달)
-        const checkoutUrl = buildWhopCheckoutUrl(item)
-        // 여러 창이 동시에 열리지 않도록 약간의 딜레이
-        setTimeout(() => {
-          window.open(checkoutUrl, `_blank_${index}`)
-        }, index * 300)
-      })
-
-      // 결제 완료 페이지로 이동 (사용자가 결제 완료 후 돌아올 페이지)
-      navigate('/order/complete?orderId=pending')
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : '주문 처리 중 오류가 발생했습니다.'
-      setError(errorMessage)
-    } finally {
-      setIsSubmitting(false)
-    }
   }
 
   // 원가 합계
@@ -246,6 +213,57 @@ const OrderPage: React.FC = () => {
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('ko-KR') + '원'
+  }
+
+  // 결제 요청
+  const handleSubmit = async () => {
+    if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
+      setError('배송 정보를 모두 입력해주세요.')
+      return
+    }
+
+    if (!widgets || !isWidgetReady) {
+      setError('결제 시스템이 준비되지 않았습니다. 잠시 후 다시 시도해주세요.')
+      return
+    }
+
+    setIsSubmitting(true)
+    setError(null)
+
+    try {
+      const orderId = generateOrderId()
+      const orderName = orderItems.length > 1
+        ? `${orderItems[0].productName} 외 ${orderItems.length - 1}건`
+        : orderItems[0].productName
+
+      // 주문 정보 백엔드에 저장
+      try {
+        await createOrder({
+          addr: shippingInfo.address + ' ' + shippingInfo.addressDetail,
+          zipCode: shippingInfo.zipcode,
+          username: shippingInfo.name,
+          orderDetail: shippingInfo.memo,
+          call: shippingInfo.phone,
+        })
+      } catch {
+        console.log('주문 정보 저장 실패, 결제 진행')
+      }
+
+      // 토스페이먼츠 결제 요청
+      await widgets.requestPayment({
+        orderId: orderId,
+        orderName: orderName,
+        customerName: shippingInfo.name,
+        customerMobilePhone: shippingInfo.phone.replace(/-/g, ''),
+        successUrl: `${window.location.origin}/order/success`,
+        failUrl: `${window.location.origin}/order/fail`,
+      })
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '결제 요청 중 오류가 발생했습니다.'
+      setError(errorMessage)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (isLoading) {
@@ -293,8 +311,8 @@ const OrderPage: React.FC = () => {
               </Typography>
               <Divider sx={{ my: 2 }} />
               <Stack spacing={2}>
-                {orderItems.map((item) => (
-                  <Box key={item.productId} sx={{ display: 'flex', gap: 2 }}>
+                {orderItems.map((item, index) => (
+                  <Box key={`${item.productId}-${index}`} sx={{ display: 'flex', gap: 2 }}>
                     <Box
                       component="img"
                       src={item.productImage}
@@ -303,9 +321,9 @@ const OrderPage: React.FC = () => {
                     />
                     <Box sx={{ flex: 1 }}>
                       <Typography fontWeight="medium">{item.productName}</Typography>
-                      {item.option && (
+                      {(item.color || item.size) && (
                         <Typography variant="body2" color="text.secondary">
-                          옵션: {item.option}
+                          옵션: {[item.color, item.size].filter(Boolean).join(' / ')}
                         </Typography>
                       )}
                       <Typography variant="body2" color="text.secondary">
@@ -378,8 +396,8 @@ const OrderPage: React.FC = () => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={8}>
-                  <Button 
-                    variant="outlined" 
+                  <Button
+                    variant="outlined"
                     sx={{ height: '56px' }}
                     startIcon={<SearchIcon />}
                     onClick={handleSearchAddress}
@@ -418,80 +436,22 @@ const OrderPage: React.FC = () => {
               </Grid>
             </Paper>
 
-            {/* 결제 수단 */}
+            {/* 토스페이먼츠 결제수단 위젯 */}
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" fontWeight="bold" gutterBottom>
                 결제 수단
               </Typography>
               <Divider sx={{ my: 2 }} />
-              <FormControl component="fieldset">
-                <RadioGroup
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                >
-                  <FormControlLabel value="card" control={<Radio />} label="신용카드" />
-                  <FormControlLabel value="bank" control={<Radio />} label="무통장입금" />
-                  <FormControlLabel value="virtual" control={<Radio />} label="가상계좌" />
-                  <FormControlLabel value="phone" control={<Radio />} label="휴대폰 결제" />
-                </RadioGroup>
-              </FormControl>
-              {paymentMethod === 'bank' && (
-                <Alert severity="info" sx={{ mt: 2 }}>
-                  주문 후 24시간 이내에 입금해주세요. 미입금 시 자동 취소됩니다.
-                </Alert>
-              )}
-              {paymentMethod === 'virtual' && (
-                <Alert severity="info" sx={{ mt: 2 }}>
-                  가상계좌는 주문 완료 후 발급됩니다. 7일 이내 입금해주세요.
-                </Alert>
-              )}
+              <Box id="payment-widget" ref={paymentWidgetRef} />
             </Paper>
 
-            {/* 약관 동의 */}
+            {/* 토스페이먼츠 약관 위젯 */}
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" fontWeight="bold" gutterBottom>
                 약관 동의
               </Typography>
               <Divider sx={{ my: 2 }} />
-              <FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={agreements.all}
-                      onChange={handleAgreementChange('all')}
-                    />
-                  }
-                  label={<Typography fontWeight="bold">전체 동의</Typography>}
-                />
-                <Divider sx={{ my: 1 }} />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={agreements.terms}
-                      onChange={handleAgreementChange('terms')}
-                    />
-                  }
-                  label="(필수) 이용약관 동의"
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={agreements.privacy}
-                      onChange={handleAgreementChange('privacy')}
-                    />
-                  }
-                  label="(필수) 개인정보 처리방침 동의"
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={agreements.payment}
-                      onChange={handleAgreementChange('payment')}
-                    />
-                  }
-                  label="(필수) 결제 서비스 이용 동의"
-                />
-              </FormGroup>
+              <Box id="agreement-widget" ref={agreementWidgetRef} />
             </Paper>
           </Stack>
         </Grid>
@@ -546,10 +506,15 @@ const OrderPage: React.FC = () => {
                 fullWidth
                 sx={{ mt: 3, py: 1.5 }}
                 onClick={handleSubmit}
-                disabled={isSubmitting || !agreements.terms || !agreements.privacy || !agreements.payment}
+                disabled={isSubmitting || !isWidgetReady}
               >
                 {isSubmitting ? '처리 중...' : `${formatPrice(totalPrice)} 결제하기`}
               </Button>
+              {!isWidgetReady && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textAlign: 'center' }}>
+                  결제 시스템 로딩 중...
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -559,4 +524,3 @@ const OrderPage: React.FC = () => {
 }
 
 export default OrderPage
-

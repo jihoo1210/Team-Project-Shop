@@ -14,6 +14,8 @@ const ProductDetailPage = lazy(() => import('@/pages/products/ProductDetailPage'
 const WishlistPage = lazy(() => import('@/pages/products/WishlistPage'))
 const CartPage = lazy(() => import('@/pages/cart/CartPage'))
 const OrderPage = lazy(() => import('@/pages/order/OrderPage'))
+const OrderSuccessPage = lazy(() => import('@/pages/order/OrderSuccessPage'))
+const OrderFailPage = lazy(() => import('@/pages/order/OrderFailPage'))
 const OrderCompletePage = lazy(() => import('@/pages/OrderCompletePage'))
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const SignupPage = lazy(() => import('@/pages/auth/SignupPage'))
@@ -57,14 +59,16 @@ const AppRoutes = () => {
             </AuthGuard>
           ) 
         },
-        { 
-          path: 'order/complete', 
+        {
+          path: 'order/complete',
           element: (
             <AuthGuard>
               <OrderCompletePage />
             </AuthGuard>
-          ) 
+          )
         },
+        { path: 'order/success', element: <OrderSuccessPage /> },
+        { path: 'order/fail', element: <OrderFailPage /> },
         { path: 'withdraw-complete', element: <WithdrawCompletePage /> },
         { 
           path: 'login', 
