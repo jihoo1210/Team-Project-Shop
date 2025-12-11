@@ -23,15 +23,15 @@ import { useAuth } from '@/hooks/useAuth'
 
 // 카테고리 메뉴 데이터 (백엔드 MajorCategoryEnum 기준)
 const categoryMenus = [
-  { label: '베스트', link: '/products?sort=best', isHot: true },
-  { label: '신상', link: '/products?sort=new' },
-  { label: '세일', link: '/products?sort=sale' },
-  { label: '여성', link: '/products?category=WOMEN' },
-  { label: '남성', link: '/products?category=MEN' },
-  { label: '키즈', link: '/products?category=KIDS' },
-  { label: '슈즈', link: '/products?category=SHOES' },
-  { label: '가방', link: '/products?category=BAGS' },
-  { label: '액세서리', link: '/products?category=ACCESSORIES' },
+  { label: '베스트', link: '/products?sort=best', isHot: true, isNew: false },
+  { label: '신상', link: '/products?sort=new', isHot: false, isNew: true },
+  { label: '세일', link: '/products?sort=sale', isHot: false, isNew: false },
+  { label: '여성', link: '/products?category=WOMEN', isHot: false, isNew: false },
+  { label: '남성', link: '/products?category=MEN', isHot: false, isNew: false },
+  { label: '키즈', link: '/products?category=KIDS', isHot: false, isNew: false },
+  { label: '슈즈', link: '/products?category=SHOES', isHot: false, isNew: false },
+  { label: '가방', link: '/products?category=BAGS', isHot: false, isNew: false },
+  { label: '액세서리', link: '/products?category=ACCESSORIES', isHot: false, isNew: false },
 ]
 
 const Header = () => {

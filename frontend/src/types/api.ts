@@ -82,7 +82,8 @@ export type ItemListQuery = PageableQuery & {
   middleCategory?: string
   subcategory?: string
   color?: string
-  size?: string
+  // 'size'는 PageableQuery의 페이지 크기와 충돌하므로 'itemSize' 사용
+  itemSize?: string
   minPrice?: number
   maxPrice?: number
   sortBy?: string

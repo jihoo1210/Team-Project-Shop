@@ -21,7 +21,7 @@ export const useAiRecommend = () => {
     category?: string | null,
   ): Promise<ProductSummary | undefined> => {
     try {
-      const params: { page: number; size: number; category?: string; keyword?: string } = { page: 0, size: 10 }
+      const params: Parameters<typeof fetchItems>[0] = { page: 0, size: 10 }
       if (category) {
         params.category = category
       }
