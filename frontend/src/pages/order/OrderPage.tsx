@@ -20,8 +20,9 @@ import { fetchUser } from '@/api/userApi'
 import { useDaumPostcode } from '@/hooks/useDaumPostcode'
 import { loadTossPayments, type TossPaymentsWidgets } from '@tosspayments/tosspayments-sdk'
 
-// 토스페이먼츠 클라이언트 키 (테스트)
-const TOSS_CLIENT_KEY = 'test_ck_GjLJoQ1aVZqN6WzpK0j53w6KYe2R'
+// 토스페이먼츠 결제위젯 클라이언트 키 (테스트)
+// 결제위젯 SDK는 결제위젯 전용 클라이언트 키가 필요합니다
+const TOSS_CLIENT_KEY = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
 
 interface OrderItem {
   productId: number
