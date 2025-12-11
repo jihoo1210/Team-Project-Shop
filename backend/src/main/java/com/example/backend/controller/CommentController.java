@@ -1,31 +1,34 @@
 package com.example.backend.controller;
 
+import com.example.backend.controller.utility.ResponseController;
 import com.example.backend.dto.CommentDTO;
 import com.example.backend.service.CommentService;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/comments")
+@RequiredArgsConstructor
 public class CommentController {
 
-    @Autowired
-    private CommentService commentService;
+    private final CommentService commentService;
 
     // 댓글 목록 조회 (게시글별)
     @GetMapping("/board/{boardNo}")
-    public ResponseEntity<List<CommentDTO>> getCommentList(
+    public ResponseEntity<?> getCommentList(
             @PathVariable Long boardNo,
             HttpSession session) {
-        Long userId = (Long) session.getAttribute("loginUserId");
-        String role = (String) session.getAttribute("loginUserRole");
-        boolean isAdmin = "ADMIN".equals(role);
+        try {
+            Long userId = (Long) session.getAttribute("loginUserId");
+            String role = (String) session.getAttribute("loginUserRole");
+            boolean isAdmin = "ADMIN".equals(role);
 
-        return ResponseEntity.ok(commentService.getCommentList(boardNo, userId, isAdmin));
+            return ResponseController.success(commentService.getCommentList(boardNo, userId, isAdmin));
+        } catch (Exception e) {
+            return ResponseController.fail(e);
+        }
     }
 
     // 댓글 작성
@@ -36,7 +39,7 @@ public class CommentController {
             HttpSession session) {
         Long userId = (Long) session.getAttribute("loginUserId");
         if (userId == null) {
-            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+            return ResponseController.fail("로그인이 필요합니다.");
         }
 
         String role = (String) session.getAttribute("loginUserRole");
@@ -44,9 +47,9 @@ public class CommentController {
 
         try {
             CommentDTO saved = commentService.write(boardNo, commentDTO, userId, isAdmin);
-            return ResponseEntity.ok(saved);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseController.success(saved);
+        } catch (Exception e) {
+            return ResponseController.fail(e);
         }
     }
 
@@ -58,7 +61,7 @@ public class CommentController {
             HttpSession session) {
         Long userId = (Long) session.getAttribute("loginUserId");
         if (userId == null) {
-            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+            return ResponseController.fail("로그인이 필요합니다.");
         }
 
         String role = (String) session.getAttribute("loginUserRole");
@@ -66,9 +69,9 @@ public class CommentController {
 
         try {
             CommentDTO updated = commentService.update(coNo, commentDTO, userId, isAdmin);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(403).body(e.getMessage());
+            return ResponseController.success(updated);
+        } catch (Exception e) {
+            return ResponseController.fail(e);
         }
     }
 
@@ -79,7 +82,7 @@ public class CommentController {
             HttpSession session) {
         Long userId = (Long) session.getAttribute("loginUserId");
         if (userId == null) {
-            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+            return ResponseController.fail("로그인이 필요합니다.");
         }
 
         String role = (String) session.getAttribute("loginUserRole");
@@ -87,10 +90,9 @@ public class CommentController {
 
         try {
             commentService.delete(coNo, userId, isAdmin);
-            return ResponseEntity.ok("삭제 성공");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(403).body(e.getMessage());
+            return ResponseController.success("삭제 성공");
+        } catch (Exception e) {
+            return ResponseController.fail(e);
         }
     }
 }
-

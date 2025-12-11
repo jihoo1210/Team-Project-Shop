@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.controller.utility.ResponseController;
 import com.example.backend.dto.LoginRequestDTO;
 import com.example.backend.dto.SignUpRequestDTO;
 import com.example.backend.dto.TokenResponseDTO;
@@ -32,9 +33,9 @@ public class AuthController {
     public ResponseEntity<?> signUp(@Valid @RequestBody SignUpRequestDTO request) {
         try {
             UserResponseDTO user = authService.signUp(request);
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseController.success(user);
+        } catch (Exception e) {
+            return ResponseController.fail(e);
         }
     }
 
@@ -62,9 +63,9 @@ public class AuthController {
             response.addCookie(refreshTokenCookie);
 
             // 응답 본문에는 사용자 정보만 반환 (토큰은 쿠키로)
-            return ResponseEntity.ok(token.getUser());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseController.success(token.getUser());
+        } catch (Exception e) {
+            return ResponseController.fail(e);
         }
     }
 
@@ -75,7 +76,7 @@ public class AuthController {
             // 쿠키에서 Refresh Token 추출
             String refreshToken = extractTokenFromCookie(request, "refreshToken");
             if (refreshToken == null) {
-                return ResponseEntity.status(401).body("Refresh Token이 없습니다.");
+                return ResponseController.fail("Refresh Token이 없습니다.");
             }
 
             TokenResponseDTO token = authService.refresh(refreshToken);
@@ -88,9 +89,9 @@ public class AuthController {
             accessTokenCookie.setMaxAge((int) (accessTokenValidity / 1000));
             response.addCookie(accessTokenCookie);
 
-            return ResponseEntity.ok(token.getUser());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
+            return ResponseController.success(token.getUser());
+        } catch (Exception e) {
+            return ResponseController.fail(e);
         }
     }
 
@@ -111,14 +112,14 @@ public class AuthController {
         refreshTokenCookie.setMaxAge(0);
         response.addCookie(refreshTokenCookie);
 
-        return ResponseEntity.ok("로그아웃 성공");
+        return ResponseController.success("로그아웃 성공");
     }
 
     // 이메일 중복 체크
     @GetMapping("/check-email")
     public ResponseEntity<?> checkEmail(@RequestParam String email) {
         boolean isDuplicate = authService.checkEmailDuplicate(email);
-        return ResponseEntity.ok(isDuplicate);
+        return ResponseController.success(isDuplicate);
     }
 
     // 현재 로그인 사용자 정보
@@ -126,14 +127,14 @@ public class AuthController {
     public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+            return ResponseController.fail("로그인이 필요합니다.");
         }
 
         try {
             UserResponseDTO user = authService.getCurrentUser(userId);
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
+            return ResponseController.success(user);
+        } catch (Exception e) {
+            return ResponseController.fail(e);
         }
     }
 
@@ -143,14 +144,14 @@ public class AuthController {
                                          HttpServletRequest httpRequest) {
         Long userId = (Long) httpRequest.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+            return ResponseController.fail("로그인이 필요합니다.");
         }
 
         try {
             UserResponseDTO user = authService.updateUser(userId, request);
-            return ResponseEntity.ok(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseController.success(user);
+        } catch (Exception e) {
+            return ResponseController.fail(e);
         }
     }
 
@@ -162,14 +163,14 @@ public class AuthController {
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+            return ResponseController.fail("로그인이 필요합니다.");
         }
 
         try {
             authService.updatePassword(userId, currentPassword, newPassword);
-            return ResponseEntity.ok("비밀번호가 변경되었습니다.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseController.success("비밀번호가 변경되었습니다.");
+        } catch (Exception e) {
+            return ResponseController.fail(e);
         }
     }
 
