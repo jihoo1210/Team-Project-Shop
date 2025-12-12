@@ -19,7 +19,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentController {
 
-    @Value("${toss.payments.secret-key:test_sk_placeholder}")
+    @Value("${toss.payments.secret-key:test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm}")
     private String secretKey;
 
     private final RestTemplate restTemplate = new RestTemplate();

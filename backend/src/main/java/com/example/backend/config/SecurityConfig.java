@@ -67,7 +67,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/error").permitAll()
                         .requestMatchers("/login/success", "/login/failure").permitAll()
-                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/api/oauth2/**", "/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/item/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/review/**").permitAll()
                         .requestMatchers("/api/ai/proxy").permitAll()
@@ -81,6 +81,12 @@ public class SecurityConfig {
                 // [진용 코드] - OAuth2 로그인 설정 (JWT 발급 핸들러 연결)
                 // =====================================================
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/api/oauth2/authorization")
+                        )
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("/api/login/oauth2/code/*")
+                        )
                         .successHandler(oAuth2SuccessHandler)
                         .failureUrl("http://localhost:5173/login?result=failure")
                 )
