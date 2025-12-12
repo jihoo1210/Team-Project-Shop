@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 import { login } from '@/api/userApi'
+import { brandColors } from '@/theme/tokens'
 
 /**
  * 로그인 페이지
@@ -99,7 +100,7 @@ const LoginPage = () => {
         LOGIN
       </Typography>
 
-      <Divider sx={{ borderColor: '#1a1a1a', mb: 4 }} />
+      <Divider sx={{ borderColor: brandColors.textDark, mb: 4 }} />
 
       {/* 로그인 폼 섹션 */}
       <Box
@@ -200,11 +201,11 @@ const LoginPage = () => {
           sx={{
             width: 120,
             height: 100,
-            bgcolor: '#1a1a1a',
+            bgcolor: brandColors.textDark,
             color: '#fff',
             borderRadius: 0,
             fontSize: '1rem',
-            '&:hover': { bgcolor: '#333' },
+            '&:hover': { bgcolor: brandColors.secondaryHover },
           }}
         >
           {isLoading ? '로그인 중...' : '로그인'}
@@ -231,12 +232,12 @@ const LoginPage = () => {
           to="/signup"
           variant="outlined"
           sx={{
-            borderColor: '#1a1a1a',
-            color: '#1a1a1a',
+            borderColor: brandColors.textDark,
+            color: brandColors.textDark,
             borderRadius: 0,
             px: 6,
             py: 1.5,
-            '&:hover': { borderColor: '#333', bgcolor: 'transparent' },
+            '&:hover': { borderColor: brandColors.secondaryHover, bgcolor: 'transparent' },
           }}
         >
           이메일로 가입하기
@@ -259,8 +260,8 @@ const LoginPage = () => {
             sx={{
               width: 56,
               height: 56,
-              bgcolor: '#03C75A',
-              '&:hover': { bgcolor: '#02b351' },
+              bgcolor: brandColors.naver,
+              '&:hover': { bgcolor: brandColors.naverHover },
             }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24">
