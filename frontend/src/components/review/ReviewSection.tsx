@@ -170,7 +170,7 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
             onClick={() => setIsWriteModalOpen(true)}
             sx={{
               bgcolor: brandColors.primary,
-              '&:hover': { bgcolor: '#374151' },
+              '&:hover': { bgcolor: brandColors.primaryHover },
             }}
           >
             리뷰 작성
@@ -296,7 +296,7 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
             disabled={writeSubmitting || !writeContent.trim()}
             sx={{
               bgcolor: brandColors.primary,
-              '&:hover': { bgcolor: '#374151' },
+              '&:hover': { bgcolor: brandColors.primaryHover },
             }}
           >
             {writeSubmitting ? '등록 중...' : '등록'}
@@ -349,7 +349,7 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
             disabled={editSubmitting || !editContent.trim()}
             sx={{
               bgcolor: brandColors.primary,
-              '&:hover': { bgcolor: '#374151' },
+              '&:hover': { bgcolor: brandColors.primaryHover },
             }}
           >
             {editSubmitting ? '수정 중...' : '수정'}

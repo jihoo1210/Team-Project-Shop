@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Typography,
   Box,
+  Container,
   Tabs,
   Tab,
   Table,
@@ -15,11 +16,16 @@ import {
   Pagination,
   Button,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material'
 import { Create as CreateIcon } from '@mui/icons-material'
 import { fetchBoardList } from '@/api/boardApi'
 import type { BoardListItem, PaginatedResponse } from '@/types/api'
 import { brandColors } from '@/theme/tokens'
+import { useAuth } from '@/hooks/useAuth'
 
 const BOARD_CATEGORIES = [
   { value: 'notice', label: '공지사항' },
@@ -33,12 +39,15 @@ const BoardListPage = () => {
   const { category } = useParams<{ category?: string }>()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const { isLoggedIn } = useAuth()
 
   const currentCategory = (category || 'notice') as BoardCategory
   const currentPage = parseInt(searchParams.get('page') || '1', 10)
 
   const [boardData, setBoardData] = useState<PaginatedResponse<BoardListItem> | null>(null)
   const [loading, setLoading] = useState(true)
+  // 로그인 유도 모달 상태
+  const [loginModalOpen, setLoginModalOpen] = useState(false)
 
   useEffect(() => {
     const loadBoardList = async () => {
@@ -79,11 +88,22 @@ const BoardListPage = () => {
   }
 
   const handleWrite = () => {
+    // 비회원이면 로그인 유도 모달 표시
+    if (!isLoggedIn) {
+      setLoginModalOpen(true)
+      return
+    }
     navigate(`/board/${currentCategory}/write`)
   }
 
+  const handleLoginRedirect = () => {
+    setLoginModalOpen(false)
+    // 로그인 후 돌아올 경로 저장
+    navigate('/login', { state: { from: `/board/${currentCategory}/write` } })
+  }
+
   return (
-    <Box>
+    <Container maxWidth="lg">
       <Typography variant="h4" fontWeight={700} sx={{ mb: 3, color: brandColors.primary }}>
         게시판
       </Typography>
@@ -187,7 +207,36 @@ const BoardListPage = () => {
           />
         </Box>
       )}
-    </Box>
+
+      {/* 로그인 유도 모달 */}
+      <Dialog
+        open={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>로그인이 필요합니다</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary">
+            글을 작성하려면 로그인이 필요합니다.
+            <br />
+            로그인 페이지로 이동하시겠습니까?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setLoginModalOpen(false)} color="inherit">
+            취소
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleLoginRedirect}
+            sx={{ bgcolor: brandColors.primary, '&:hover': { bgcolor: '#374151' } }}
+          >
+            로그인하기
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   )
 }
 

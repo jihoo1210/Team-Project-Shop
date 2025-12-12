@@ -62,7 +62,23 @@ interface ProductFormData {
   price: string;
   stock: string;
   description: string;
+  imageUrl: string; // 이미지 URL 직접 입력용
 }
+
+// 이미지 URL 처리 유틸 함수
+const getImageSrc = (url?: string): string => {
+  if (!url) return '/placeholder.jpg';
+  // 절대 URL이면 그대로 사용
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  // 상대 경로면 백엔드 기본 URL 붙이기
+  return url.startsWith('/') ? url : `/${url}`;
+};
+
+// 이미지 로드 실패 시 fallback 처리
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  e.currentTarget.src = '/placeholder.jpg';
+  e.currentTarget.onerror = null; // 무한 루프 방지
+};
 
 const AdminProductListPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -82,7 +98,10 @@ const AdminProductListPage: React.FC = () => {
     price: '',
     stock: '',
     description: '',
+    imageUrl: '',
   });
+  // URL 미리보기용 상태
+  const [urlPreview, setUrlPreview] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -93,11 +112,30 @@ const AdminProductListPage: React.FC = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axiosClient.get('/api/admin/products', {
-        params: { page, search: searchTerm },
+      // 백엔드 ItemController의 /api/item 사용
+      const response = await axiosClient.get('/item', {
+        params: {
+          page: page - 1,
+          size: 10,
+          searchField: 'title',
+          searchTerm: searchTerm || undefined,
+        },
       });
-      setProducts(response.data.content);
-      setTotalPages(response.data.totalPages);
+      const data = response.data.result;
+      // 백엔드 응답을 프론트엔드 Product 형식으로 변환
+      const mappedProducts = data.content.map((item: { id: number; title: string; brand: string; price: number; discountPercent: number; mainImageUrl: string }) => ({
+        id: item.id,
+        name: item.title,
+        brand: item.brand,
+        price: item.price,
+        stock: 100, // 백엔드에 stock 필드가 없으므로 기본값
+        status: 'active' as const,
+        category: '패션',
+        createdAt: new Date().toISOString().split('T')[0],
+        imageUrl: item.mainImageUrl,
+      }));
+      setProducts(mappedProducts);
+      setTotalPages(data.totalPages);
     } catch (err) {
       console.error('상품 목록 로드 실패:', err);
       setProducts([]);
@@ -117,7 +155,10 @@ const AdminProductListPage: React.FC = () => {
         price: product.price.toString(),
         stock: product.stock.toString(),
         description: '',
+        imageUrl: product.imageUrl || '',
       });
+      // 기존 이미지 URL이 있으면 미리보기 설정
+      setUrlPreview(product.imageUrl || '');
     } else {
       setFormData({
         name: '',
@@ -126,7 +167,9 @@ const AdminProductListPage: React.FC = () => {
         price: '',
         stock: '',
         description: '',
+        imageUrl: '',
       });
+      setUrlPreview('');
     }
     setProductImages([]);
     setDialogOpen(true);
@@ -136,6 +179,7 @@ const AdminProductListPage: React.FC = () => {
     setDialogOpen(false);
     setEditingProduct(null);
     setProductImages([]);
+    setUrlPreview('');
     setFormData({
       name: '',
       brand: '',
@@ -143,6 +187,7 @@ const AdminProductListPage: React.FC = () => {
       price: '',
       stock: '',
       description: '',
+      imageUrl: '',
     });
   };
 
@@ -212,38 +257,62 @@ const AdminProductListPage: React.FC = () => {
   // 폼 데이터 변경 핸들러
   const handleFormChange = (field: keyof ProductFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // 이미지 URL 변경 시 미리보기 업데이트
+    if (field === 'imageUrl') {
+      setUrlPreview(value);
+    }
   };
 
   // 상품 저장
   const handleSaveProduct = async () => {
-    if (!formData.name || !formData.price || !formData.stock) {
-      alert('상품명, 가격, 재고는 필수입니다.');
+    if (!formData.name || !formData.price) {
+      alert('상품명, 가격은 필수입니다.');
       return;
     }
 
     try {
       const submitFormData = new FormData();
-      submitFormData.append('name', formData.name);
-      submitFormData.append('brand', formData.brand);
-      submitFormData.append('category', formData.category);
-      submitFormData.append('price', formData.price);
-      submitFormData.append('stock', formData.stock);
-      submitFormData.append('description', formData.description);
 
-      // 이미지 추가
-      productImages.forEach((img, index) => {
+      // 백엔드 ItemResistraionRequest 형식에 맞게 data 객체 생성
+      // 파일 업로드가 없고 URL만 입력된 경우 URL 사용
+      const mainImageUrl = productImages.length === 0 && formData.imageUrl
+        ? formData.imageUrl
+        : '';
+
+      const itemData = {
+        title: formData.name,
+        price: parseInt(formData.price) || 0,
+        discountPercent: 0,
+        sku: '',
+        brand: formData.brand,
+        description: formData.description,
+        colorList: [],
+        sizeList: [],
+        mainImageUrl: mainImageUrl,
+        imageList: [],
+      };
+
+      // data를 JSON Blob으로 추가
+      submitFormData.append('data', new Blob([JSON.stringify(itemData)], { type: 'application/json' }));
+
+      // 대표 이미지와 추가 이미지 분리
+      const mainImage = productImages.find(img => img.isMain);
+      const otherImages = productImages.filter(img => !img.isMain);
+
+      if (mainImage) {
+        submitFormData.append('mainImage', mainImage.file);
+      }
+
+      otherImages.forEach((img) => {
         submitFormData.append('images', img.file);
-        if (img.isMain) {
-          submitFormData.append('mainImageIndex', index.toString());
-        }
       });
 
       if (editingProduct) {
-        await axiosClient.put(`/api/admin/products/${editingProduct.id}`, submitFormData, {
+        await axiosClient.put(`/admin/${editingProduct.id}`, submitFormData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
-        await axiosClient.post('/api/admin/products', submitFormData, {
+        await axiosClient.post('/admin', submitFormData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       }
@@ -251,28 +320,9 @@ const AdminProductListPage: React.FC = () => {
       fetchProducts();
       handleCloseDialog();
       alert(editingProduct ? '상품이 수정되었습니다.' : '상품이 등록되었습니다.');
-    } catch {
-      // 데모용 로컬 처리
-      const newProduct: Product = {
-        id: editingProduct?.id || Date.now(),
-        name: formData.name,
-        brand: formData.brand,
-        price: parseInt(formData.price) || 0,
-        stock: parseInt(formData.stock) || 0,
-        status: 'active',
-        category: formData.category || '기타',
-        createdAt: new Date().toISOString().split('T')[0],
-        imageUrl: productImages[0]?.preview,
-      };
-
-      if (editingProduct) {
-        setProducts((prev) => prev.map((p) => (p.id === editingProduct.id ? newProduct : p)));
-      } else {
-        setProducts((prev) => [newProduct, ...prev]);
-      }
-      
-      handleCloseDialog();
-      alert(editingProduct ? '상품이 수정되었습니다.' : '상품이 등록되었습니다.');
+    } catch (err) {
+      console.error('상품 저장 실패:', err);
+      alert('상품 저장에 실패했습니다.');
     }
   };
 
@@ -280,11 +330,12 @@ const AdminProductListPage: React.FC = () => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
 
     try {
-      await axiosClient.delete(`/api/admin/products/${id}`);
+      await axiosClient.delete(`/admin/${id}`);
       setProducts(products.filter(p => p.id !== id));
-    } catch {
-      // Delete locally for demo
-      setProducts(products.filter(p => p.id !== id));
+      alert('상품이 삭제되었습니다.');
+    } catch (err) {
+      console.error('상품 삭제 실패:', err);
+      alert('상품 삭제에 실패했습니다.');
     }
   };
 
@@ -340,7 +391,8 @@ const AdminProductListPage: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: 'grey.50' }}>
-              <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
+              <TableCell sx={{ fontWeight: 600, width: 60 }}>ID</TableCell>
+              <TableCell sx={{ fontWeight: 600, width: 80 }}>이미지</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>상품명</TableCell>
               <TableCell sx={{ fontWeight: 600, width: 100 }}>브랜드</TableCell>
               <TableCell sx={{ fontWeight: 600 }} align="right">가격</TableCell>
@@ -353,6 +405,21 @@ const AdminProductListPage: React.FC = () => {
             {products.map((product) => (
               <TableRow key={product.id} hover>
                 <TableCell>{product.id}</TableCell>
+                <TableCell>
+                  <Box
+                    component="img"
+                    src={getImageSrc(product.imageUrl)}
+                    onError={handleImageError}
+                    alt={product.name}
+                    sx={{
+                      width: 50,
+                      height: 50,
+                      objectFit: 'cover',
+                      borderRadius: 1,
+                      bgcolor: '#f5f5f5',
+                    }}
+                  />
+                </TableCell>
                 <TableCell>
                   <Typography fontWeight="medium">{product.name}</Typography>
                   <Typography variant="caption" color="text.secondary">
@@ -397,8 +464,10 @@ const AdminProductListPage: React.FC = () => {
             {/* 이미지 업로드 영역 */}
             <Grid item xs={12}>
               <Typography variant="subtitle2" gutterBottom>
-                상품 이미지 (최대 5개, 5MB 이하)
+                상품 이미지 (파일 업로드 또는 URL 입력)
               </Typography>
+
+              {/* 파일 업로드 */}
               <input
                 type="file"
                 ref={fileInputRef}
@@ -412,9 +481,9 @@ const AdminProductListPage: React.FC = () => {
                 startIcon={<CloudUploadIcon />}
                 onClick={() => fileInputRef.current?.click()}
                 disabled={productImages.length >= 5}
-                sx={{ mb: 2 }}
+                sx={{ mb: 2, mr: 2 }}
               >
-                이미지 업로드 ({productImages.length}/5)
+                파일 업로드 ({productImages.length}/5)
               </Button>
 
               {/* 업로드된 이미지 미리보기 */}
@@ -468,9 +537,43 @@ const AdminProductListPage: React.FC = () => {
                   ))}
                 </Box>
               )}
-              <Typography variant="caption" color="text.secondary">
-                * 클릭하여 대표 이미지를 선택하세요
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
+                * 클릭하여 대표 이미지를 선택하세요 (최대 5개, 5MB 이하)
               </Typography>
+
+              {/* 이미지 URL 입력 */}
+              <TextField
+                label="이미지 URL (파일 업로드 대신 URL 입력 가능)"
+                fullWidth
+                placeholder="https://example.com/image.jpg"
+                value={formData.imageUrl}
+                onChange={(e) => handleFormChange('imageUrl', e.target.value)}
+                disabled={productImages.length > 0}
+                helperText={productImages.length > 0 ? '파일이 업로드되면 URL은 무시됩니다' : '외부 이미지 URL을 입력하세요'}
+                sx={{ mb: 2 }}
+              />
+
+              {/* URL 이미지 미리보기 */}
+              {urlPreview && productImages.length === 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                    URL 이미지 미리보기:
+                  </Typography>
+                  <Box
+                    component="img"
+                    src={getImageSrc(urlPreview)}
+                    onError={handleImageError}
+                    alt="미리보기"
+                    sx={{
+                      width: 150,
+                      height: 150,
+                      objectFit: 'cover',
+                      borderRadius: 1,
+                      border: '1px solid #e0e0e0',
+                    }}
+                  />
+                </Box>
+              )}
             </Grid>
 
             <Grid item xs={12}>
