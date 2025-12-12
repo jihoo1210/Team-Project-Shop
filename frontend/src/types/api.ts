@@ -112,19 +112,27 @@ export type ItemSummary = {
 }
 
 export type ItemDetail = {
+  id: number
   title: string
+  description: string
+  brand: string
   price: number
-  discount_percent: number
+  discountPercent: number
+  realPrice: number
   sku: string
+  stock: number
+  mainImageUrl: string
+  imageList: string[]
   colorList: string[]
   sizeList: string[]
-  imageList: string[]
-  reviewList: ReviewSummary[]
-  created_at: string
-  updated_at: string
-  description: string
+  isFavorite: boolean
+  isCart: boolean
+  // Legacy fields (backward compatibility)
+  discount_percent?: number
   savedInLikes?: boolean
-  brand: string
+  reviewList?: ReviewSummary[]
+  created_at?: string
+  updated_at?: string
 }
 
 export type CreateOrUpdateItemRequest = {

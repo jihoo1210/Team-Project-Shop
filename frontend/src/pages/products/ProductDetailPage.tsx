@@ -249,10 +249,10 @@ const ProductDetailPage = () => {
 
   // 여기서 product는 확실히 존재 - 가격 계산
   const productPrice = product.price ?? 0
-  const discountPercent = product.discount_percent ?? 0
-  const finalPrice = discountPercent > 0 
-    ? productPrice * (1 - discountPercent / 100) 
-    : productPrice
+  const discountPercent = product.discountPercent ?? product.discount_percent ?? 0
+  const finalPrice = product.realPrice ?? (discountPercent > 0
+    ? productPrice * (1 - discountPercent / 100)
+    : productPrice)
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
