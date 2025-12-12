@@ -53,17 +53,25 @@ public class Filter {
         }
     }
 
-    public static <T> void addColorPredicate(CriteriaBuilder builder, Root<T> root, List<Predicate> predicates, String color) {
-        if (color != null && !color.isEmpty()) {
+    public static <T> void addColorPredicate(CriteriaBuilder builder, Root<T> root, List<Predicate> predicates, List<String> colors) {
+        if (colors != null && !colors.isEmpty()) {
             Join<?, ?> colorJoin = getItemJoin(root, "colorList");
-            predicates.add(builder.equal(colorJoin.get("color"), color));
+            // 여러 색상 중 하나라도 매칭되면 조회 (OR 조건)
+            Predicate[] colorPredicates = colors.stream()
+                    .map(color -> builder.equal(colorJoin.get("color"), color))
+                    .toArray(Predicate[]::new);
+            predicates.add(builder.or(colorPredicates));
         }
     }
 
-    public static <T> void addSizePredicate(CriteriaBuilder builder, Root<T> root, List<Predicate> predicates, String size) {
-        if (size != null && !size.isEmpty()) {
+    public static <T> void addSizePredicate(CriteriaBuilder builder, Root<T> root, List<Predicate> predicates, List<String> sizes) {
+        if (sizes != null && !sizes.isEmpty()) {
             Join<?, ?> sizeJoin = getItemJoin(root, "sizeList");
-            predicates.add(builder.equal(sizeJoin.get("size"), size));
+            // 여러 사이즈 중 하나라도 매칭되면 조회 (OR 조건)
+            Predicate[] sizePredicates = sizes.stream()
+                    .map(size -> builder.equal(sizeJoin.get("size"), size))
+                    .toArray(Predicate[]::new);
+            predicates.add(builder.or(sizePredicates));
         }
     }
 
