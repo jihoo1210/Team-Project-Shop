@@ -15,24 +15,34 @@ public class Filter {
         if (searchField == null || searchField.isEmpty()) {
             // 기본적으로 title 필드에서 검색
             Path<String> titlePath = getItemPath(root, "title");
-            predicates.add(builder.like(builder.lower(titlePath), pattern));
+            predicates.add(builder.like(
+                builder.lower(builder.function("REPLACE", String.class, titlePath, builder.literal(" "), builder.literal(""))),
+                pattern));
         } else {
             switch (searchField) {
                 case "title":
                     Path<String> titlePath = getItemPath(root, "title");
-                    predicates.add(builder.like(builder.lower(titlePath), pattern));
+                    predicates.add(builder.like(
+                        builder.lower(builder.function("REPLACE", String.class, titlePath, builder.literal(" "), builder.literal(""))),
+                        pattern));
                     break;
                 case "brand":
                     Path<String> brandPath = getItemPath(root, "brand");
-                    predicates.add(builder.like(builder.lower(brandPath), pattern));
+                    predicates.add(builder.like(
+                        builder.lower(builder.function("REPLACE", String.class, brandPath, builder.literal(" "), builder.literal(""))),
+                        pattern));
                     break;
                 case "description":
                     Path<String> descPath = getItemPath(root, "description");
-                    predicates.add(builder.like(builder.lower(descPath), pattern));
+                    predicates.add(builder.like(
+                        builder.lower(builder.function("REPLACE", String.class, descPath, builder.literal(" "), builder.literal(""))),
+                        pattern));
                     break;
                 default:
                     Path<String> defaultPath = getItemPath(root, "title");
-                    predicates.add(builder.like(builder.lower(defaultPath), pattern));
+                    predicates.add(builder.like(
+                        builder.lower(builder.function("REPLACE", String.class, defaultPath, builder.literal(" "), builder.literal(""))),
+                        pattern));
                     break;
             }
         }
