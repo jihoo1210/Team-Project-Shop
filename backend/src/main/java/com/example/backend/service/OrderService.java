@@ -2,10 +2,13 @@ package com.example.backend.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.backend.dto.order.OrderDetailResponse;
+import com.example.backend.dto.order.OrderListResponse;
 import com.example.backend.dto.order.OrderRequest;
 import com.example.backend.entity.item.utility.CartItem;
 import com.example.backend.entity.item.utility.OrderItem;
@@ -68,6 +71,40 @@ public class OrderService {
             .zipcode(orderItem.getZipcode())
             .totalPrice(orderItem.getTotalPrice())
             .build();
+    }
 
+    /**
+     * 주문 목록 조회
+     */
+    public Page<OrderListResponse> getOrderList(User user, Pageable pageable) {
+        User orderUser = userRepository.findById(user.getUserId()).orElse(null);
+        Page<OrderItem> orderItems = orderItemRepository.findByUserOrderByIdDesc(orderUser, pageable);
+
+        return orderItems.map(orderItem -> {
+            List<OrderItemList> itemList = orderItem.getItemList();
+            String title = "";
+            String mainImgUrl = "";
+
+            if (itemList != null && !itemList.isEmpty()) {
+                // 첫 번째 상품 정보
+                var firstItem = itemList.get(0).getItem();
+                title = firstItem.getTitle();
+                mainImgUrl = firstItem.getMainImageUrl();
+
+                // 여러 상품이면 "외 n개" 추가
+                if (itemList.size() > 1) {
+                    title = title + " 외 " + (itemList.size() - 1) + "개";
+                }
+            }
+
+            return OrderListResponse.builder()
+                .orderId(orderItem.getId())
+                .title(title)
+                .mainImgUrl(mainImgUrl)
+                .totalPrice(orderItem.getTotalPrice())
+                .status("paid") // 결제완료 상태
+                .createdAt(orderItem.getCratedAt())
+                .build();
+        });
     }
 }

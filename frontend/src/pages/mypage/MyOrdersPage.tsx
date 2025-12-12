@@ -21,14 +21,17 @@ import {
   Pagination,
 } from '@mui/material'
 import { fetchOrders, fetchOrderDetail } from '@/api/orderApi'
-import type { OrderListItem, OrderDetailResponse } from '@/types/api'
+import type { OrderDetailResponse } from '@/types/api'
 import { brandColors } from '@/theme/tokens'
 
-// 가상 주문 목록 (실제 API 연동 시 수정)
-interface OrderItem extends OrderListItem {
-  order_no: string
+// 백엔드 OrderListResponse와 매칭되는 타입
+interface OrderItem {
+  orderId: number
+  title: string
+  mainImgUrl: string
+  totalPrice: number
   status: string
-  created_at: string
+  createdAt: string
 }
 
 const MyOrdersPage = () => {
@@ -38,14 +41,15 @@ const MyOrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState<OrderDetailResponse | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
   const [page, setPage] = useState(1)
-  const pageSize = 10
+  const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
     const loadOrders = async () => {
       try {
         const data = await fetchOrders({ page: 0, size: 20 })
-        // API 응답 구조에 맞게 조정
-        setOrders(data as unknown as OrderItem[])
+        // API 응답: Page 객체의 content 배열
+        setOrders(data?.content || [])
+        setTotalPages(data?.totalPages || 1)
       } catch (error) {
         console.error('주문 목록 로드 실패:', error)
       } finally {
@@ -82,8 +86,7 @@ const MyOrdersPage = () => {
     return new Intl.NumberFormat('ko-KR').format(price) + '원'
   }
 
-  const totalPages = Math.ceil(orders.length / pageSize)
-  const displayedOrders = orders.slice((page - 1) * pageSize, page * pageSize)
+  const displayedOrders = orders
 
   if (loading) {
     return (
@@ -150,17 +153,17 @@ const MyOrdersPage = () => {
               </TableHead>
               <TableBody>
                 {displayedOrders.map((order) => (
-                  <TableRow key={order.order_no} hover>
+                  <TableRow key={order.orderId} hover>
                     <TableCell>
                       <Typography fontWeight={500} fontSize="0.875rem">
-                        {order.order_no}
+                        {order.orderId}
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Box
                           component="img"
-                          src={order.main_img_url || '/placeholder.jpg'}
+                          src={order.mainImgUrl || '/placeholder.jpg'}
                           alt={order.title}
                           sx={{
                             width: 60,
@@ -183,13 +186,13 @@ const MyOrdersPage = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Typography fontSize="0.875rem" color="text.secondary">
-                        {order.created_at ? new Date(order.created_at).toLocaleDateString('ko-KR') : '-'}
+                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString('ko-KR') : '-'}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
                       <Button
                         size="small"
-                        onClick={() => handleViewDetail(order.order_id || '')}
+                        onClick={() => handleViewDetail(String(order.orderId))}
                       >
                         상세보기
                       </Button>
