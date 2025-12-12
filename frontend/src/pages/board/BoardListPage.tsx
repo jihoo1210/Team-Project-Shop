@@ -103,7 +103,7 @@ const BoardListPage = () => {
   }
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="md" sx={{ py: 4 }}>
       <Typography variant="h4" fontWeight={700} sx={{ mb: 3, color: brandColors.primary }}>
         게시판
       </Typography>

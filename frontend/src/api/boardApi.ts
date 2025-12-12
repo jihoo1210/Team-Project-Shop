@@ -47,6 +47,19 @@ export const updateBoard = (boardNo: string, data: Omit<BoardUpdateRequest, 'boa
 export const deleteBoard = (boardNo: string) =>
   axiosClient.delete<void>(`/board/${boardNo}`).then((res) => res.data)
 
+// 파일 업로드 - POST /api/board/upload
+export const uploadBoardFiles = (files: File[]) => {
+  const formData = new FormData()
+  files.forEach((file) => {
+    formData.append('files', file)
+  })
+  return axiosClient
+    .post<{ fileUrls: string[] }>('/board/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    .then((res) => res.data)
+}
+
 // 파일 다운로드 - GET /api/board/file/{fileNo}
 export const downloadBoardFile = (fileNo: string) =>
   axiosClient.get<Blob>(`/board/file/${fileNo}`, { responseType: 'blob' }).then((res) => res.data)

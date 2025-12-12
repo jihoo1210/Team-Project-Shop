@@ -186,7 +186,7 @@ const BoardEditPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: 4 }}>
       {/* 뒤로가기 */}
       <Button
         startIcon={<ArrowBackIcon />}
