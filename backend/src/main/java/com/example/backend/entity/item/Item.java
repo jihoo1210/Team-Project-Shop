@@ -61,6 +61,14 @@ public class Item extends BaseEntity {
     private Integer stock;
     @Column
     private String sku;
+    @Column
+    private Integer realPrice;
+    @Builder.Default
+    @Column
+    private Integer likeCount = 0;
+    @Builder.Default
+    @Column
+    private Integer reviewCount = 0;
     @Builder.Default
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemImage> imageList = new ArrayList<>();
@@ -103,11 +111,13 @@ public class Item extends BaseEntity {
         }
         if(dto.getPrice() != this.price) {
             this.price = dto.getPrice();
+            this.realPrice = calculateRealPrice();
         }
         if(dto.getDiscountPercent() != this.discountPercent) {
             this.discountPercent = dto.getDiscountPercent();
+            this.realPrice = calculateRealPrice();
         }
-        if(dto.getSku() != null && !dto.getSku().equals(this.sku)) {
+        if(dto.getSku() != null && !dto.getSku().isBlank() && !dto.getSku().equals(this.sku)) {
             this.sku = dto.getSku();
         }
         if(dto.getBrand() != null && !dto.getBrand().equals(this.brand)) {
@@ -133,8 +143,14 @@ public class Item extends BaseEntity {
         }
     }
 
-    public int getRealPrice() {
-        return this.price - this.price * discountPercent / 100;
+    public Integer getRealPrice() {
+        return this.realPrice;
+    }
+
+    public Integer calculateRealPrice() {
+        if (this.price == null) return 0;
+        int discount = this.discountPercent != null ? this.discountPercent : 0;
+        return this.price - this.price * discount / 100;
     }
 }
 
