@@ -152,16 +152,15 @@ const ProductDetailPage = () => {
     }
     try {
       // useCart 훅을 사용하여 장바구니에 추가
-      // 원가와 할인율을 별도로 저장하여 Whop 결제 시 정확한 정보 전달
       const cartItem = {
         productId: id,
         productName: product.title,
         productImage: product.imageList?.[0] || 'https://placehold.co/100x100/png',
-        price: product.price ?? 0, // 원가
+        price: product.price ?? 0,
         quantity: quantity,
         color: selectedColor || undefined,
         size: selectedSize || undefined,
-        discountRate: product.discount_percent ?? 0, // 할인율
+        discountRate: product.discount_percent ?? 0,
       }
       await addToCart(cartItem)
       alert('장바구니에 담았습니다.')
@@ -189,16 +188,15 @@ const ProductDetailPage = () => {
     }
     try {
       // useCart 훅을 사용하여 장바구니에 추가 후 이동
-      // 원가와 할인율을 별도로 저장하여 Whop 결제 시 정확한 정보 전달
       const cartItem = {
         productId: id,
         productName: product.title,
         productImage: product.imageList?.[0] || 'https://placehold.co/100x100/png',
-        price: product.price ?? 0, // 원가
+        price: product.price ?? 0,
         quantity: quantity,
         color: selectedColor || undefined,
         size: selectedSize || undefined,
-        discountRate: product.discount_percent ?? 0, // 할인율
+        discountRate: product.discount_percent ?? 0,
       }
       await addToCart(cartItem)
       navigate('/cart')
