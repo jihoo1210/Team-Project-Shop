@@ -47,63 +47,104 @@ const MAJOR_CATEGORIES = [
   { value: 'BAGS', label: '가방' },
 ];
 
-const MIDDLE_CATEGORIES = [
-  { value: 'TOP', label: '상의' },
-  { value: 'BOTTOM', label: '하의' },
-  { value: 'OUTER', label: '아우터' },
-  { value: 'DRESS', label: '드레스' },
-  { value: 'SUIT', label: '정장' },
-  { value: 'UNDERWEAR', label: '속옷' },
-  { value: 'SPORTSWEAR', label: '스포츠웨어' },
-  { value: 'SNEAKERS', label: '스니커즈' },
-  { value: 'BOOTS', label: '부츠' },
-  { value: 'SANDALS', label: '샌들' },
-  { value: 'LOAFERS', label: '로퍼' },
-  { value: 'HEELS', label: '힐' },
-  { value: 'BACKPACK', label: '백팩' },
-  { value: 'CROSSBODY', label: '크로스백' },
-  { value: 'TOTE', label: '토트백' },
-  { value: 'CLUTCH', label: '클러치' },
-  { value: 'WALLET', label: '지갑' },
-  { value: 'HAT', label: '모자' },
-  { value: 'SCARF', label: '스카프' },
-  { value: 'BELT', label: '벨트' },
-  { value: 'JEWELRY', label: '주얼리' },
-  { value: 'WATCH', label: '시계' },
-  { value: 'SUNGLASSES', label: '선글라스' },
-];
+// 대분류에 따른 중분류 매핑
+const MIDDLE_CATEGORIES_BY_MAJOR: Record<string, { value: string; label: string }[]> = {
+  MEN: [
+    { value: 'TOP', label: '상의' },
+    { value: 'BOTTOM', label: '하의' },
+    { value: 'OUTER', label: '아우터' },
+    { value: 'SUIT', label: '정장' },
+    { value: 'UNDERWEAR', label: '속옷' },
+    { value: 'SPORTSWEAR', label: '스포츠웨어' },
+  ],
+  WOMEN: [
+    { value: 'TOP', label: '상의' },
+    { value: 'BOTTOM', label: '하의' },
+    { value: 'OUTER', label: '아우터' },
+    { value: 'DRESS', label: '드레스' },
+    { value: 'SUIT', label: '정장' },
+    { value: 'UNDERWEAR', label: '속옷' },
+    { value: 'SPORTSWEAR', label: '스포츠웨어' },
+  ],
+  KIDS: [
+    { value: 'TOP', label: '상의' },
+    { value: 'BOTTOM', label: '하의' },
+    { value: 'OUTER', label: '아우터' },
+    { value: 'DRESS', label: '드레스' },
+    { value: 'UNDERWEAR', label: '속옷' },
+    { value: 'SPORTSWEAR', label: '스포츠웨어' },
+  ],
+  ACCESSORIES: [
+    { value: 'HAT', label: '모자' },
+    { value: 'SCARF', label: '스카프' },
+    { value: 'BELT', label: '벨트' },
+    { value: 'JEWELRY', label: '주얼리' },
+    { value: 'WATCH', label: '시계' },
+    { value: 'SUNGLASSES', label: '선글라스' },
+  ],
+  SHOES: [
+    { value: 'SNEAKERS', label: '스니커즈' },
+    { value: 'BOOTS', label: '부츠' },
+    { value: 'SANDALS', label: '샌들' },
+    { value: 'LOAFERS', label: '로퍼' },
+    { value: 'HEELS', label: '힐' },
+  ],
+  BAGS: [
+    { value: 'BACKPACK', label: '백팩' },
+    { value: 'CROSSBODY', label: '크로스백' },
+    { value: 'TOTE', label: '토트백' },
+    { value: 'CLUTCH', label: '클러치' },
+    { value: 'WALLET', label: '지갑' },
+  ],
+};
 
-const SUB_CATEGORIES = [
-  { value: 'T_SHIRT', label: '티셔츠' },
-  { value: 'SHIRT', label: '셔츠' },
-  { value: 'BLOUSE', label: '블라우스' },
-  { value: 'SWEATER', label: '스웨터' },
-  { value: 'HOODIE', label: '후드티' },
-  { value: 'CARDIGAN', label: '가디건' },
-  { value: 'JACKET', label: '재킷' },
-  { value: 'COAT', label: '코트' },
-  { value: 'PARKA', label: '파카' },
-  { value: 'VEST', label: '조끼' },
-  { value: 'JEANS', label: '청바지' },
-  { value: 'PANTS', label: '바지' },
-  { value: 'SHORTS', label: '반바지' },
-  { value: 'SKIRT', label: '스커트' },
-  { value: 'LEGGINGS', label: '레깅스' },
-  { value: 'SWEATPANTS', label: '트레이닝 바지' },
-  { value: 'MINI_DRESS', label: '미니 드레스' },
-  { value: 'MIDI_DRESS', label: '미디 드레스' },
-  { value: 'MAXI_DRESS', label: '맥시 드레스' },
-  { value: 'FORMAL_SUIT', label: '정장 수트' },
-  { value: 'CASUAL_SUIT', label: '캐주얼 수트' },
-  { value: 'BRA', label: '브라' },
-  { value: 'PANTIES', label: '팬티' },
-  { value: 'BOXERS', label: '박서' },
-  { value: 'SOCKS', label: '양말' },
-  { value: 'RUNNING', label: '러닝' },
-  { value: 'GYM', label: '헬스' },
-  { value: 'YOGA', label: '요가' },
-  { value: 'SWIMMING', label: '수영' },
-];
+// 중분류에 따른 소분류 매핑
+const SUB_CATEGORIES_BY_MIDDLE: Record<string, { value: string; label: string }[]> = {
+  TOP: [
+    { value: 'T_SHIRT', label: '티셔츠' },
+    { value: 'SHIRT', label: '셔츠' },
+    { value: 'BLOUSE', label: '블라우스' },
+    { value: 'SWEATER', label: '스웨터' },
+    { value: 'HOODIE', label: '후드티' },
+    { value: 'CARDIGAN', label: '가디건' },
+  ],
+  BOTTOM: [
+    { value: 'JEANS', label: '청바지' },
+    { value: 'PANTS', label: '바지' },
+    { value: 'SHORTS', label: '반바지' },
+    { value: 'SKIRT', label: '스커트' },
+    { value: 'LEGGINGS', label: '레깅스' },
+    { value: 'SWEATPANTS', label: '트레이닝 바지' },
+  ],
+  OUTER: [
+    { value: 'JACKET', label: '재킷' },
+    { value: 'COAT', label: '코트' },
+    { value: 'PARKA', label: '파카' },
+    { value: 'VEST', label: '조끼' },
+    { value: 'CARDIGAN', label: '가디건' },
+  ],
+  DRESS: [
+    { value: 'MINI_DRESS', label: '미니 드레스' },
+    { value: 'MIDI_DRESS', label: '미디 드레스' },
+    { value: 'MAXI_DRESS', label: '맥시 드레스' },
+  ],
+  SUIT: [
+    { value: 'FORMAL_SUIT', label: '정장 수트' },
+    { value: 'CASUAL_SUIT', label: '캐주얼 수트' },
+  ],
+  UNDERWEAR: [
+    { value: 'BRA', label: '브라' },
+    { value: 'PANTIES', label: '팬티' },
+    { value: 'BOXERS', label: '박서' },
+    { value: 'SOCKS', label: '양말' },
+  ],
+  SPORTSWEAR: [
+    { value: 'RUNNING', label: '러닝' },
+    { value: 'GYM', label: '헬스' },
+    { value: 'YOGA', label: '요가' },
+    { value: 'SWIMMING', label: '수영' },
+  ],
+};
 
 const COLOR_OPTIONS: { value: string; label: string; hex: string }[] = [
   { value: 'BLACK', label: '블랙', hex: '#000000' },
@@ -358,12 +399,36 @@ const AdminProductListPage: React.FC = () => {
 
   // 폼 데이터 변경 핸들러
   const handleFormChange = (field: keyof ProductFormData, value: string | string[]) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value };
+
+      // 대분류 변경 시 중분류, 소분류 초기화
+      if (field === 'majorCategory') {
+        newData.middleCategory = '';
+        newData.subcategory = '';
+      }
+      // 중분류 변경 시 소분류 초기화
+      if (field === 'middleCategory') {
+        newData.subcategory = '';
+      }
+
+      return newData;
+    });
     // 이미지 URL 변경 시 미리보기 업데이트
     if (field === 'imageUrl' && typeof value === 'string') {
       setUrlPreview(value);
     }
   };
+
+  // 현재 선택된 대분류에 따른 중분류 목록
+  const availableMiddleCategories = formData.majorCategory
+    ? MIDDLE_CATEGORIES_BY_MAJOR[formData.majorCategory] || []
+    : [];
+
+  // 현재 선택된 중분류에 따른 소분류 목록
+  const availableSubCategories = formData.middleCategory
+    ? SUB_CATEGORIES_BY_MIDDLE[formData.middleCategory] || []
+    : [];
 
   // 색상 선택 토글 핸들러
   const handleColorToggle = (colorValue: string) => {
@@ -727,7 +792,7 @@ const AdminProductListPage: React.FC = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={!formData.majorCategory}>
                 <InputLabel>중분류</InputLabel>
                 <Select
                   label="중분류"
@@ -735,14 +800,14 @@ const AdminProductListPage: React.FC = () => {
                   onChange={(e) => handleFormChange('middleCategory', e.target.value)}
                 >
                   <MenuItem value="">선택안함</MenuItem>
-                  {MIDDLE_CATEGORIES.map((cat) => (
+                  {availableMiddleCategories.map((cat) => (
                     <MenuItem key={cat.value} value={cat.value}>{cat.label}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={!formData.middleCategory || availableSubCategories.length === 0}>
                 <InputLabel>소분류</InputLabel>
                 <Select
                   label="소분류"
@@ -750,7 +815,7 @@ const AdminProductListPage: React.FC = () => {
                   onChange={(e) => handleFormChange('subcategory', e.target.value)}
                 >
                   <MenuItem value="">선택안함</MenuItem>
-                  {SUB_CATEGORIES.map((cat) => (
+                  {availableSubCategories.map((cat) => (
                     <MenuItem key={cat.value} value={cat.value}>{cat.label}</MenuItem>
                   ))}
                 </Select>
