@@ -1,16 +1,37 @@
 import FavoriteBorder from '@mui/icons-material/FavoriteBorder'
+import Favorite from '@mui/icons-material/Favorite'
 import Star from '@mui/icons-material/Star'
 import { Box, Card, CardContent, CardMedia, Chip, IconButton, Stack, Typography } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import type { ProductSummary } from '@/types/product'
+import { useLike } from '@/hooks/useLike'
+import { brandColors } from '@/theme/tokens'
 
 interface ProductCardProps {
   product: ProductSummary
 }
 
+// 이미지 로드 실패 시 fallback 처리
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  e.currentTarget.src = '/placeholder.jpg'
+  e.currentTarget.onerror = null
+}
+
+// 이미지 URL 처리
+const getImageSrc = (url?: string): string => {
+  if (!url) return '/placeholder.jpg'
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return url.startsWith('/') ? url : `/${url}`
+}
+
 const ProductCard = ({ product }: ProductCardProps) => {
   const navigate = useNavigate()
-  
+  // 좋아요 훅 사용 (랜덤 숫자 + 토글)
+  const { likeCount, isLiked, toggleLike } = useLike({
+    initialCount: product.likeCount, // 기존 값이 있으면 사용
+    initialLiked: false,
+  })
+
   const discountedPrice = product.discountPercent
     ? product.price * (1 - product.discountPercent / 100)
     : product.price
@@ -21,7 +42,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation() // 카드 클릭 이벤트 전파 방지
-    // TODO: 찜하기 기능 구현
+    toggleLike()
   }
 
   return (
@@ -53,23 +74,50 @@ const ProductCard = ({ product }: ProductCardProps) => {
             objectFit: 'cover',
             transition: 'transform 0.5s ease',
           }}
-          image={product.mainImage}
+          image={getImageSrc(product.mainImage)}
           alt={product.title}
+          onError={handleImageError}
         />
-        <IconButton
-          onClick={handleFavoriteClick}
-          size="small"
+        {/* 좋아요 버튼 + 카운트 */}
+        <Box
           sx={{
             position: 'absolute',
             top: 12,
             right: 12,
-            bgcolor: 'rgba(255,255,255,0.9)',
-            backdropFilter: 'blur(4px)',
-            '&:hover': { bgcolor: 'white' },
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
-          <FavoriteBorder sx={{ fontSize: 20 }} />
-        </IconButton>
+          <IconButton
+            onClick={handleFavoriteClick}
+            size="small"
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.9)',
+              backdropFilter: 'blur(4px)',
+              '&:hover': { bgcolor: 'white' },
+            }}
+          >
+            {isLiked ? (
+              <Favorite sx={{ fontSize: 20, color: '#ff4444' }} />
+            ) : (
+              <FavoriteBorder sx={{ fontSize: 20 }} />
+            )}
+          </IconButton>
+          <Typography
+            sx={{
+              fontSize: '0.7rem',
+              fontWeight: 600,
+              color: brandColors.muted,
+              mt: 0.3,
+              bgcolor: 'rgba(255,255,255,0.8)',
+              px: 0.5,
+              borderRadius: 0.5,
+            }}
+          >
+            {likeCount}
+          </Typography>
+        </Box>
         {product.badges && product.badges.length > 0 && (
           <Stack
             direction="row"
