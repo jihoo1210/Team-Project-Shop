@@ -30,7 +30,7 @@ import { fetchItemDetail, toggleFavoriteItem } from '@/api/itemApi'
 import { useCart } from '@/hooks/useCart'
 import ReviewSection from '@/components/review/ReviewSection'
 import type { ItemDetail, ReviewListItem } from '@/types/api'
-import { COLORS, type ColorKey } from '@/constants/colors'
+import { COLORS, type ColorKey } from '@/types/colors'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -171,7 +171,6 @@ const ProductDetailPage = () => {
   }
 
   // 바로구매: 장바구니에 담고 /cart로 이동
-  // SPEC [중요 UX 규칙]: OrderPage는 항상 CartPage에서 "주문하기"를 통해서만 진입
   const handleBuyNow = async () => {
     if (!id || !product) return
     // 옵션이 있는 경우에만 선택 체크
