@@ -47,9 +47,9 @@ public class ItemService {
         Page<T> itemPage = repository.findAll(spec, pageable);
         return itemPage.map(entity -> {
             Item item = itemExtractor.apply(entity);
-            return IndexItemResponse.fromEntity(item,
-                    favoriteItemRepository.existsByItemAndUser(item, user),
-                    cartItemRepository.existsByItemAndUser(item, user));
+            boolean isFavorite = user != null && favoriteItemRepository.existsByItemAndUser(item, user);
+            boolean isCart = user != null && cartItemRepository.existsByItemAndUser(item, user);
+            return IndexItemResponse.fromEntity(item, isFavorite, isCart);
         });
     }
 
