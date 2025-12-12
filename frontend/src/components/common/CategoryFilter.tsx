@@ -1,3 +1,4 @@
+import CheckIcon from '@mui/icons-material/Check'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
@@ -11,9 +12,11 @@ import {
   Paper,
   Slider,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
+import { COLORS, COLOR_ORDER } from '@/types/colors'
 
 interface FilterOption {
   id: string
@@ -30,6 +33,7 @@ export interface FilterState {
   priceRange: [number, number]
   brands: string[]
   badges: string[]
+  colors: string[]
 }
 
 const categories: FilterOption[] = [
@@ -62,6 +66,7 @@ const CategoryFilter = ({ onFilterChange }: CategoryFilterProps) => {
     priceRange: [0, 500000],
     brands: [],
     badges: [],
+    colors: [],
   })
 
   const handleCategoryChange = (categoryId: string) => {
@@ -88,8 +93,18 @@ const CategoryFilter = ({ onFilterChange }: CategoryFilterProps) => {
     const newBadges = filters.badges.includes(badgeId)
       ? filters.badges.filter((id) => id !== badgeId)
       : [...filters.badges, badgeId]
-    
+
     const newFilters = { ...filters, badges: newBadges }
+    setFilters(newFilters)
+    onFilterChange?.(newFilters)
+  }
+
+  const handleColorChange = (colorId: string) => {
+    const newColors = filters.colors.includes(colorId)
+      ? filters.colors.filter((id) => id !== colorId)
+      : [...filters.colors, colorId]
+
+    const newFilters = { ...filters, colors: newColors }
     setFilters(newFilters)
     onFilterChange?.(newFilters)
   }
@@ -106,6 +121,7 @@ const CategoryFilter = ({ onFilterChange }: CategoryFilterProps) => {
       priceRange: [0, 500000],
       brands: [],
       badges: [],
+      colors: [],
     }
     setFilters(newFilters)
     onFilterChange?.(newFilters)
@@ -115,6 +131,7 @@ const CategoryFilter = ({ onFilterChange }: CategoryFilterProps) => {
     filters.categories.length > 0 ||
     filters.brands.length > 0 ||
     filters.badges.length > 0 ||
+    filters.colors.length > 0 ||
     filters.priceRange[0] !== 0 ||
     filters.priceRange[1] !== 500000
 
@@ -186,6 +203,58 @@ const CategoryFilter = ({ onFilterChange }: CategoryFilterProps) => {
                 </Typography>
               </Box>
             </Stack>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* 색상 필터 */}
+        <Accordion defaultExpanded elevation={0} disableGutters sx={{ '&:before': { display: 'none' }, borderBottom: '1px solid #E5E7EB' }}>
+          <AccordionSummary expandIcon={<ExpandMore />}>
+            <Typography fontWeight={600}>색상</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(5, 1fr)"
+              gap={1.5}
+              justifyItems="center"
+            >
+              {COLOR_ORDER.map((colorKey) => {
+                const color = COLORS[colorKey]
+                const isSelected = filters.colors.includes(colorKey)
+                const isLight = ['WHITE', 'IVORY', 'BEIGE', 'YELLOW', 'PINK'].includes(colorKey)
+                return (
+                  <Tooltip key={colorKey} title={color.name} arrow>
+                    <Box
+                      onClick={() => handleColorChange(colorKey)}
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        backgroundColor: color.hex,
+                        border: isLight ? '1px solid #ddd' : 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.15)',
+                        },
+                      }}
+                    >
+                      {isSelected && (
+                        <CheckIcon
+                          sx={{
+                            fontSize: 18,
+                            color: isLight ? '#000' : '#fff',
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </Tooltip>
+                )
+              })}
+            </Box>
           </AccordionDetails>
         </Accordion>
 

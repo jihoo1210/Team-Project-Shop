@@ -26,7 +26,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import Pagination from '@/components/common/Pagination'
 import { fetchItems } from '@/api/itemApi'
 import type { ProductSummary } from '@/types/product'
-import { COLORS, type ColorKey } from '@/constants/colors'
+import { COLORS, COLOR_ORDER } from '@/types/colors'
 
 type SortOption = 'popular' | 'latest' | 'price-low' | 'price-high' | 'review'
 
@@ -364,12 +364,19 @@ const ProductListPage = () => {
           <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
             색상
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 4 }}>
-            {(Object.keys(COLORS) as ColorKey[]).map((colorKey) => {
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: 1.5,
+              justifyItems: 'center',
+              mb: 4,
+            }}
+          >
+            {COLOR_ORDER.map((colorKey) => {
               const color = COLORS[colorKey]
               const isSelected = selectedColors.includes(colorKey)
-              // 어두운 색상 판별 (검정, 네이비 등)
-              const isDarkColor = ['BLACK', 'NAVY', 'BROWN', 'CHARCOAL'].includes(colorKey)
+              const isLight = ['WHITE', 'IVORY', 'BEIGE', 'YELLOW', 'PINK'].includes(colorKey)
               return (
                 <Box
                   key={colorKey}
@@ -382,21 +389,24 @@ const ProductListPage = () => {
                     setCurrentPage(1)
                   }}
                   sx={{
-                    width: 28,
-                    height: 28,
+                    width: 32,
+                    height: 32,
                     borderRadius: '50%',
                     backgroundColor: color.hex,
-                    border: isSelected ? '2px solid #fff' : '1px solid #ddd',
-                    boxShadow: isSelected ? '0 0 0 2px #6366F1' : 'none',
+                    border: isLight ? '1px solid #ddd' : 'none',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'scale(1.15)',
+                    },
                   }}
                   title={color.name}
                 >
                   {isSelected && (
-                    <CheckIcon sx={{ fontSize: 16, color: isDarkColor ? '#fff' : '#1a1a1a' }} />
+                    <CheckIcon sx={{ fontSize: 18, color: isLight ? '#000' : '#fff' }} />
                   )}
                 </Box>
               )
@@ -543,12 +553,19 @@ const ProductListPage = () => {
           <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
             색상
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 4 }}>
-            {(Object.keys(COLORS) as ColorKey[]).map((colorKey) => {
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: 1.5,
+              justifyItems: 'center',
+              mb: 4,
+            }}
+          >
+            {COLOR_ORDER.map((colorKey) => {
               const color = COLORS[colorKey]
               const isSelected = selectedColors.includes(colorKey)
-              // 어두운 색상 판별 (검정, 네이비 등)
-              const isDarkColor = ['BLACK', 'NAVY', 'BROWN', 'CHARCOAL'].includes(colorKey)
+              const isLight = ['WHITE', 'IVORY', 'BEIGE', 'YELLOW', 'PINK'].includes(colorKey)
               return (
                 <Box
                   key={colorKey}
@@ -561,25 +578,24 @@ const ProductListPage = () => {
                     setCurrentPage(1)
                   }}
                   sx={{
-                    width: 28,
-                    height: 28,
+                    width: 32,
+                    height: 32,
                     borderRadius: '50%',
                     backgroundColor: color.hex,
-                    border: isSelected ? '2px solid #fff' : '1px solid #ddd',
-                    boxShadow: isSelected ? '0 0 0 2px #6366F1' : 'none',
+                    border: isLight ? '1px solid #ddd' : 'none',
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    transition: 'transform 0.2s',
                     '&:hover': {
-                      transform: 'scale(1.1)',
+                      transform: 'scale(1.15)',
                     },
                   }}
                   title={color.name}
                 >
                   {isSelected && (
-                    <CheckIcon sx={{ fontSize: 16, color: isDarkColor ? '#fff' : '#1a1a1a' }} />
+                    <CheckIcon sx={{ fontSize: 18, color: isLight ? '#000' : '#fff' }} />
                   )}
                 </Box>
               )
