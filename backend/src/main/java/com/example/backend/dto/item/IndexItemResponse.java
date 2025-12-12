@@ -1,5 +1,8 @@
 package com.example.backend.dto.item;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.example.backend.entity.item.Item;
 
 import lombok.AllArgsConstructor;
@@ -27,6 +30,8 @@ public class IndexItemResponse {
     private Integer likeCount;
     private Integer stock;
     private String status;
+    private List<String> colors;
+    private List<String> sizes;
 
     public static IndexItemResponse fromEntity(Item item, boolean isFavorite, boolean isCart) {
         // 재고에 따른 판매 상태 결정
@@ -36,6 +41,20 @@ public class IndexItemResponse {
         } else if (item.getStock() < 10) {
             status = "LOW_STOCK";
         }
+
+        // 색상 목록 추출
+        List<String> colors = item.getColorList() != null
+            ? item.getColorList().stream()
+                .map(c -> c.getColor().name())
+                .collect(Collectors.toList())
+            : List.of();
+
+        // 사이즈 목록 추출
+        List<String> sizes = item.getSizeList() != null
+            ? item.getSizeList().stream()
+                .map(s -> s.getSize().name())
+                .collect(Collectors.toList())
+            : List.of();
 
         return IndexItemResponse.builder()
                 .id(item.getId())
@@ -50,6 +69,8 @@ public class IndexItemResponse {
                 .likeCount(item.getLikeCount() != null ? item.getLikeCount() : 0)
                 .stock(item.getStock())
                 .status(status)
+                .colors(colors)
+                .sizes(sizes)
                 .build();
     }
 }
