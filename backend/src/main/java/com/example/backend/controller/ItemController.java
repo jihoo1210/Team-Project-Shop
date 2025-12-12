@@ -13,6 +13,8 @@ import com.example.backend.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -51,12 +53,12 @@ public class ItemController {
             String majorCategory = searchParams.getMajorCategory();
             String middleCategory = searchParams.getMiddleCategory();
             String subcategory = searchParams.getSubcategory();
-            String color = searchParams.getColor();
-            String size = searchParams.getItemSize();
+            List<String> colors = searchParams.getColors();
+            List<String> sizes = searchParams.getItemSizes();
             Integer maxPrice = searchParams.getMaxPrice();
             User user = userService.checkLoginAndGetUser();
             // customUserDetails null 체크 필요
-            Page<IndexItemResponse> response = itemService.indexItem(pageable, searchField, searchTerm, majorCategory, middleCategory, subcategory, color, size, maxPrice, user);
+            Page<IndexItemResponse> response = itemService.indexItem(pageable, searchField, searchTerm, majorCategory, middleCategory, subcategory, colors, sizes, maxPrice, user);
             return ResponseController.success(response);
         } catch (Exception e) {
             e.printStackTrace();
