@@ -5,6 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import com.example.backend.dto.item.IndexItemRequest;
 import com.example.backend.dto.item.IndexItemResponse;
 import com.example.backend.dto.item.ShowItemResponse;
@@ -51,8 +53,8 @@ public class ItemService {
         });
     }
 
-    public Page<IndexItemResponse> indexItem(Pageable pageable, String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory, String color, String size, Integer maxPrice, User user) {
-        Specification<Item> spec = IndexItemSpec.search(searchField, searchTerm, majorCategory, middleCategory, subcategory, color, size, maxPrice);
+    public Page<IndexItemResponse> indexItem(Pageable pageable, String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory, List<String> colors, List<String> sizes, Integer maxPrice, User user) {
+        Specification<Item> spec = IndexItemSpec.search(searchField, searchTerm, majorCategory, middleCategory, subcategory, colors, sizes, maxPrice);
         return getIndexPage(pageable, searchField, searchTerm, majorCategory, middleCategory, subcategory, user, spec, itemRepository, item -> item);
     }
 
@@ -60,7 +62,7 @@ public class ItemService {
         Specification<FavoriteItem> spec = IndexItemSpec.searchFavorites(
             searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
-            searchParams.getColor(), searchParams.getSize(), searchParams.getMaxPrice());
+            searchParams.getColors(), searchParams.getItemSizes(), searchParams.getMaxPrice());
         return getIndexPage(pageable, searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
             user, spec, favoriteItemRepository, favoriteItem -> favoriteItem.getItem());
@@ -70,7 +72,7 @@ public class ItemService {
         Specification<CartItem> spec = IndexItemSpec.searchCart(
             searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
-            searchParams.getColor(), searchParams.getSize(), searchParams.getMaxPrice());
+            searchParams.getColors(), searchParams.getItemSizes(), searchParams.getMaxPrice());
         return getIndexPage(pageable, searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
             user, spec, cartItemRepository, cartItem -> cartItem.getItem());
