@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom'
 import {
   Container,
   Typography,
@@ -11,6 +11,7 @@ import {
   IconButton,
   Avatar,
   CircularProgress,
+  Link,
 } from '@mui/material'
 import {
   ArrowBack as ArrowBackIcon,
@@ -189,7 +190,7 @@ const BoardDetailPage = () => {
       </Button>
 
       {/* 게시글 헤더 */}
-      <Paper elevation={0} sx={{ border: '1px solid #E5E7EB', p: 3, mb: 3 }}>
+      <Paper elevation={0} sx={{ border: `1px solid ${brandColors.border}`, p: 3, mb: 3 }}>
         <Box sx={{ mb: 2 }}>
           <Typography
             variant="caption"
@@ -259,7 +260,7 @@ const BoardDetailPage = () => {
       </Paper>
 
       {/* 게시글 내용 */}
-      <Paper elevation={0} sx={{ border: '1px solid #E5E7EB', p: 3, mb: 3 }}>
+      <Paper elevation={0} sx={{ border: `1px solid ${brandColors.border}`, p: 3, mb: 3 }}>
         <Typography
           sx={{
             whiteSpace: 'pre-wrap',
@@ -273,7 +274,7 @@ const BoardDetailPage = () => {
 
       {/* 댓글 섹션 (QnA만) */}
       {category === 'qna' && (
-        <Paper elevation={0} sx={{ border: '1px solid #E5E7EB', p: 3 }}>
+        <Paper elevation={0} sx={{ border: `1px solid ${brandColors.border}`, p: 3 }}>
           <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
             답변 ({comments.length})
           </Typography>
@@ -294,7 +295,7 @@ const BoardDetailPage = () => {
                     display: 'flex',
                     gap: 2,
                     p: 2,
-                    bgcolor: '#F9FAFB',
+                    bgcolor: brandColors.background,
                     borderRadius: 1,
                   }}
                 >
@@ -355,7 +356,7 @@ const BoardDetailPage = () => {
                             disabled={editSubmitting || !editingCommentContent.trim()}
                             sx={{
                               bgcolor: brandColors.primary,
-                              '&:hover': { bgcolor: '#374151' },
+                              '&:hover': { bgcolor: brandColors.primaryHover },
                             }}
                           >
                             {editSubmitting ? '수정 중...' : '수정'}
@@ -388,7 +389,7 @@ const BoardDetailPage = () => {
               disabled={submitting || !newComment.trim() || !currentUserId}
               sx={{
                 bgcolor: brandColors.primary,
-                '&:hover': { bgcolor: '#374151' },
+                '&:hover': { bgcolor: brandColors.primaryHover },
                 minWidth: 100,
                 alignSelf: 'flex-end',
               }}
@@ -397,8 +398,16 @@ const BoardDetailPage = () => {
             </Button>
           </Box>
           {!currentUserId && (
-            <Typography color="text.secondary" fontSize="0.75rem" sx={{ mt: 1 }}>
-              답변을 작성하려면 로그인이 필요합니다.
+            <Typography color="text.secondary" fontSize="0.875rem" sx={{ mt: 1 }}>
+              답변을 작성하려면{' '}
+              <Link
+                component={RouterLink}
+                to="/login"
+                sx={{ color: brandColors.primary, fontWeight: 600 }}
+              >
+                로그인
+              </Link>
+              이 필요합니다.
             </Typography>
           )}
         </Paper>

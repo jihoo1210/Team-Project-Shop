@@ -25,19 +25,19 @@ export const fetchItems = (params: ItemListQuery) =>
 export const fetchItemDetail = (itemId: string) =>
   axiosClient.get<ApiResponse<ItemDetail>>(`/item/${itemId}`).then((res) => res.data.result)
 
-/* 관리자 상품 API - SPEC: /api/admin/item */
+/* 관리자 상품 API - SPEC: /api/admin */
 
-// 상품 등록 - POST /api/admin/item
+// 상품 등록 - POST /api/admin (multipart/form-data)
 export const createItem = (data: CreateOrUpdateItemRequest) =>
-  axiosClient.post<ApiResponse<{ item_id: string }>>('/admin/item', data).then((res) => res.data.result)
+  axiosClient.post<ApiResponse<{ item_id: string }>>('/admin', data).then((res) => res.data.result)
 
-// 상품 수정 - PUT /api/admin/item/{itemId}
+// 상품 수정 - PUT /api/admin/{itemId} (multipart/form-data)
 export const updateItem = (itemId: string, data: CreateOrUpdateItemRequest) =>
-  axiosClient.put<ApiResponse<void>>(`/admin/item/${itemId}`, data).then((res) => res.data.result)
+  axiosClient.put<ApiResponse<void>>(`/admin/${itemId}`, data).then((res) => res.data.result)
 
-// 상품 삭제 - DELETE /api/admin/item/{itemId}
+// 상품 삭제 - DELETE /api/admin/{itemId}
 export const deleteItem = (itemId: string) =>
-  axiosClient.delete<ApiResponse<void>>(`/admin/item/${itemId}`).then((res) => res.data.result)
+  axiosClient.delete<ApiResponse<void>>(`/admin/${itemId}`).then((res) => res.data.result)
 
 /* 찜/장바구니 API - SPEC: /api/item */
 

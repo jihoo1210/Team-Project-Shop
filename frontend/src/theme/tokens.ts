@@ -1,22 +1,59 @@
 import type { PaletteOptions, ThemeOptions } from '@mui/material/styles'
 
 export const brandColors = {
+  // 주요 브랜드 컬러
   primary: '#111827',
   secondary: '#1F2937',
   accent: '#6366F1',
   info: '#2563EB',
   warning: '#F59E0B',
+
+  // 배경 컬러
   background: '#F9FAFB',
   surface: '#FFFFFF',
+  surfaceHover: '#F3F4F6',
+  surfaceActive: '#F8FAFF',
+
+  // 텍스트 컬러
   text: '#111418',
+  textDark: '#1a1a1a',
+  textLight: '#374151',
   muted: '#6B7280',
+  mutedLight: '#9CA3AF',
+
+  // 테두리/구분선
   border: '#E5E7EB',
+  borderDark: '#D1D5DB',
+
+  // 상태 컬러
+  success: '#16A34A',
+  error: '#DC2626',
+  errorLight: '#ff4444',
+
+  // 특수 컬러 (SNS 등)
+  naver: '#03C75A',
+  naverHover: '#02b351',
+  google: '#4285F4',
+  googleRed: '#EA4335',
+  googleYellow: '#FBBC05',
+  googleGreen: '#34A853',
+
+  // 채팅/위젯 강조색
+  chatPrimary: '#4F7DF3',
+  chatGradientStart: '#667eea',
+  chatGradientEnd: '#764ba2',
+
+  // 버튼 호버
+  primaryHover: '#374151',
+  secondaryHover: '#333',
 }
 
 export const palette: PaletteOptions = {
   mode: 'light',
   primary: {
     main: brandColors.primary,
+    light: brandColors.textLight,
+    dark: brandColors.textDark,
     contrastText: '#FFFFFF',
   },
   secondary: {
@@ -24,7 +61,8 @@ export const palette: PaletteOptions = {
     contrastText: '#FFFFFF',
   },
   error: {
-    main: '#DC2626',
+    main: brandColors.error,
+    light: brandColors.errorLight,
   },
   warning: {
     main: brandColors.warning,
@@ -33,7 +71,7 @@ export const palette: PaletteOptions = {
     main: brandColors.info,
   },
   success: {
-    main: '#16A34A',
+    main: brandColors.success,
   },
   background: {
     default: brandColors.background,
@@ -42,8 +80,20 @@ export const palette: PaletteOptions = {
   text: {
     primary: brandColors.text,
     secondary: brandColors.muted,
+    disabled: brandColors.mutedLight,
   },
   divider: brandColors.border,
+  grey: {
+    50: brandColors.background,
+    100: brandColors.surfaceHover,
+    200: brandColors.border,
+    300: brandColors.borderDark,
+    500: brandColors.muted,
+    600: brandColors.textLight,
+    700: brandColors.secondary,
+    800: brandColors.primary,
+    900: brandColors.textDark,
+  },
 }
 
 export const typography: NonNullable<ThemeOptions['typography']> = {

@@ -7,14 +7,10 @@ import {
   Chip,
   Container,
   Divider,
-  FormControl,
   Grid,
   IconButton,
-  InputLabel,
   Link,
-  MenuItem,
   Rating,
-  Select,
   Skeleton,
   Stack,
   Tab,
@@ -398,52 +394,108 @@ const ProductDetailPage = () => {
 
           {/* 옵션 선택: 색상 */}
           {product.colorList && product.colorList.length > 0 && (
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>색상</InputLabel>
-              <Select
-                value={selectedColor}
-                label="색상"
-                onChange={(e) => setSelectedColor(e.target.value)}
-              >
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                색상 {selectedColor && (
+                  <Typography component="span" fontWeight={600} color="text.primary">
+                    : {COLORS[selectedColor as ColorKey]?.name || selectedColor}
+                  </Typography>
+                )}
+              </Typography>
+              <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
                 {product.colorList.map((color) => {
                   const colorInfo = COLORS[color as ColorKey]
+                  const isSelected = selectedColor === color
+                  const lightColors = ['#FFFFF0', '#FFFF00', '#F5F5DC', '#FFC0CB', '#FFA500', '#C3B091']
+                  const isLightColor = lightColors.includes(colorInfo?.hex || '')
                   return (
-                    <MenuItem key={color} value={color}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box
+                    <Box
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: '50%',
+                        backgroundColor: colorInfo?.hex || '#ccc',
+                        cursor: 'pointer',
+                        border: isSelected ? '3px solid' : '2px solid',
+                        borderColor: isSelected ? 'primary.main' : 'grey.300',
+                        boxShadow: isSelected ? '0 0 0 2px #fff, 0 0 0 4px #1976d2' : 'none',
+                        transition: 'all 0.2s ease',
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        '&:hover': {
+                          transform: 'scale(1.1)',
+                          borderColor: isSelected ? 'primary.main' : 'grey.500',
+                        },
+                      }}
+                      title={colorInfo?.name || color}
+                    >
+                      {isSelected && (
+                        <Typography
                           sx={{
-                            width: 20,
-                            height: 20,
-                            borderRadius: '50%',
-                            backgroundColor: colorInfo?.hex || '#ccc',
-                            border: '1px solid #ddd',
+                            color: isLightColor ? '#000' : '#fff',
+                            fontWeight: 700,
+                            fontSize: '1.2rem',
+                            lineHeight: 1,
                           }}
-                        />
-                        {colorInfo?.name || color}
-                      </Box>
-                    </MenuItem>
+                        >
+                          ✓
+                        </Typography>
+                      )}
+                    </Box>
                   )
                 })}
-              </Select>
-            </FormControl>
+              </Stack>
+            </Box>
           )}
 
           {/* 옵션 선택: 사이즈 */}
           {product.sizeList && product.sizeList.length > 0 && (
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>사이즈</InputLabel>
-              <Select
-                value={selectedSize}
-                label="사이즈"
-                onChange={(e) => setSelectedSize(e.target.value)}
-              >
-                {product.sizeList.map((size) => (
-                  <MenuItem key={size} value={size}>
-                    {size}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                사이즈 {selectedSize && (
+                  <Typography component="span" fontWeight={600} color="text.primary">
+                    : {selectedSize}
+                  </Typography>
+                )}
+              </Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                {product.sizeList.map((size) => {
+                  const isSelected = selectedSize === size
+                  return (
+                    <Box
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      sx={{
+                        minWidth: 48,
+                        height: 48,
+                        px: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: 1,
+                        cursor: 'pointer',
+                        border: '2px solid',
+                        borderColor: isSelected ? 'primary.main' : 'grey.300',
+                        backgroundColor: isSelected ? 'primary.main' : 'transparent',
+                        color: isSelected ? 'white' : 'text.primary',
+                        fontWeight: isSelected ? 700 : 500,
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          borderColor: isSelected ? 'primary.dark' : 'grey.500',
+                          backgroundColor: isSelected ? 'primary.dark' : 'grey.100',
+                        },
+                      }}
+                    >
+                      {size}
+                    </Box>
+                  )
+                })}
+              </Stack>
+            </Box>
           )}
 
           {/* 수량 선택 */}

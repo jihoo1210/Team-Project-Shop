@@ -13,7 +13,22 @@
       "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" log --oneline --all --source -- \"backend/src/main/java/com/example/backend/repository/item/ItemRepository.java\")",
       "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" show add9931 --stat)",
       "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" add backend/src/main/java/com/example/backend/dto/ backend/src/main/java/com/example/backend/entity/item/details/ backend/src/main/java/com/example/backend/entity/item/enums/ backend/src/main/java/com/example/backend/repository/item/ backend/src/main/java/com/example/backend/service/CommentService.java backend/src/main/java/com/example/backend/service/search/utility/ backend/build.gradle)",
-      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" commit -m \"Restore missing DTO, Entity, Repository files and add webflux dependency\")"
+      "Bash(git -C \"c:\\dev\\Portfolios\\Team\\Team-Project-Shop\" commit -m \"Restore missing DTO, Entity, Repository files and add webflux dependency\")",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: size 파라미터 충돌 해결 및 localStorage 에러 처리\n\n- IndexItemRequest: size → itemSize로 변경 (Spring Pageable 충돌 방지)\n- ItemController: getItemSize() 사용\n- ProductListPage: itemSize 파라미터 사용\n- axiosClient: localStorage 접근 시 try-catch 추가\n- useAuth: localStorage 접근 시 try-catch 추가\n- OrderPage: 미사용 import 제거 및 totalPrice 에러 수정\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: TypeScript 타입 에러 수정\n\n- ItemListQuery: size → itemSize로 변경 (PageableQuery 충돌 방지)\n- Header: categoryMenus에 isNew 속성 추가\n- useAiRecommend: params 타입을 fetchItems 파라미터 타입으로 추론\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(gh pr list:*)",
+      "Bash(git commit:*)",
+      "Bash(dir:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(find:*)",
+      "Bash(dir /s /b \"c:\\Users\\Administrator\\Team-Project-Shop\\backend\\src\\main\\resources\\*\")",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
