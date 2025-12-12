@@ -93,11 +93,30 @@ const AdminProductListPage: React.FC = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axiosClient.get('/api/admin/products', {
-        params: { page, search: searchTerm },
+      // 백엔드 ItemController의 /api/item 사용
+      const response = await axiosClient.get('/item', {
+        params: {
+          page: page - 1,
+          size: 10,
+          searchField: 'title',
+          searchTerm: searchTerm || undefined,
+        },
       });
-      setProducts(response.data.content);
-      setTotalPages(response.data.totalPages);
+      const data = response.data.result;
+      // 백엔드 응답을 프론트엔드 Product 형식으로 변환
+      const mappedProducts = data.content.map((item: { id: number; title: string; brand: string; price: number; discountPercent: number; mainImageUrl: string }) => ({
+        id: item.id,
+        name: item.title,
+        brand: item.brand,
+        price: item.price,
+        stock: 100, // 백엔드에 stock 필드가 없으므로 기본값
+        status: 'active' as const,
+        category: '패션',
+        createdAt: new Date().toISOString().split('T')[0],
+        imageUrl: item.mainImageUrl,
+      }));
+      setProducts(mappedProducts);
+      setTotalPages(data.totalPages);
     } catch (err) {
       console.error('상품 목록 로드 실패:', err);
       setProducts([]);
@@ -216,34 +235,49 @@ const AdminProductListPage: React.FC = () => {
 
   // 상품 저장
   const handleSaveProduct = async () => {
-    if (!formData.name || !formData.price || !formData.stock) {
-      alert('상품명, 가격, 재고는 필수입니다.');
+    if (!formData.name || !formData.price) {
+      alert('상품명, 가격은 필수입니다.');
       return;
     }
 
     try {
       const submitFormData = new FormData();
-      submitFormData.append('name', formData.name);
-      submitFormData.append('brand', formData.brand);
-      submitFormData.append('category', formData.category);
-      submitFormData.append('price', formData.price);
-      submitFormData.append('stock', formData.stock);
-      submitFormData.append('description', formData.description);
 
-      // 이미지 추가
-      productImages.forEach((img, index) => {
+      // 백엔드 ItemResistraionRequest 형식에 맞게 data 객체 생성
+      const itemData = {
+        title: formData.name,
+        price: parseInt(formData.price) || 0,
+        discountPercent: 0,
+        sku: '',
+        brand: formData.brand,
+        description: formData.description,
+        colorList: [],
+        sizeList: [],
+        mainImageUrl: '',
+        imageList: [],
+      };
+
+      // data를 JSON Blob으로 추가
+      submitFormData.append('data', new Blob([JSON.stringify(itemData)], { type: 'application/json' }));
+
+      // 대표 이미지와 추가 이미지 분리
+      const mainImage = productImages.find(img => img.isMain);
+      const otherImages = productImages.filter(img => !img.isMain);
+
+      if (mainImage) {
+        submitFormData.append('mainImage', mainImage.file);
+      }
+
+      otherImages.forEach((img) => {
         submitFormData.append('images', img.file);
-        if (img.isMain) {
-          submitFormData.append('mainImageIndex', index.toString());
-        }
       });
 
       if (editingProduct) {
-        await axiosClient.put(`/api/admin/products/${editingProduct.id}`, submitFormData, {
+        await axiosClient.put(`/admin/${editingProduct.id}`, submitFormData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
-        await axiosClient.post('/api/admin/products', submitFormData, {
+        await axiosClient.post('/admin', submitFormData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       }
@@ -251,28 +285,9 @@ const AdminProductListPage: React.FC = () => {
       fetchProducts();
       handleCloseDialog();
       alert(editingProduct ? '상품이 수정되었습니다.' : '상품이 등록되었습니다.');
-    } catch {
-      // 데모용 로컬 처리
-      const newProduct: Product = {
-        id: editingProduct?.id || Date.now(),
-        name: formData.name,
-        brand: formData.brand,
-        price: parseInt(formData.price) || 0,
-        stock: parseInt(formData.stock) || 0,
-        status: 'active',
-        category: formData.category || '기타',
-        createdAt: new Date().toISOString().split('T')[0],
-        imageUrl: productImages[0]?.preview,
-      };
-
-      if (editingProduct) {
-        setProducts((prev) => prev.map((p) => (p.id === editingProduct.id ? newProduct : p)));
-      } else {
-        setProducts((prev) => [newProduct, ...prev]);
-      }
-      
-      handleCloseDialog();
-      alert(editingProduct ? '상품이 수정되었습니다.' : '상품이 등록되었습니다.');
+    } catch (err) {
+      console.error('상품 저장 실패:', err);
+      alert('상품 저장에 실패했습니다.');
     }
   };
 
@@ -280,11 +295,12 @@ const AdminProductListPage: React.FC = () => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
 
     try {
-      await axiosClient.delete(`/api/admin/products/${id}`);
+      await axiosClient.delete(`/admin/${id}`);
       setProducts(products.filter(p => p.id !== id));
-    } catch {
-      // Delete locally for demo
-      setProducts(products.filter(p => p.id !== id));
+      alert('상품이 삭제되었습니다.');
+    } catch (err) {
+      console.error('상품 삭제 실패:', err);
+      alert('상품 삭제에 실패했습니다.');
     }
   };
 
