@@ -15,6 +15,10 @@ const axiosClient = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // ( BE / FE Cookie인증 자동 전송)
+  paramsSerializer: {
+    // 배열 파라미터를 colors=RED&colors=BLUE 형태로 직렬화 (Spring Boot 호환)
+    indexes: null,
+  },
 })
 
 export const getAccessToken = () => {
