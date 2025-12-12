@@ -12,7 +12,7 @@ const axiosClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json;charset=UTF-8',
   },
   withCredentials: true, // ( BE / FE Cookie인증 자동 전송)
   paramsSerializer: {
