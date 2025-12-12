@@ -3,6 +3,7 @@ export interface ProductSummary {
   title: string
   brand: string
   price: number
+  
   discountPercent?: number
   realPrice?: number
   scoreAverage?: number

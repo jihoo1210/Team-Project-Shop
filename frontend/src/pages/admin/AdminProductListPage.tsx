@@ -216,12 +216,12 @@ const AdminProductListPage: React.FC = () => {
       });
       const data = response.data.result;
       // 백엔드 응답을 프론트엔드 Product 형식으로 변환
-      const mappedProducts = data.content.map((item: { id: number; title: string; brand: string; price: number; discountPercent: number; mainImageUrl: string }) => ({
+      const mappedProducts = data.content.map((item: { id: number; title: string; brand: string; stock: string; price: number; discountPercent: number; mainImageUrl: string }) => ({
         id: item.id,
         name: item.title,
         brand: item.brand,
         price: item.price,
-        stock: 100, // 백엔드에 stock 필드가 없으므로 기본값
+        stock: parseInt(item.stock, 10), // 재고 정보가 없으므로 임시
         status: 'active' as const,
         category: '패션',
         createdAt: new Date().toISOString().split('T')[0],

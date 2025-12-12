@@ -88,8 +88,7 @@ export type ItemListQuery = PageableQuery & {
   itemSizes?: string[]
   minPrice?: number
   maxPrice?: number
-  sortBy?: string
-  sortDir?: string
+  sort?: string
 }
 
 export type ReviewSummary = {
@@ -109,6 +108,7 @@ export type ItemSummary = {
   mainImageUrl: string
   favorite: boolean
   cart: boolean
+  stock: number
 }
 
 export type ItemDetail = {

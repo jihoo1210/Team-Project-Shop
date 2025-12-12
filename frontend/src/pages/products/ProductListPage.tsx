@@ -30,6 +30,8 @@ import { COLORS, type ColorKey } from '@/constants/colors'
 
 type SortOption = 'popular' | 'latest' | 'price-low' | 'price-high' | 'review'
 
+
+
 // 사이즈 옵션
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'FREE'] as const
 
@@ -164,16 +166,16 @@ const ProductListPage = () => {
   const getSortParams = (sort: SortOption) => {
     switch (sort) {
       case 'latest':
-        return { sortBy: 'created_at', sortDir: 'desc' }
+        return { sort: 'created_at,desc' }
       case 'price-low':
-        return { sortBy: 'price', sortDir: 'asc' }
+        return { sort: 'price,asc' }
       case 'price-high':
-        return { sortBy: 'price', sortDir: 'desc' }
+        return { sort: 'price,desc' }
       case 'review':
-        return { sortBy: 'review_count', sortDir: 'desc' }
+        return { sort: 'review_count,desc' }
       case 'popular':
       default:
-        return { sortBy: 'like_count', sortDir: 'desc' }
+        return { sort: 'like_count,desc' }
     }
   }
 
