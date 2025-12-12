@@ -86,12 +86,12 @@ public class Filter {
     }
 
     public static <T> void addPricePredicate(CriteriaBuilder builder, Root<T> root, List<Predicate> predicates, Integer minPrice, Integer maxPrice) {
-        Path<Integer> pricePath = getItemPath(root, "price");
+        Path<Integer> realPricePath = getItemPath(root, "realPrice");
         if (minPrice != null && minPrice > 0) {
-            predicates.add(builder.greaterThanOrEqualTo(pricePath, minPrice));
+            predicates.add(builder.greaterThanOrEqualTo(realPricePath, minPrice));
         }
         if (maxPrice != null && maxPrice > 0) {
-            predicates.add(builder.lessThanOrEqualTo(pricePath, maxPrice));
+            predicates.add(builder.lessThanOrEqualTo(realPricePath, maxPrice));
         }
     }
 
