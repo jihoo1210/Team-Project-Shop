@@ -55,10 +55,11 @@ public class ItemController {
             String subcategory = searchParams.getSubcategory();
             List<String> colors = searchParams.getColors();
             List<String> sizes = searchParams.getItemSizes();
+            Integer minPrice = searchParams.getMinPrice();
             Integer maxPrice = searchParams.getMaxPrice();
             User user = userService.checkLoginAndGetUser();
             // customUserDetails null 체크 필요
-            Page<IndexItemResponse> response = itemService.indexItem(pageable, searchField, searchTerm, majorCategory, middleCategory, subcategory, colors, sizes, maxPrice, user);
+            Page<IndexItemResponse> response = itemService.indexItem(pageable, searchField, searchTerm, majorCategory, middleCategory, subcategory, colors, sizes, minPrice, maxPrice, user);
             return ResponseController.success(response);
         } catch (Exception e) {
             e.printStackTrace();

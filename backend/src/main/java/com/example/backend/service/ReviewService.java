@@ -32,7 +32,7 @@ public class ReviewService {
         return reviews.stream().map(review -> IndexReviewResponse.builder()
                 .content(review.getContent())
                 .score(review.getScore())
-                .created_at(review.getCratedAt())
+                .created_at(review.getCreatedAt())
                 .updated_at(review.getUpdatedAt())
                 .build()).toList();
     }

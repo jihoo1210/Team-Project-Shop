@@ -53,8 +53,8 @@ public class ItemService {
         });
     }
 
-    public Page<IndexItemResponse> indexItem(Pageable pageable, String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory, List<String> colors, List<String> sizes, Integer maxPrice, User user) {
-        Specification<Item> spec = IndexItemSpec.search(searchField, searchTerm, majorCategory, middleCategory, subcategory, colors, sizes, maxPrice);
+    public Page<IndexItemResponse> indexItem(Pageable pageable, String searchField, String searchTerm, String majorCategory, String middleCategory, String subcategory, List<String> colors, List<String> sizes, Integer minPrice, Integer maxPrice, User user) {
+        Specification<Item> spec = IndexItemSpec.search(searchField, searchTerm, majorCategory, middleCategory, subcategory, colors, sizes, minPrice, maxPrice);
         return getIndexPage(pageable, searchField, searchTerm, majorCategory, middleCategory, subcategory, user, spec, itemRepository, item -> item);
     }
 
@@ -62,7 +62,7 @@ public class ItemService {
         Specification<FavoriteItem> spec = IndexItemSpec.searchFavorites(
             searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
-            searchParams.getColors(), searchParams.getItemSizes(), searchParams.getMaxPrice());
+            searchParams.getColors(), searchParams.getItemSizes(), searchParams.getMinPrice(), searchParams.getMaxPrice());
         return getIndexPage(pageable, searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
             user, spec, favoriteItemRepository, favoriteItem -> favoriteItem.getItem());
@@ -72,7 +72,7 @@ public class ItemService {
         Specification<CartItem> spec = IndexItemSpec.searchCart(
             searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
-            searchParams.getColors(), searchParams.getItemSizes(), searchParams.getMaxPrice());
+            searchParams.getColors(), searchParams.getItemSizes(), searchParams.getMinPrice(), searchParams.getMaxPrice());
         return getIndexPage(pageable, searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
             user, spec, cartItemRepository, cartItem -> cartItem.getItem());
