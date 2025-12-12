@@ -146,6 +146,7 @@ const ProductListPage = () => {
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000])
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false)
 
   const itemsPerPage = 12
 
@@ -220,6 +221,11 @@ const ProductListPage = () => {
         filterParams.maxPrice = priceRange[1]
       }
 
+      // 판매중만 보기 필터
+      if (showOnlyAvailable) {
+        filterParams.status = 'active'
+      }
+
       const response = await fetchItems(filterParams)
 
       // 백엔드 응답 필드명: id, title, brand, price, discountPercent, realPrice, mainImageUrl, favorite, cart
@@ -243,7 +249,7 @@ const ProductListPage = () => {
     } finally {
       setLoading(false)
     }
-  }, [currentPage, sortBy, searchTerm, mainCategory, subCategory, selectedColors, selectedSizes, priceRange])
+  }, [currentPage, sortBy, searchTerm, mainCategory, subCategory, selectedColors, selectedSizes, priceRange, showOnlyAvailable])
 
   useEffect(() => {
     loadProducts()
@@ -452,7 +458,7 @@ const ProductListPage = () => {
           <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
             가격
           </Typography>
-          <Box sx={{ px: 1, mb: 2 }}>
+          <Box sx={{ px: 1, mb: 4 }}>
             <Slider
               value={priceRange}
               onChange={(_, newValue) => setPriceRange(newValue as [number, number])}
@@ -471,6 +477,27 @@ const ProductListPage = () => {
                 {(priceRange[1] / 10000).toFixed(0)}만원
               </Typography>
             </Box>
+          </Box>
+
+          {/* 상태 필터 */}
+          <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+            상품 상태
+          </Typography>
+          <Box sx={{ mb: 4 }}>
+            <Chip
+              label="판매중만 보기"
+              onClick={() => {
+                setShowOnlyAvailable(!showOnlyAvailable)
+                setCurrentPage(1)
+              }}
+              sx={{
+                fontWeight: showOnlyAvailable ? 600 : 400,
+                bgcolor: showOnlyAvailable ? '#4caf50' : '#fff',
+                color: showOnlyAvailable ? '#fff' : '#666',
+                border: '1px solid',
+                borderColor: showOnlyAvailable ? '#4caf50' : '#ddd',
+              }}
+            />
           </Box>
 
           {/* 적용 버튼 */}

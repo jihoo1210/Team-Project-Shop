@@ -176,7 +176,7 @@ const HomePage = () => {
   }, [])
 
   const handleAiSubmit = async () => {
-    if (!aiPrompt.trim() || isAiLoading || aiPrompt.length < 25) return
+    if (!aiPrompt.trim() || isAiLoading) return
 
     try {
       const result = await getRecommendation(aiPrompt)
@@ -479,22 +479,22 @@ const HomePage = () => {
             {/* 하단 영역: 글자수 + 전송버튼 */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.5 }}>
               <Typography sx={{ color: '#bbb', fontSize: '0.75rem' }}>
-                최소 25자  {aiPrompt.length} / 1000
+                {aiPrompt.length} / 1000
               </Typography>
               <IconButton
                 onClick={handleAiSubmit}
-                disabled={isAiLoading || aiPrompt.length < 25}
+                disabled={isAiLoading || !aiPrompt.trim()}
                 size="small"
                 sx={{
-                  bgcolor: aiPrompt.length >= 25 ? '#6366F1' : '#e0e0e0',
-                  color: aiPrompt.length >= 25 ? 'white' : '#999',
+                  bgcolor: aiPrompt.trim() ? '#6366F1' : '#e0e0e0',
+                  color: aiPrompt.trim() ? 'white' : '#999',
                   width: 32,
                   height: 32,
                   transition: 'all 0.2s ease',
-                  cursor: aiPrompt.length >= 25 ? 'pointer' : 'not-allowed',
+                  cursor: aiPrompt.trim() ? 'pointer' : 'not-allowed',
                   '&:hover': {
-                    bgcolor: aiPrompt.length >= 25 ? '#4F46E5' : '#d0d0d0',
-                    transform: aiPrompt.length >= 25 ? 'scale(1.05)' : 'none',
+                    bgcolor: aiPrompt.trim() ? '#4F46E5' : '#d0d0d0',
+                    transform: aiPrompt.trim() ? 'scale(1.05)' : 'none',
                   },
                   '&.Mui-disabled': {
                     color: '#999',

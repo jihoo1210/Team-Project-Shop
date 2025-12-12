@@ -170,7 +170,7 @@ interface Product {
   brand: string;
   price: number;
   stock: number;
-  status: 'active' | 'soldout' | 'hidden';
+  status: 'active' | 'soldout';
   category: string;
   createdAt: string;
   imageUrl?: string;
@@ -194,6 +194,7 @@ interface ProductFormData {
   description: string;
   imageUrl: string; // 이미지 URL 직접 입력용
   selectedColors: string[];
+  status: 'active' | 'soldout';
 }
 
 // 이미지 URL 처리 유틸 함수
@@ -233,6 +234,7 @@ const AdminProductListPage: React.FC = () => {
     description: '',
     imageUrl: '',
     selectedColors: [],
+    status: 'active',
   });
   // URL 미리보기용 상태
   const [urlPreview, setUrlPreview] = useState<string>('');
@@ -293,6 +295,7 @@ const AdminProductListPage: React.FC = () => {
         description: '',
         imageUrl: product.imageUrl || '',
         selectedColors: [],
+        status: product.status,
       });
       // 기존 이미지 URL이 있으면 미리보기 설정
       setUrlPreview(product.imageUrl || '');
@@ -308,6 +311,7 @@ const AdminProductListPage: React.FC = () => {
         description: '',
         imageUrl: '',
         selectedColors: [],
+        status: 'active',
       });
       setUrlPreview('');
     }
@@ -331,6 +335,7 @@ const AdminProductListPage: React.FC = () => {
       description: '',
       imageUrl: '',
       selectedColors: [],
+      status: 'active',
     });
   };
 
@@ -527,10 +532,9 @@ const AdminProductListPage: React.FC = () => {
   };
 
   const getStatusChip = (status: string) => {
-    const statusConfig: Record<string, { label: string; color: 'success' | 'error' | 'default' }> = {
+    const statusConfig: Record<string, { label: string; color: 'success' | 'error' }> = {
       active: { label: '판매중', color: 'success' },
       soldout: { label: '품절', color: 'error' },
-      hidden: { label: '숨김', color: 'default' },
     };
     const config = statusConfig[status] || statusConfig.active;
     return <Chip label={config.label} color={config.color} size="small" />;
@@ -586,7 +590,14 @@ const AdminProductListPage: React.FC = () => {
           </TableHead>
           <TableBody>
             {products.map((product) => (
-              <TableRow key={product.id} hover>
+              <TableRow
+                key={product.id}
+                hover
+                sx={{
+                  opacity: product.status === 'soldout' ? 0.5 : 1,
+                  bgcolor: product.status === 'soldout' ? 'rgba(0, 0, 0, 0.02)' : 'transparent',
+                }}
+              >
                 <TableCell>{product.id}</TableCell>
                 <TableCell>
                   <Box
@@ -600,6 +611,7 @@ const AdminProductListPage: React.FC = () => {
                       objectFit: 'cover',
                       borderRadius: 1,
                       bgcolor: '#f5f5f5',
+                      filter: product.status === 'soldout' ? 'grayscale(50%)' : 'none',
                     }}
                   />
                 </TableCell>
@@ -925,6 +937,21 @@ const AdminProductListPage: React.FC = () => {
                   })}
                 </Box>
               )}
+            </Grid>
+
+            {/* 상태 선택 */}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>상품 상태</InputLabel>
+                <Select
+                  label="상품 상태"
+                  value={formData.status || 'active'}
+                  onChange={(e) => handleFormChange('status', e.target.value)}
+                >
+                  <MenuItem value="active">판매중</MenuItem>
+                  <MenuItem value="soldout">품절</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
           </Grid>
         </DialogContent>
