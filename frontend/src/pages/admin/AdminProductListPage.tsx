@@ -33,8 +33,95 @@ import {
   Delete as DeleteIcon,
   Add as AddIcon,
   CloudUpload as CloudUploadIcon,
+  Check as CheckIcon,
 } from '@mui/icons-material';
 import axiosClient from '../../api/axiosClient';
+
+// 백엔드 Enum 정의
+const MAJOR_CATEGORIES = [
+  { value: 'MEN', label: '남성' },
+  { value: 'WOMEN', label: '여성' },
+  { value: 'KIDS', label: '키즈' },
+  { value: 'ACCESSORIES', label: '액세서리' },
+  { value: 'SHOES', label: '신발' },
+  { value: 'BAGS', label: '가방' },
+];
+
+const MIDDLE_CATEGORIES = [
+  { value: 'TOP', label: '상의' },
+  { value: 'BOTTOM', label: '하의' },
+  { value: 'OUTER', label: '아우터' },
+  { value: 'DRESS', label: '드레스' },
+  { value: 'SUIT', label: '정장' },
+  { value: 'UNDERWEAR', label: '속옷' },
+  { value: 'SPORTSWEAR', label: '스포츠웨어' },
+  { value: 'SNEAKERS', label: '스니커즈' },
+  { value: 'BOOTS', label: '부츠' },
+  { value: 'SANDALS', label: '샌들' },
+  { value: 'LOAFERS', label: '로퍼' },
+  { value: 'HEELS', label: '힐' },
+  { value: 'BACKPACK', label: '백팩' },
+  { value: 'CROSSBODY', label: '크로스백' },
+  { value: 'TOTE', label: '토트백' },
+  { value: 'CLUTCH', label: '클러치' },
+  { value: 'WALLET', label: '지갑' },
+  { value: 'HAT', label: '모자' },
+  { value: 'SCARF', label: '스카프' },
+  { value: 'BELT', label: '벨트' },
+  { value: 'JEWELRY', label: '주얼리' },
+  { value: 'WATCH', label: '시계' },
+  { value: 'SUNGLASSES', label: '선글라스' },
+];
+
+const SUB_CATEGORIES = [
+  { value: 'T_SHIRT', label: '티셔츠' },
+  { value: 'SHIRT', label: '셔츠' },
+  { value: 'BLOUSE', label: '블라우스' },
+  { value: 'SWEATER', label: '스웨터' },
+  { value: 'HOODIE', label: '후드티' },
+  { value: 'CARDIGAN', label: '가디건' },
+  { value: 'JACKET', label: '재킷' },
+  { value: 'COAT', label: '코트' },
+  { value: 'PARKA', label: '파카' },
+  { value: 'VEST', label: '조끼' },
+  { value: 'JEANS', label: '청바지' },
+  { value: 'PANTS', label: '바지' },
+  { value: 'SHORTS', label: '반바지' },
+  { value: 'SKIRT', label: '스커트' },
+  { value: 'LEGGINGS', label: '레깅스' },
+  { value: 'SWEATPANTS', label: '트레이닝 바지' },
+  { value: 'MINI_DRESS', label: '미니 드레스' },
+  { value: 'MIDI_DRESS', label: '미디 드레스' },
+  { value: 'MAXI_DRESS', label: '맥시 드레스' },
+  { value: 'FORMAL_SUIT', label: '정장 수트' },
+  { value: 'CASUAL_SUIT', label: '캐주얼 수트' },
+  { value: 'BRA', label: '브라' },
+  { value: 'PANTIES', label: '팬티' },
+  { value: 'BOXERS', label: '박서' },
+  { value: 'SOCKS', label: '양말' },
+  { value: 'RUNNING', label: '러닝' },
+  { value: 'GYM', label: '헬스' },
+  { value: 'YOGA', label: '요가' },
+  { value: 'SWIMMING', label: '수영' },
+];
+
+const COLOR_OPTIONS: { value: string; label: string; hex: string }[] = [
+  { value: 'BLACK', label: '블랙', hex: '#000000' },
+  { value: 'WHITE', label: '화이트', hex: '#FFFFFF' },
+  { value: 'GRAY', label: '그레이', hex: '#808080' },
+  { value: 'IVORY', label: '아이보리', hex: '#FFFFF0' },
+  { value: 'RED', label: '레드', hex: '#FF0000' },
+  { value: 'PINK', label: '핑크', hex: '#FFC0CB' },
+  { value: 'ORANGE', label: '오렌지', hex: '#FFA500' },
+  { value: 'YELLOW', label: '옐로우', hex: '#FFFF00' },
+  { value: 'GREEN', label: '그린', hex: '#008000' },
+  { value: 'KHAKI', label: '카키', hex: '#C3B091' },
+  { value: 'BLUE', label: '블루', hex: '#0000FF' },
+  { value: 'NAVY', label: '네이비', hex: '#000080' },
+  { value: 'PURPLE', label: '퍼플', hex: '#800080' },
+  { value: 'BROWN', label: '브라운', hex: '#8B4513' },
+  { value: 'BEIGE', label: '베이지', hex: '#F5F5DC' },
+];
 
 interface Product {
   id: number;
@@ -58,11 +145,14 @@ interface ProductImage {
 interface ProductFormData {
   name: string;
   brand: string;
-  category: string;
+  majorCategory: string;
+  middleCategory: string;
+  subcategory: string;
   price: string;
   stock: string;
   description: string;
   imageUrl: string; // 이미지 URL 직접 입력용
+  selectedColors: string[];
 }
 
 // 이미지 URL 처리 유틸 함수
@@ -94,11 +184,14 @@ const AdminProductListPage: React.FC = () => {
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
     brand: '',
-    category: '',
+    majorCategory: '',
+    middleCategory: '',
+    subcategory: '',
     price: '',
     stock: '',
     description: '',
     imageUrl: '',
+    selectedColors: [],
   });
   // URL 미리보기용 상태
   const [urlPreview, setUrlPreview] = useState<string>('');
@@ -151,11 +244,14 @@ const AdminProductListPage: React.FC = () => {
       setFormData({
         name: product.name,
         brand: product.brand,
-        category: product.category,
+        majorCategory: '',
+        middleCategory: '',
+        subcategory: '',
         price: product.price.toString(),
         stock: product.stock.toString(),
         description: '',
         imageUrl: product.imageUrl || '',
+        selectedColors: [],
       });
       // 기존 이미지 URL이 있으면 미리보기 설정
       setUrlPreview(product.imageUrl || '');
@@ -163,11 +259,14 @@ const AdminProductListPage: React.FC = () => {
       setFormData({
         name: '',
         brand: '',
-        category: '',
+        majorCategory: '',
+        middleCategory: '',
+        subcategory: '',
         price: '',
         stock: '',
         description: '',
         imageUrl: '',
+        selectedColors: [],
       });
       setUrlPreview('');
     }
@@ -183,11 +282,14 @@ const AdminProductListPage: React.FC = () => {
     setFormData({
       name: '',
       brand: '',
-      category: '',
+      majorCategory: '',
+      middleCategory: '',
+      subcategory: '',
       price: '',
       stock: '',
       description: '',
       imageUrl: '',
+      selectedColors: [],
     });
   };
 
@@ -255,12 +357,24 @@ const AdminProductListPage: React.FC = () => {
   };
 
   // 폼 데이터 변경 핸들러
-  const handleFormChange = (field: keyof ProductFormData, value: string) => {
+  const handleFormChange = (field: keyof ProductFormData, value: string | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // 이미지 URL 변경 시 미리보기 업데이트
-    if (field === 'imageUrl') {
+    if (field === 'imageUrl' && typeof value === 'string') {
       setUrlPreview(value);
     }
+  };
+
+  // 색상 선택 토글 핸들러
+  const handleColorToggle = (colorValue: string) => {
+    setFormData((prev) => {
+      const isSelected = prev.selectedColors.includes(colorValue);
+      if (isSelected) {
+        return { ...prev, selectedColors: prev.selectedColors.filter((c) => c !== colorValue) };
+      } else {
+        return { ...prev, selectedColors: [...prev.selectedColors, colorValue] };
+      }
+    });
   };
 
   // 상품 저장
@@ -286,7 +400,11 @@ const AdminProductListPage: React.FC = () => {
         sku: '',
         brand: formData.brand,
         description: formData.description,
-        colorList: [],
+        stock: parseInt(formData.stock) || 0,
+        majorCategory: formData.majorCategory || null,
+        middleCategory: formData.middleCategory || null,
+        subcategory: formData.subcategory || null,
+        colorList: formData.selectedColors,
         sizeList: [],
         mainImageUrl: mainImageUrl,
         imageList: [],
@@ -595,17 +713,46 @@ const AdminProductListPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
-                <InputLabel>카테고리</InputLabel>
+                <InputLabel>대분류</InputLabel>
                 <Select
-                  label="카테고리"
-                  value={formData.category}
-                  onChange={(e) => handleFormChange('category', e.target.value)}
+                  label="대분류"
+                  value={formData.majorCategory}
+                  onChange={(e) => handleFormChange('majorCategory', e.target.value)}
                 >
-                  <MenuItem value="electronics">전자기기</MenuItem>
-                  <MenuItem value="fashion">패션</MenuItem>
-                  <MenuItem value="home">홈/리빙</MenuItem>
-                  <MenuItem value="beauty">뷰티</MenuItem>
-                  <MenuItem value="sports">스포츠</MenuItem>
+                  <MenuItem value="">선택안함</MenuItem>
+                  {MAJOR_CATEGORIES.map((cat) => (
+                    <MenuItem key={cat.value} value={cat.value}>{cat.label}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>중분류</InputLabel>
+                <Select
+                  label="중분류"
+                  value={formData.middleCategory}
+                  onChange={(e) => handleFormChange('middleCategory', e.target.value)}
+                >
+                  <MenuItem value="">선택안함</MenuItem>
+                  {MIDDLE_CATEGORIES.map((cat) => (
+                    <MenuItem key={cat.value} value={cat.value}>{cat.label}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>소분류</InputLabel>
+                <Select
+                  label="소분류"
+                  value={formData.subcategory}
+                  onChange={(e) => handleFormChange('subcategory', e.target.value)}
+                >
+                  <MenuItem value="">선택안함</MenuItem>
+                  {SUB_CATEGORIES.map((cat) => (
+                    <MenuItem key={cat.value} value={cat.value}>{cat.label}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -644,6 +791,75 @@ const AdminProductListPage: React.FC = () => {
                 value={formData.description}
                 onChange={(e) => handleFormChange('description', e.target.value)}
               />
+            </Grid>
+
+            {/* 색상 선택 */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" gutterBottom>
+                색상 선택 (다중 선택 가능)
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {COLOR_OPTIONS.map((color) => {
+                  const isSelected = formData.selectedColors.includes(color.value);
+                  const isDarkColor = ['BLACK', 'NAVY', 'BROWN', 'PURPLE', 'BLUE', 'GREEN'].includes(color.value);
+                  return (
+                    <Box
+                      key={color.value}
+                      onClick={() => handleColorToggle(color.value)}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        cursor: 'pointer',
+                        p: 0.5,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: '50%',
+                          backgroundColor: color.hex,
+                          border: '1px solid #ddd',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            transform: 'scale(1.1)',
+                          },
+                        }}
+                      >
+                        {isSelected && (
+                          <CheckIcon sx={{ fontSize: 20, color: isDarkColor ? '#fff' : '#1a1a1a' }} />
+                        )}
+                      </Box>
+                      <Typography variant="caption" sx={{ mt: 0.5, fontSize: '0.7rem', fontWeight: isSelected ? 600 : 400 }}>
+                        {color.label}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+              </Box>
+              {formData.selectedColors.length > 0 && (
+                <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {formData.selectedColors.map((colorValue) => {
+                    const colorInfo = COLOR_OPTIONS.find((c) => c.value === colorValue);
+                    return (
+                      <Chip
+                        key={colorValue}
+                        label={colorInfo?.label || colorValue}
+                        size="small"
+                        onDelete={() => handleColorToggle(colorValue)}
+                        sx={{
+                          bgcolor: colorInfo?.hex,
+                          color: ['BLACK', 'NAVY', 'BROWN', 'PURPLE', 'BLUE', 'GREEN'].includes(colorValue) ? '#fff' : '#000',
+                        }}
+                      />
+                    );
+                  })}
+                </Box>
+              )}
             </Grid>
           </Grid>
         </DialogContent>

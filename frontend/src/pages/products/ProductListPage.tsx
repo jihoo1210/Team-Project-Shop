@@ -19,6 +19,7 @@ import {
   FavoriteBorder as HeartIcon,
   FilterList as FilterIcon,
   Close as CloseIcon,
+  Check as CheckIcon,
 } from '@mui/icons-material'
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -183,7 +184,7 @@ const ProductListPage = () => {
       const sortParams = getSortParams(sortBy)
 
       // 필터 파라미터 구성
-      const filterParams: Record<string, string | number | undefined> = {
+      const filterParams: Record<string, string | number | string[] | undefined> = {
         page: currentPage - 1,
         size: itemsPerPage,
         searchTerm: searchTerm || undefined,
@@ -198,15 +199,15 @@ const ProductListPage = () => {
         filterParams.middleCategory = subCategory
       }
 
-      // 색상 필터 (첫 번째 선택된 색상만 전달 - 백엔드가 단일 값만 지원)
+      // 색상 필터 (다수의 색상 필터링 지원)
       if (selectedColors.length > 0) {
-        filterParams.color = selectedColors[0]
+        filterParams.colors = selectedColors
       }
 
-      // 사이즈 필터 (첫 번째 선택된 사이즈만 전달)
-      // 주의: 'size'는 Spring Pageable의 페이지 크기 파라미터와 충돌하므로 'itemSize' 사용
+      // 사이즈 필터 (다수의 사이즈 필터링 지원)
+      // 주의: 'size'는 Spring Pageable의 페이지 크기 파라미터와 충돌하므로 'itemSizes' 사용
       if (selectedSizes.length > 0) {
-        filterParams.itemSize = selectedSizes[0]
+        filterParams.itemSizes = selectedSizes
       }
 
       // 가격 필터 (최대 가격이 50만원 미만일 때만 전달)
@@ -365,6 +366,8 @@ const ProductListPage = () => {
             {(Object.keys(COLORS) as ColorKey[]).map((colorKey) => {
               const color = COLORS[colorKey]
               const isSelected = selectedColors.includes(colorKey)
+              // 어두운 색상 판별 (검정, 네이비 등)
+              const isDarkColor = ['BLACK', 'NAVY', 'BROWN', 'CHARCOAL'].includes(colorKey)
               return (
                 <Box
                   key={colorKey}
@@ -381,11 +384,19 @@ const ProductListPage = () => {
                     height: 28,
                     borderRadius: '50%',
                     backgroundColor: color.hex,
-                    border: isSelected ? '3px solid #1a1a1a' : '1px solid #ddd',
+                    border: isSelected ? '2px solid #fff' : '1px solid #ddd',
+                    boxShadow: isSelected ? '0 0 0 2px #6366F1' : 'none',
                     cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                   title={color.name}
-                />
+                >
+                  {isSelected && (
+                    <CheckIcon sx={{ fontSize: 16, color: isDarkColor ? '#fff' : '#1a1a1a' }} />
+                  )}
+                </Box>
               )
             })}
           </Box>
@@ -534,6 +545,8 @@ const ProductListPage = () => {
             {(Object.keys(COLORS) as ColorKey[]).map((colorKey) => {
               const color = COLORS[colorKey]
               const isSelected = selectedColors.includes(colorKey)
+              // 어두운 색상 판별 (검정, 네이비 등)
+              const isDarkColor = ['BLACK', 'NAVY', 'BROWN', 'CHARCOAL'].includes(colorKey)
               return (
                 <Box
                   key={colorKey}
@@ -550,15 +563,23 @@ const ProductListPage = () => {
                     height: 28,
                     borderRadius: '50%',
                     backgroundColor: color.hex,
-                    border: isSelected ? '3px solid #1a1a1a' : '1px solid #ddd',
+                    border: isSelected ? '2px solid #fff' : '1px solid #ddd',
+                    boxShadow: isSelected ? '0 0 0 2px #6366F1' : 'none',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     '&:hover': {
                       transform: 'scale(1.1)',
                     },
                   }}
                   title={color.name}
-                />
+                >
+                  {isSelected && (
+                    <CheckIcon sx={{ fontSize: 16, color: isDarkColor ? '#fff' : '#1a1a1a' }} />
+                  )}
+                </Box>
               )
             })}
           </Box>

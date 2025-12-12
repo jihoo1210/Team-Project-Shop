@@ -80,17 +80,14 @@ const Header = () => {
             </Typography>
           </Box>
 
-          {/* 검색창 - 완전 가운데 */}
+          {/* 검색창 - 가운데 */}
           <Box
             component="form"
             onSubmit={handleSearch}
             sx={{
-              position: 'absolute',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '100%',
-              maxWidth: 500,
-              px: 2,
+              flex: 1,
+              maxWidth: 400,
+              mx: { sm: 2, md: 4 },
               display: { xs: 'none', sm: 'block' },
             }}
           >

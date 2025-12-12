@@ -12,9 +12,13 @@ const axiosClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json;charset=UTF-8',
   },
   withCredentials: true, // ( BE / FE Cookie인증 자동 전송)
+  paramsSerializer: {
+    // 배열 파라미터를 colors=RED&colors=BLUE 형태로 직렬화 (Spring Boot 호환)
+    indexes: null,
+  },
 })
 
 export const getAccessToken = () => {

@@ -17,6 +17,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 import ProductCard from '@/components/common/ProductCard'
 import { fetchItems } from '@/api/itemApi'
+import { fetchActiveBanners, type Banner } from '@/api/bannerApi'
 import { useAiRecommend, type AiRecommendWithProduct } from '@/hooks/useAiRecommend'
 import type { ProductSummary } from '@/types/product'
 
@@ -31,8 +32,8 @@ const carouselCards = [
   { id: 6, image: '/images/carousel-woman-3.jpg', title: 'CASUAL' },
 ]
 
-// 메인 배너 슬라이더 데이터
-const bannerSlides = [
+// 기본 배너 데이터 (DB에 배너가 없을 경우 폴백)
+const defaultBannerSlides = [
   [
     { id: 1, image: '/images/banner-1.jpg', fallback: 'https://picsum.photos/id/400/600/800', label: '2025\n결 산\n빅세일', brand: 'vunque', title: '인기 브랜드 백팩 발매', subtitle: '분크', link: '/products?category=bag' },
     { id: 2, image: '/images/banner-2.jpg', fallback: 'https://picsum.photos/id/401/600/800', label: '2025\n결 산\n빅세일', brand: '', title: '잡화 브랜드데이 최대 25% 쿠폰', subtitle: '락피쉬웨더웨어, 도씨 외', link: '/products?category=shoes' },
@@ -49,6 +50,38 @@ const bannerSlides = [
     { id: 9, image: '/images/banner-9.jpg', fallback: 'https://picsum.photos/id/408/600/800', label: 'STREET\nWEAR', brand: 'SUPREME', title: '스트릿 웨어 특집', subtitle: '힙한 스타일링', link: '/products?category=street' },
   ],
 ]
+
+// DB 배너를 슬라이드 형식으로 변환 (3개씩 그룹)
+const convertBannersToSlides = (banners: Banner[]) => {
+  if (banners.length === 0) return defaultBannerSlides
+
+  const slides: Array<Array<{
+    id: number
+    image: string
+    fallback: string
+    label: string
+    brand: string
+    title: string
+    subtitle: string
+    link: string
+  }>> = []
+
+  for (let i = 0; i < banners.length; i += 3) {
+    const group = banners.slice(i, i + 3).map((banner) => ({
+      id: banner.id,
+      image: banner.imageUrl,
+      fallback: `https://picsum.photos/id/${400 + banner.id}/600/800`,
+      label: '',
+      brand: '',
+      title: banner.title,
+      subtitle: '',
+      link: banner.linkUrl || '/products',
+    }))
+    slides.push(group)
+  }
+
+  return slides
+}
 
 // 상품 이미지 - picsum
 const FASHION_IMAGES = {
@@ -69,6 +102,7 @@ const HomePage = () => {
   const [aiPrompt, setAiPrompt] = useState('')
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [bannerSlideIndex, setBannerSlideIndex] = useState(0)
+  const [bannerSlides, setBannerSlides] = useState(defaultBannerSlides)
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
@@ -99,6 +133,23 @@ const HomePage = () => {
       setBannerSlideIndex((prev) => (prev + 1) % bannerSlides.length)
     }, 5000)
     return () => clearInterval(interval)
+  }, [bannerSlides.length])
+
+  // DB에서 배너 데이터 로드
+  useEffect(() => {
+    const loadBanners = async () => {
+      try {
+        const banners = await fetchActiveBanners()
+        if (banners && banners.length > 0) {
+          const slides = convertBannersToSlides(banners)
+          setBannerSlides(slides)
+        }
+      } catch (err) {
+        console.error('배너 로드 실패, 기본 배너 사용:', err)
+        // 에러 시 기본 배너 유지
+      }
+    }
+    loadBanners()
   }, [])
 
   useEffect(() => {

@@ -8,11 +8,13 @@ import {
   Divider,
   FormControlLabel,
   IconButton,
+  InputAdornment,
   Link,
   Stack,
   TextField,
   Typography,
 } from '@mui/material'
+import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { login } from '@/api/userApi'
 import { brandColors } from '@/theme/tokens'
 
@@ -33,6 +35,7 @@ const LoginPage = () => {
   const [saveEmail, setSaveEmail] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }))
@@ -146,12 +149,25 @@ const LoginPage = () => {
               </Typography>
               <TextField
                 placeholder="영문+숫자+특수문자 조합 8~16자리를 입력해주세요."
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={handleChange('password')}
                 fullWidth
                 size="small"
                 variant="outlined"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        size="small"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 0,
