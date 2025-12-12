@@ -166,16 +166,16 @@ const ProductListPage = () => {
   const getSortParams = (sort: SortOption) => {
     switch (sort) {
       case 'latest':
-        return { sort: 'created_at,desc' }
+        return { sort: 'createdAt,desc' }
       case 'price-low':
         return { sort: 'price,asc' }
       case 'price-high':
         return { sort: 'price,desc' }
       case 'review':
-        return { sort: 'review_count,desc' }
+        return { sort: 'reviewCount,desc' }
       case 'popular':
       default:
-        return { sort: 'like_count,desc' }
+        return { sort: 'likeCount,desc' }
     }
   }
 
@@ -212,7 +212,10 @@ const ProductListPage = () => {
         filterParams.itemSizes = selectedSizes
       }
 
-      // 가격 필터 (최대 가격이 50만원 미만일 때만 전달)
+      // 가격 필터
+      if (priceRange[0] > 0) {
+        filterParams.minPrice = priceRange[0]
+      }
       if (priceRange[1] < 500000) {
         filterParams.maxPrice = priceRange[1]
       }
