@@ -19,7 +19,7 @@ public class IndexItemSpec {
             List<Predicate> predicates = new ArrayList<>();
             String pattern = "";
             if (searchTerm != null && !searchTerm.isEmpty()) {
-                String clearSearchTerm = searchTerm.replace("\\s", "").toLowerCase();
+                String clearSearchTerm = searchTerm.replaceAll("\\s", "").toLowerCase();
                 pattern = "%" + clearSearchTerm + "%";
                 Filter.addSearchFieldPredicates(builder, root, predicates, searchField, pattern);
             }
@@ -38,7 +38,7 @@ public class IndexItemSpec {
         return (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (searchTerm != null && !searchTerm.isEmpty()) {
-                String clearSearchTerm = searchTerm.replace("\\s", "").toLowerCase();
+                String clearSearchTerm = searchTerm.replaceAll("\\s", "").toLowerCase();
                 String pattern = "%" + clearSearchTerm + "%";
                 Filter.addSearchFieldPredicates(builder, root, predicates, searchField, pattern);
             }
@@ -57,7 +57,7 @@ public class IndexItemSpec {
         return (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (searchTerm != null && !searchTerm.isEmpty()) {
-                String clearSearchTerm = searchTerm.replace("\\s", "").toLowerCase();
+                String clearSearchTerm = searchTerm.replaceAll("\\s", "").toLowerCase();
                 String pattern = "%" + clearSearchTerm + "%";
                 Filter.addSearchFieldPredicates(builder, root, predicates, searchField, pattern);
             }
