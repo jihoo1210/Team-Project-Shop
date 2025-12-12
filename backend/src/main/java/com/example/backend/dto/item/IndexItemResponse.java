@@ -28,8 +28,18 @@ public class IndexItemResponse {
     private boolean isFavorite;
     private boolean isCart;
     private Integer likeCount;
+    private Integer stock;
+    private String status;
 
     public static IndexItemResponse fromEntity(Item item, boolean isFavorite, boolean isCart) {
+        // 재고에 따른 판매 상태 결정
+        String status = "ON_SALE";
+        if (item.getStock() == null || item.getStock() <= 0) {
+            status = "SOLD_OUT";
+        } else if (item.getStock() < 10) {
+            status = "LOW_STOCK";
+        }
+
         return IndexItemResponse.builder()
                 .id(item.getId())
                 .title(item.getTitle())
@@ -41,6 +51,8 @@ public class IndexItemResponse {
                 .isFavorite(isFavorite)
                 .isCart(isCart)
                 .likeCount(random.nextInt(500) + 10)
+                .stock(item.getStock())
+                .status(status)
                 .build();
     }
 }

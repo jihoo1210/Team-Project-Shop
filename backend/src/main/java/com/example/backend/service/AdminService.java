@@ -18,7 +18,10 @@ import com.example.backend.entity.item.details.Color;
 import com.example.backend.entity.item.details.ItemImage;
 import com.example.backend.entity.item.details.Size;
 import com.example.backend.entity.item.enums.ColorEnum;
+import com.example.backend.entity.item.enums.MajorCategoryEnum;
+import com.example.backend.entity.item.enums.MiddleCategoryEnum;
 import com.example.backend.entity.item.enums.SizeEnum;
+import com.example.backend.entity.item.enums.SubcategoryEnum;
 import com.example.backend.repository.item.ColorRepostitory;
 import com.example.backend.repository.item.ItemImageRepository;
 import com.example.backend.repository.item.ItemRepository;
@@ -132,15 +135,40 @@ public class AdminService {
     }
 
 
+    /**
+     * SKU 자동 생성: 카테고리 기반 + 타임스탬프
+     * 예: MEN-TOP-T_SHIRT-1702345678901
+     */
+    private String generateSku(String majorCategory, String middleCategory, String subcategory) {
+        String major = majorCategory != null ? majorCategory : "NONE";
+        String middle = middleCategory != null ? middleCategory : "NONE";
+        String sub = subcategory != null ? subcategory : "NONE";
+        return String.format("%s-%s-%s-%d", major, middle, sub, System.currentTimeMillis());
+    }
+
     public void saveItem(ItemResistraionRequest dto, MultipartFile mainImage, List<MultipartFile> images) throws IOException {
         String title = dto.getTitle();
         int price = dto.getPrice();
         int discountPercent = dto.getDiscountPercent();
-        String sku = dto.getSku();
         String brand = dto.getBrand();
         String description = dto.getDescription();
         List<String> colorList = dto.getColorList();
         List<String> sizeList = dto.getSizeList();
+        Integer stock = dto.getStock() != null ? dto.getStock() : 0;
+
+        // SKU: 입력값이 없으면 카테고리 기반 자동 생성
+        String sku = dto.getSku();
+        if (sku == null || sku.isBlank()) {
+            sku = generateSku(dto.getMajorCategory(), dto.getMiddleCategory(), dto.getSubcategory());
+        }
+
+        // 카테고리 파싱
+        MajorCategoryEnum majorCategory = dto.getMajorCategory() != null
+            ? MajorCategoryEnum.valueOf(dto.getMajorCategory()) : null;
+        MiddleCategoryEnum middleCategory = dto.getMiddleCategory() != null
+            ? MiddleCategoryEnum.valueOf(dto.getMiddleCategory()) : null;
+        SubcategoryEnum subcategory = dto.getSubcategory() != null
+            ? SubcategoryEnum.valueOf(dto.getSubcategory()) : null;
 
         // 메인 이미지 저장
         String mainImageUrl = saveImageFile(mainImage);
@@ -162,6 +190,10 @@ public class AdminService {
                 .brand(brand)
                 .description(description)
                 .mainImageUrl(mainImageUrl)
+                .stock(stock)
+                .majorCategory(majorCategory)
+                .middleCategory(middleCategory)
+                .subcategory(subcategory)
                 .build();
 
         itemRepository.save(item);

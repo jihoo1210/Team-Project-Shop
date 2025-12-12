@@ -98,26 +98,38 @@ public class Item extends BaseEntity {
     private List<ViewedItem> viewedItemList;
 
     public void update(ItemResistraionRequest dto) {
-        if(!this.title.equals(dto.getTitle()) && dto.getTitle() != null) {
+        if(dto.getTitle() != null && !dto.getTitle().equals(this.title)) {
             this.title = dto.getTitle();
         }
-        if(!this.price.equals(dto.getPrice())) {
+        if(dto.getPrice() != this.price) {
             this.price = dto.getPrice();
         }
-        if(!this.discountPercent.equals(dto.getDiscountPercent())) {
+        if(dto.getDiscountPercent() != this.discountPercent) {
             this.discountPercent = dto.getDiscountPercent();
         }
-        if(!this.sku.equals(dto.getSku()) && dto.getSku() != null) {
+        if(dto.getSku() != null && !dto.getSku().equals(this.sku)) {
             this.sku = dto.getSku();
         }
-        if(!this.brand.equals(dto.getBrand()) && dto.getBrand() != null) {
+        if(dto.getBrand() != null && !dto.getBrand().equals(this.brand)) {
             this.brand = dto.getBrand();
         }
-        if(!this.description.equals(dto.getDescription()) && dto.getDescription() != null) {
+        if(dto.getDescription() != null && !dto.getDescription().equals(this.description)) {
             this.description = dto.getDescription();
         }
-        if(!this.mainImageUrl.equals(dto.getMainImageUrl()) && dto.getMainImageUrl() != null) {
+        if(dto.getMainImageUrl() != null && !dto.getMainImageUrl().equals(this.mainImageUrl)) {
             this.mainImageUrl = dto.getMainImageUrl();
+        }
+        if(dto.getStock() != null) {
+            this.stock = dto.getStock();
+        }
+        if(dto.getMajorCategory() != null) {
+            this.majorCategory = MajorCategoryEnum.valueOf(dto.getMajorCategory());
+        }
+        if(dto.getMiddleCategory() != null) {
+            this.middleCategory = MiddleCategoryEnum.valueOf(dto.getMiddleCategory());
+        }
+        if(dto.getSubcategory() != null) {
+            this.subcategory = SubcategoryEnum.valueOf(dto.getSubcategory());
         }
     }
 
