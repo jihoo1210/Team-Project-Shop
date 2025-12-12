@@ -75,9 +75,12 @@ public class Filter {
         }
     }
 
-    public static <T> void addPricePredicate(CriteriaBuilder builder, Root<T> root, List<Predicate> predicates, Integer maxPrice) {
+    public static <T> void addPricePredicate(CriteriaBuilder builder, Root<T> root, List<Predicate> predicates, Integer minPrice, Integer maxPrice) {
+        Path<Integer> pricePath = getItemPath(root, "price");
+        if (minPrice != null && minPrice > 0) {
+            predicates.add(builder.greaterThanOrEqualTo(pricePath, minPrice));
+        }
         if (maxPrice != null && maxPrice > 0) {
-            Path<Integer> pricePath = getItemPath(root, "price");
             predicates.add(builder.lessThanOrEqualTo(pricePath, maxPrice));
         }
     }

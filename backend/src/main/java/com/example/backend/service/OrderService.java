@@ -103,7 +103,7 @@ public class OrderService {
                 .mainImgUrl(mainImgUrl)
                 .totalPrice(orderItem.getTotalPrice())
                 .status("paid") // 결제완료 상태
-                .createdAt(orderItem.getCratedAt())
+                .createdAt(orderItem.getCreatedAt())
                 .build();
         });
     }

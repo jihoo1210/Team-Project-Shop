@@ -24,5 +24,6 @@ public class IndexItemRequest {
     // 다수의 사이즈 필터링 지원 (예: ?itemSizes=S&itemSizes=M)
     // 'size'는 Spring Pageable의 페이지 크기 파라미터와 충돌하므로 'itemSizes' 사용
     private List<String> itemSizes;
+    private Integer minPrice;
     private Integer maxPrice;
 }
