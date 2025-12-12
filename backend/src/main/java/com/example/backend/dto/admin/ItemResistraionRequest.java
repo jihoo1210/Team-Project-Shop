@@ -24,4 +24,8 @@ public class ItemResistraionRequest {
     private List<String> sizeList;
     private String mainImageUrl;
     private List<String> imageList;
+    private Integer stock;
+    private String majorCategory;
+    private String middleCategory;
+    private String subcategory;
 }

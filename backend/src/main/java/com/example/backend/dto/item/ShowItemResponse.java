@@ -1,6 +1,7 @@
 package com.example.backend.dto.item;
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import com.example.backend.entity.item.Item;
@@ -17,6 +18,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ShowItemResponse {
+    private static final Random random = new Random();
+
     private Long id;
     private String title;
     private String description;
@@ -32,6 +35,7 @@ public class ShowItemResponse {
     private List<String> sizeList;
     private boolean isFavorite;
     private boolean isCart;
+    private Integer likeCount;
 
     public static ShowItemResponse fromEntity(Item item, boolean isFavorite, boolean isCart) {
         return ShowItemResponse.builder()
@@ -56,6 +60,7 @@ public class ShowItemResponse {
                     : null)
                 .isFavorite(isFavorite)
                 .isCart(isCart)
+                .likeCount(random.nextInt(500) + 10)
                 .build();
     }
 }
