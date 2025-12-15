@@ -34,8 +34,24 @@ public class ShowItemResponse {
     private boolean isFavorite;
     private boolean isCart;
     private Integer likeCount;
+    private Integer reviewCount;
+    private Double reviewAverage;
 
     public static ShowItemResponse fromEntity(Item item, boolean isFavorite, boolean isCart) {
+        // 리뷰 수
+        int reviewCount = item.getReviewList() != null ? item.getReviewList().size() : 0;
+
+        // 리뷰 평균 점수 (소수점 1자리)
+        double reviewAverage = 0.0;
+        if (item.getReviewList() != null && !item.getReviewList().isEmpty()) {
+            reviewAverage = item.getReviewList().stream()
+                .filter(r -> r.getScore() != null)
+                .mapToInt(r -> r.getScore())
+                .average()
+                .orElse(0.0);
+            reviewAverage = Math.round(reviewAverage * 10) / 10.0;
+        }
+
         return ShowItemResponse.builder()
                 .id(item.getId())
                 .title(item.getTitle())
@@ -59,6 +75,8 @@ public class ShowItemResponse {
                 .isFavorite(isFavorite)
                 .isCart(isCart)
                 .likeCount(item.getLikeCount() != null ? item.getLikeCount() : 0)
+                .reviewCount(reviewCount)
+                .reviewAverage(reviewAverage)
                 .build();
     }
 }
