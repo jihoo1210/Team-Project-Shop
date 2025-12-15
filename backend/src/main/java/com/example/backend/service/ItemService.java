@@ -62,7 +62,7 @@ public class ItemService {
         Specification<FavoriteItem> spec = IndexItemSpec.searchFavorites(
             searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
-            searchParams.getColors(), searchParams.getItemSizes(), searchParams.getMinPrice(), searchParams.getMaxPrice());
+            searchParams.getColors(), searchParams.getItemSizes(), searchParams.getMinPrice(), searchParams.getMaxPrice(), user);
         return getIndexPage(pageable, searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
             user, spec, favoriteItemRepository, favoriteItem -> favoriteItem.getItem());
@@ -72,7 +72,7 @@ public class ItemService {
         Specification<CartItem> spec = IndexItemSpec.searchCart(
             searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
-            searchParams.getColors(), searchParams.getItemSizes(), searchParams.getMinPrice(), searchParams.getMaxPrice());
+            searchParams.getColors(), searchParams.getItemSizes(), searchParams.getMinPrice(), searchParams.getMaxPrice(), user);
         return getIndexPage(pageable, searchParams.getSearchField(), searchParams.getSearchTerm(),
             searchParams.getMajorCategory(), searchParams.getMiddleCategory(), searchParams.getSubcategory(),
             user, spec, cartItemRepository, cartItem -> cartItem.getItem());
