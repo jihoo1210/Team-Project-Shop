@@ -4,6 +4,8 @@ import {
   Box,
   Button,
   Container,
+  IconButton,
+  InputAdornment,
   Link,
   Paper,
   Stack,
@@ -35,6 +37,8 @@ const SignupPage = () => {
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
 
   // 다음 우편번호 스크립트 미리 로드
   useEffect(() => {
@@ -163,20 +167,46 @@ const SignupPage = () => {
             />
             <TextField
               label="비밀번호"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={handleChange('password')}
               helperText="8자 이상 입력해주세요"
               fullWidth
               required
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? '🙉' : '🙈'}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               label="비밀번호 확인"
-              type="password"
+              type={showPasswordConfirm ? 'text' : 'password'}
               value={formData.passwordConfirm}
               onChange={handleChange('passwordConfirm')}
               fullWidth
               required
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPasswordConfirm ? '🙉' : '🙈'}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               label="이름"

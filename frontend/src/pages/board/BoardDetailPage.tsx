@@ -22,10 +22,12 @@ import {
 import { fetchBoardDetail, fetchComments, createComment, updateComment, deleteBoard, deleteComment, type BoardDetail } from '@/api/boardApi'
 import type { CommentListItem } from '@/types/api'
 import { brandColors } from '@/theme/tokens'
+import { useAuth } from '@/hooks/useAuth'
 
 const BoardDetailPage = () => {
   const { category, id } = useParams<{ category: string; id: string }>()
   const navigate = useNavigate()
+  const { user, isLoggedIn } = useAuth()
 
   const [post, setPost] = useState<BoardDetail | null>(null)
   const [comments, setComments] = useState<CommentListItem[]>([])
@@ -38,9 +40,9 @@ const BoardDetailPage = () => {
   const [editingCommentContent, setEditingCommentContent] = useState('')
   const [editSubmitting, setEditSubmitting] = useState(false)
 
-  // TODO: 실제 로그인 사용자 정보 연동
-  const currentUserId = localStorage.getItem('user_id') || ''
-  const currentUserRole = localStorage.getItem('role') || 'User'
+  // useAuth 훅에서 사용자 정보 가져오기
+  const currentUserId = user?.userId?.toString() || ''
+  const currentUserRole = user?.role || 'User'
 
   useEffect(() => {
     const loadData = async () => {
@@ -381,12 +383,12 @@ const BoardDetailPage = () => {
               placeholder="답변을 작성해주세요..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              disabled={!currentUserId}
+              disabled={!isLoggedIn}
             />
             <Button
               variant="contained"
               onClick={handleCommentSubmit}
-              disabled={submitting || !newComment.trim() || !currentUserId}
+              disabled={submitting || !newComment.trim() || !isLoggedIn}
               sx={{
                 bgcolor: brandColors.primary,
                 '&:hover': { bgcolor: brandColors.primaryHover },
@@ -397,7 +399,7 @@ const BoardDetailPage = () => {
               {submitting ? '작성 중...' : '등록'}
             </Button>
           </Box>
-          {!currentUserId && (
+          {!isLoggedIn && (
             <Typography color="text.secondary" fontSize="0.875rem" sx={{ mt: 1 }}>
               답변을 작성하려면{' '}
               <Link
