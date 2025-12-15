@@ -152,6 +152,14 @@ const Header = () => {
               <>
                 <Button
                   component={Link}
+                  to="/board/notice"
+                  size="small"
+                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                >
+                  게시판
+                </Button>
+                <Button
+                  component={Link}
                   to="/login"
                   size="small"
                   sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}

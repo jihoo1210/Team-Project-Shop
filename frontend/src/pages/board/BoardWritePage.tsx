@@ -23,6 +23,7 @@ import {
 } from '@mui/icons-material'
 import { createBoard, uploadBoardFiles } from '@/api/boardApi'
 import { brandColors } from '@/theme/tokens'
+import { useAuth } from '@/hooks/useAuth'
 
 interface AttachedFile {
   id: string
@@ -34,15 +35,16 @@ const BoardWritePage = () => {
   const { category } = useParams<{ category: string }>()
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { user, isLoggedIn } = useAuth()
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
   const [submitting, setSubmitting] = useState(false)
 
-  // TODO: 실제 로그인 사용자 정보 연동
-  const currentUserId = localStorage.getItem('user_id') || ''
-  const currentUserRole = (localStorage.getItem('role') || 'User') as 'Admin' | 'User'
+  // useAuth 훅에서 사용자 정보 가져오기
+  const currentUserId = user?.userId?.toString() || ''
+  const currentUserRole = (user?.role === 'ADMIN' ? 'Admin' : 'User') as 'Admin' | 'User'
 
   const getCategoryLabel = (cat: string) => {
     const labels: Record<string, string> = {
@@ -130,7 +132,7 @@ const BoardWritePage = () => {
       return
     }
 
-    if (!currentUserId) {
+    if (!isLoggedIn || !currentUserId) {
       alert('로그인이 필요합니다.')
       navigate('/login')
       return

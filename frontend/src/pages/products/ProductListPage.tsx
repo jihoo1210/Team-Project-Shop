@@ -808,11 +808,16 @@ const ProductListPage = () => {
                           component="img"
                           src={product.mainImage}
                           alt={product.title}
+                          loading="lazy"
                           sx={{
                             width: '100%',
                             aspectRatio: '3/4',
                             objectFit: 'cover',
                             borderRadius: '4px',
+                            bgcolor: '#f5f5f5',
+                          }}
+                          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                            e.currentTarget.src = 'https://placehold.co/400x500/png'
                           }}
                         />
 

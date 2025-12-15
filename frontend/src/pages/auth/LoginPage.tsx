@@ -14,7 +14,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { login } from '@/api/userApi'
 import { brandColors } from '@/theme/tokens'
 
@@ -163,7 +162,7 @@ const LoginPage = () => {
                         edge="end"
                         size="small"
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? <span>🙉</span> : <span>🙈</span>}
                       </IconButton>
                     </InputAdornment>
                   ),

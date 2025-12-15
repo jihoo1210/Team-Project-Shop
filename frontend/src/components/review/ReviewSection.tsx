@@ -22,6 +22,7 @@ import {
 import { createReview, updateReview, deleteReview } from '@/api/reviewApi'
 import type { ReviewListItem } from '@/types/api'
 import { brandColors } from '@/theme/tokens'
+import { useAuth } from '@/hooks/useAuth'
 
 interface ReviewSectionProps {
   itemId: string
@@ -35,9 +36,11 @@ interface ReviewSectionProps {
  * - 리뷰 작성/수정/삭제 기능
  */
 const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) => {
-  // 현재 사용자 정보
-  const currentUserId = localStorage.getItem('user_id') || ''
-  const currentUserRole = localStorage.getItem('role') || 'User'
+  const { user, isLoggedIn } = useAuth()
+
+  // useAuth 훅에서 사용자 정보 가져오기
+  const currentUserId = user?.userId?.toString() || ''
+  const currentUserRole = user?.role || 'User'
 
   // 리뷰 작성 상태
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
@@ -62,7 +65,7 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
       alert('리뷰 내용을 입력해주세요.')
       return
     }
-    if (!currentUserId) {
+    if (!isLoggedIn || !currentUserId) {
       alert('로그인이 필요합니다.')
       return
     }
