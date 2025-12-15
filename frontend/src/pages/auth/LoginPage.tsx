@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, Link as RouterLink } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link as RouterLink, useSearchParams } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -26,6 +26,7 @@ import { brandColors } from '@/theme/tokens'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   const [formData, setFormData] = useState({
     email: '',
@@ -35,6 +36,37 @@ const LoginPage = () => {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+
+  // OAuth 로그인 성공 처리
+  useEffect(() => {
+    const result = searchParams.get('result')
+    if (result === 'success') {
+      // OAuth 로그인 성공 - 쿠키에서 토큰이 설정됨
+      // 사용자 정보를 가져와서 저장
+      fetch('/api/auth/me', {
+        credentials: 'include',
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.result) {
+            const user = data.result
+            localStorage.setItem('userId', String(user.userId))
+            localStorage.setItem('email', user.email)
+            localStorage.setItem('username', user.username)
+            localStorage.setItem('role', user.role)
+            window.dispatchEvent(new Event('auth:login'))
+            navigate('/')
+          }
+        })
+        .catch(() => {
+          // 사용자 정보 조회 실패해도 홈으로 이동 (쿠키 인증은 유지됨)
+          window.dispatchEvent(new Event('auth:login'))
+          navigate('/')
+        })
+    } else if (result === 'failure') {
+      setError('소셜 로그인에 실패했습니다. 다시 시도해주세요.')
+    }
+  }, [searchParams, navigate])
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }))
