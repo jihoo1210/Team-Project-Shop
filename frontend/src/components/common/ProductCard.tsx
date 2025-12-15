@@ -164,17 +164,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
         >
           {product.title}
         </Typography>
-        {(product.scoreAverage || product.reviewCount) && (
-          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1 }}>
-            <Star sx={{ color: '#FFB800', fontSize: 16 }} />
-            <Typography sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
-              {product.scoreAverage || 0}
-            </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: '#999' }}>
-              ({product.reviewCount || 0})
-            </Typography>
-          </Stack>
-        )}
+        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1 }}>
+          <Star sx={{ color: '#FFB800', fontSize: 16 }} />
+          <Typography sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+            {(product.scoreAverage ?? 0).toFixed(1)}
+          </Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: '#999' }}>
+            ({product.reviewCount ?? 0})
+          </Typography>
+        </Stack>
         <Stack direction="row" alignItems="baseline" spacing={1}>
           {product.discountPercent && (
             <Typography sx={{ color: '#ff4444', fontWeight: 700, fontSize: '1rem' }}>
