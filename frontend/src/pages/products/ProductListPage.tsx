@@ -17,6 +17,8 @@ import {
 import {
   AccessTime as TimeIcon,
   FavoriteBorder as HeartIcon,
+  Favorite as HeartFilledIcon,
+  ShoppingCart as CartIcon,
   FilterList as FilterIcon,
   Close as CloseIcon,
   Check as CheckIcon,
@@ -825,14 +827,14 @@ const ProductListPage = () => {
                           }}
                         />
 
-                        {/* 찜 버튼 */}
+                        {/* 찜 버튼 - 찜한 상품은 빨간 하트로 표시 */}
                         <Box
                           sx={{
                             position: 'absolute',
                             top: 8,
                             right: 8,
-                            color: '#fff',
-                            bgcolor: 'rgba(0,0,0,0.3)',
+                            color: product.favorite ? '#ff4444' : '#fff',
+                            bgcolor: product.favorite ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.3)',
                             borderRadius: '50%',
                             width: 32,
                             height: 32,
@@ -841,8 +843,33 @@ const ProductListPage = () => {
                             justifyContent: 'center',
                           }}
                         >
-                          <HeartIcon sx={{ fontSize: 18 }} />
+                          {product.favorite ? (
+                            <HeartFilledIcon sx={{ fontSize: 18 }} />
+                          ) : (
+                            <HeartIcon sx={{ fontSize: 18 }} />
+                          )}
                         </Box>
+
+                        {/* 장바구니에 있는 상품 표시 */}
+                        {product.cart && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 48,
+                              color: '#1976d2',
+                              bgcolor: 'rgba(255,255,255,0.9)',
+                              borderRadius: '50%',
+                              width: 32,
+                              height: 32,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <CartIcon sx={{ fontSize: 18 }} />
+                          </Box>
+                        )}
                       </Box>
 
                       {/* 홀리데이 태그 */}

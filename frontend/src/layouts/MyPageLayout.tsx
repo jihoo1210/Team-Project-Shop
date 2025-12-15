@@ -2,10 +2,11 @@ import CreditCardIcon from '@mui/icons-material/CreditCard'
 import HomeIcon from '@mui/icons-material/Home'
 import LogoutIcon from '@mui/icons-material/Logout'
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import StarIcon from '@mui/icons-material/Star'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import { Box, Divider, List, ListItemButton, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 
@@ -14,9 +15,21 @@ const myMenu = [
   { label: '주문 내역', to: 'orders', icon: <ShoppingBagIcon /> },
   { label: '내가 쓴 글/리뷰', to: 'posts', icon: <StarIcon /> },
   { label: '찜한 상품', to: 'wishlist', icon: <FavoriteIcon /> },
+  { label: '장바구니', to: '/cart', icon: <ShoppingCartIcon /> },
 ]
 
 const MyPageLayout = () => {
+  const location = useLocation()
+
+  const isActiveMenu = (menuTo: string) => {
+    // 절대 경로인 경우 (예: /cart)
+    if (menuTo.startsWith('/')) {
+      return location.pathname === menuTo
+    }
+    // 상대 경로인 경우
+    return location.pathname.endsWith(menuTo) || location.pathname.includes(`/${menuTo}`)
+  }
+
   return (
     <>
       <Header />
@@ -27,22 +40,34 @@ const MyPageLayout = () => {
               마이페이지
             </Typography>
             <List disablePadding>
-              {myMenu.map((item) => (
-                <ListItemButton
-                  key={item.to}
-                  component={NavLink}
-                  to={item.to}
-                  sx={{
-                    py: 1.5,
-                    px: 0,
-                    '&:hover': { bgcolor: 'transparent', color: '#1a1a1a' },
-                    '&.active': { color: '#1a1a1a', fontWeight: 600 },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: '0.95rem' }} />
-                </ListItemButton>
-              ))}
+              {myMenu.map((item) => {
+                const isActive = isActiveMenu(item.to)
+                return (
+                  <ListItemButton
+                    key={item.to}
+                    component={NavLink}
+                    to={item.to}
+                    sx={{
+                      py: 1.5,
+                      px: 0,
+                      bgcolor: isActive ? '#f5f5f5' : 'transparent',
+                      borderLeft: isActive ? '3px solid #1a1a1a' : '3px solid transparent',
+                      pl: 1,
+                      '&:hover': { bgcolor: '#f5f5f5', color: '#1a1a1a' },
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 36, color: isActive ? '#1a1a1a' : 'inherit' }}>{item.icon}</ListItemIcon>
+                    <ListItemText
+                      primary={item.label}
+                      primaryTypographyProps={{
+                        fontSize: '0.95rem',
+                        fontWeight: isActive ? 700 : 400,
+                        color: isActive ? '#1a1a1a' : 'inherit',
+                      }}
+                    />
+                  </ListItemButton>
+                )
+              })}
             </List>
             <Divider sx={{ my: 2 }} />
             <ListItemButton

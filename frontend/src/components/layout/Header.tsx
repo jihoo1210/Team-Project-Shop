@@ -18,7 +18,7 @@ import {
   Divider,
 } from '@mui/material'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 
 // 카테고리 메뉴 데이터 (백엔드 MajorCategoryEnum 기준)
@@ -36,8 +36,15 @@ const categoryMenus = [
 
 const Header = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { isLoggedIn, isAdmin, logout } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
+
+  // 현재 경로가 메뉴 링크와 일치하는지 확인
+  const isActiveMenu = (menuLink: string) => {
+    const currentPath = location.pathname + location.search
+    return currentPath === menuLink || currentPath.startsWith(menuLink)
+  }
 
   const cartItemCount = 0
 
@@ -179,7 +186,7 @@ const Header = () => {
 
             <Divider orientation="vertical" flexItem sx={{ mx: 1, display: { xs: 'none', md: 'flex' } }} />
 
-            <IconButton component={Link} to="/mypage/favorites" sx={{ color: '#1a1a1a' }}>
+            <IconButton component={Link} to="/mypage/wishlist" sx={{ color: '#1a1a1a' }}>
               <FavoriteBorderIcon />
             </IconButton>
             <IconButton component={Link} to="/mypage" sx={{ color: '#1a1a1a' }}>
@@ -206,20 +213,24 @@ const Header = () => {
               '&::-webkit-scrollbar': { display: 'none' },
             }}
           >
-            {categoryMenus.map((menu, index) => (
+            {categoryMenus.map((menu, index) => {
+              const isActive = isActiveMenu(menu.link)
+              return (
               <Button
                 key={index}
                 component={Link}
                 to={menu.link}
                 sx={{
-                  color: '#1a1a1a',
+                  color: isActive ? '#000' : '#1a1a1a',
                   fontSize: '0.95rem',
-                  fontWeight: 500,
+                  fontWeight: isActive ? 700 : 500,
                   px: 2,
                   py: 0.5,
                   whiteSpace: 'nowrap',
                   minWidth: 'auto',
                   position: 'relative',
+                  borderBottom: isActive ? '2px solid #1a1a1a' : 'none',
+                  borderRadius: 0,
                   '&:hover': {
                     bgcolor: 'transparent',
                     color: '#666',
@@ -255,7 +266,8 @@ const Header = () => {
                   </Box>
                 )}
               </Button>
-            ))}
+              )
+            })}
 
             {/* 검색 아이콘 (우측) */}
             <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
