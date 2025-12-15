@@ -243,6 +243,9 @@ const ProductListPage = () => {
         mainImage: item.mainImageUrl || 'https://placehold.co/400x500/png',
         favorite: item.favorite,
         cart: item.cart,
+        reviewCount: item.reviewCount ?? 0,
+        scoreAverage: item.reviewAverage ?? 0,
+        likeCount: item.likeCount ?? 0,
       }))
 
       setProducts(mappedProducts)
@@ -936,17 +939,12 @@ const ProductListPage = () => {
 
                       {/* 평점 & 좋아요 */}
                       <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                        {product.scoreAverage && (
-                          <Typography variant="caption" color="text.secondary">
-                            ★ {product.scoreAverage.toFixed(1)}
-                            {product.reviewCount && ` (${product.reviewCount.toLocaleString()})`}
-                          </Typography>
-                        )}
-                        {product.likeCount && product.likeCount > 0 && (
-                          <Typography variant="caption" color="text.secondary">
-                            ♥ {product.likeCount >= 9999 ? '9,999+' : product.likeCount.toLocaleString()}
-                          </Typography>
-                        )}
+                        <Typography variant="caption" color="text.secondary">
+                          ★ {(product.scoreAverage ?? 0).toFixed(1)} ({product.reviewCount ?? 0})
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          ♥ {(product.likeCount ?? 0) >= 9999 ? '9,999+' : (product.likeCount ?? 0).toLocaleString()}
+                        </Typography>
                       </Stack>
 
                       {/* 뱃지들 */}

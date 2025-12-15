@@ -346,22 +346,17 @@ const ProductDetailPage = () => {
           </Typography>
 
           {/* 리뷰 평점 */}
-          {product.reviewList && product.reviewList.length > 0 && (
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-              <Rating
-                value={
-                  product.reviewList.reduce((acc, r) => acc + r.score, 0) /
-                  product.reviewList.length
-                }
-                precision={0.5}
-                readOnly
-                size="small"
-              />
-              <Typography variant="body2" color="text.secondary">
-                ({product.reviewList.length}개 리뷰)
-              </Typography>
-            </Stack>
-          )}
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+            <Rating
+              value={product.reviewAverage ?? 0}
+              precision={0.5}
+              readOnly
+              size="small"
+            />
+            <Typography variant="body2" color="text.secondary">
+              {(product.reviewAverage ?? 0).toFixed(1)} ({product.reviewCount ?? 0}개 리뷰)
+            </Typography>
+          </Stack>
 
           {/* 가격 */}
           <Box sx={{ mb: 3 }}>

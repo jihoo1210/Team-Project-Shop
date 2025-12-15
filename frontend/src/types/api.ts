@@ -109,6 +109,9 @@ export type ItemSummary = {
   favorite: boolean
   cart: boolean
   stock: number
+  reviewCount?: number
+  reviewAverage?: number
+  likeCount?: number
 }
 
 export type ItemDetail = {
@@ -127,6 +130,9 @@ export type ItemDetail = {
   sizeList: string[]
   isFavorite: boolean
   isCart: boolean
+  reviewCount?: number
+  reviewAverage?: number
+  likeCount?: number
   // Legacy fields (backward compatibility)
   discount_percent?: number
   savedInLikes?: boolean
