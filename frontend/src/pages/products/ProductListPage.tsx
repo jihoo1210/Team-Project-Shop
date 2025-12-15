@@ -26,7 +26,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import Pagination from '@/components/common/Pagination'
 import { fetchItems } from '@/api/itemApi'
 import type { ProductSummary } from '@/types/product'
-import { COLORS, type ColorKey } from '@/constants/colors'
+import { COLORS, COLOR_ORDER } from '@/types/colors'
 
 type SortOption = 'popular' | 'latest' | 'price-low' | 'price-high' | 'review'
 
@@ -146,6 +146,7 @@ const ProductListPage = () => {
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000])
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false)
 
   const itemsPerPage = 12
 
@@ -166,16 +167,16 @@ const ProductListPage = () => {
   const getSortParams = (sort: SortOption) => {
     switch (sort) {
       case 'latest':
-        return { sort: 'created_at,desc' }
+        return { sort: 'createdAt,desc' }
       case 'price-low':
         return { sort: 'price,asc' }
       case 'price-high':
         return { sort: 'price,desc' }
       case 'review':
-        return { sort: 'review_count,desc' }
+        return { sort: 'reviewCount,desc' }
       case 'popular':
       default:
-        return { sort: 'like_count,desc' }
+        return { sort: 'likeCount,desc' }
     }
   }
 
@@ -212,15 +213,26 @@ const ProductListPage = () => {
         filterParams.itemSizes = selectedSizes
       }
 
-      // 가격 필터 (최대 가격이 50만원 미만일 때만 전달)
+      // 가격 필터
+      if (priceRange[0] > 0) {
+        filterParams.minPrice = priceRange[0]
+      }
       if (priceRange[1] < 500000) {
         filterParams.maxPrice = priceRange[1]
       }
 
+      // 판매중만 보기 필터
+      if (showOnlyAvailable) {
+        filterParams.status = 'active'
+      }
+
       const response = await fetchItems(filterParams)
 
-      // 백엔드 응답 필드명: id, title, brand, price, discountPercent, realPrice, mainImageUrl, favorite, cart
-      const mappedProducts: ProductSummary[] = (response.content || []).map((item) => ({
+      // 백엔드 응답 필드명: id, title, brand, price, discountPercent, realPrice, mainImageUrl, favorite, cart, stock
+      // 재고가 0인 상품은 필터링하여 표시하지 않음 (판매중지 상품)
+      const availableItems = (response.content || []).filter((item) => (item.stock ?? 1) > 0)
+
+      const mappedProducts: ProductSummary[] = availableItems.map((item) => ({
         id: item.id,
         title: item.title || '상품명',
         brand: item.brand || '',
@@ -232,6 +244,7 @@ const ProductListPage = () => {
       }))
 
       setProducts(mappedProducts)
+      // 필터링된 상품 수를 반영 (전체 개수는 백엔드에서 오는 값 사용)
       setTotalCount(response.totalElements || 0)
     } catch (err) {
       console.error('상품 목록 로드 실패:', err)
@@ -240,7 +253,7 @@ const ProductListPage = () => {
     } finally {
       setLoading(false)
     }
-  }, [currentPage, sortBy, searchTerm, mainCategory, subCategory, selectedColors, selectedSizes, priceRange])
+  }, [currentPage, sortBy, searchTerm, mainCategory, subCategory, selectedColors, selectedSizes, priceRange, showOnlyAvailable])
 
   useEffect(() => {
     loadProducts()
@@ -364,12 +377,19 @@ const ProductListPage = () => {
           <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
             색상
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 4 }}>
-            {(Object.keys(COLORS) as ColorKey[]).map((colorKey) => {
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: 1.5,
+              justifyItems: 'center',
+              mb: 4,
+            }}
+          >
+            {COLOR_ORDER.map((colorKey) => {
               const color = COLORS[colorKey]
               const isSelected = selectedColors.includes(colorKey)
-              // 어두운 색상 판별 (검정, 네이비 등)
-              const isDarkColor = ['BLACK', 'NAVY', 'BROWN', 'CHARCOAL'].includes(colorKey)
+              const isLight = ['WHITE', 'IVORY', 'BEIGE', 'YELLOW', 'PINK'].includes(colorKey)
               return (
                 <Box
                   key={colorKey}
@@ -382,21 +402,24 @@ const ProductListPage = () => {
                     setCurrentPage(1)
                   }}
                   sx={{
-                    width: 28,
-                    height: 28,
+                    width: 32,
+                    height: 32,
                     borderRadius: '50%',
                     backgroundColor: color.hex,
-                    border: isSelected ? '2px solid #fff' : '1px solid #ddd',
-                    boxShadow: isSelected ? '0 0 0 2px #6366F1' : 'none',
+                    border: isLight ? '1px solid #ddd' : 'none',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'scale(1.15)',
+                    },
                   }}
                   title={color.name}
                 >
                   {isSelected && (
-                    <CheckIcon sx={{ fontSize: 16, color: isDarkColor ? '#fff' : '#1a1a1a' }} />
+                    <CheckIcon sx={{ fontSize: 18, color: isLight ? '#000' : '#fff' }} />
                   )}
                 </Box>
               )
@@ -439,7 +462,7 @@ const ProductListPage = () => {
           <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
             가격
           </Typography>
-          <Box sx={{ px: 1, mb: 2 }}>
+          <Box sx={{ px: 1, mb: 4 }}>
             <Slider
               value={priceRange}
               onChange={(_, newValue) => setPriceRange(newValue as [number, number])}
@@ -458,6 +481,27 @@ const ProductListPage = () => {
                 {(priceRange[1] / 10000).toFixed(0)}만원
               </Typography>
             </Box>
+          </Box>
+
+          {/* 상태 필터 */}
+          <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+            상품 상태
+          </Typography>
+          <Box sx={{ mb: 4 }}>
+            <Chip
+              label="판매중만 보기"
+              onClick={() => {
+                setShowOnlyAvailable(!showOnlyAvailable)
+                setCurrentPage(1)
+              }}
+              sx={{
+                fontWeight: showOnlyAvailable ? 600 : 400,
+                bgcolor: showOnlyAvailable ? '#4caf50' : '#fff',
+                color: showOnlyAvailable ? '#fff' : '#666',
+                border: '1px solid',
+                borderColor: showOnlyAvailable ? '#4caf50' : '#ddd',
+              }}
+            />
           </Box>
 
           {/* 적용 버튼 */}
@@ -543,12 +587,19 @@ const ProductListPage = () => {
           <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
             색상
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 4 }}>
-            {(Object.keys(COLORS) as ColorKey[]).map((colorKey) => {
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: 1.5,
+              justifyItems: 'center',
+              mb: 4,
+            }}
+          >
+            {COLOR_ORDER.map((colorKey) => {
               const color = COLORS[colorKey]
               const isSelected = selectedColors.includes(colorKey)
-              // 어두운 색상 판별 (검정, 네이비 등)
-              const isDarkColor = ['BLACK', 'NAVY', 'BROWN', 'CHARCOAL'].includes(colorKey)
+              const isLight = ['WHITE', 'IVORY', 'BEIGE', 'YELLOW', 'PINK'].includes(colorKey)
               return (
                 <Box
                   key={colorKey}
@@ -561,25 +612,24 @@ const ProductListPage = () => {
                     setCurrentPage(1)
                   }}
                   sx={{
-                    width: 28,
-                    height: 28,
+                    width: 32,
+                    height: 32,
                     borderRadius: '50%',
                     backgroundColor: color.hex,
-                    border: isSelected ? '2px solid #fff' : '1px solid #ddd',
-                    boxShadow: isSelected ? '0 0 0 2px #6366F1' : 'none',
+                    border: isLight ? '1px solid #ddd' : 'none',
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    transition: 'transform 0.2s',
                     '&:hover': {
-                      transform: 'scale(1.1)',
+                      transform: 'scale(1.15)',
                     },
                   }}
                   title={color.name}
                 >
                   {isSelected && (
-                    <CheckIcon sx={{ fontSize: 16, color: isDarkColor ? '#fff' : '#1a1a1a' }} />
+                    <CheckIcon sx={{ fontSize: 18, color: isLight ? '#000' : '#fff' }} />
                   )}
                 </Box>
               )
@@ -762,11 +812,16 @@ const ProductListPage = () => {
                           component="img"
                           src={product.mainImage}
                           alt={product.title}
+                          loading="lazy"
                           sx={{
                             width: '100%',
                             aspectRatio: '3/4',
                             objectFit: 'cover',
                             borderRadius: '4px',
+                            bgcolor: '#f5f5f5',
+                          }}
+                          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                            e.currentTarget.src = 'https://placehold.co/400x500/png'
                           }}
                         />
 

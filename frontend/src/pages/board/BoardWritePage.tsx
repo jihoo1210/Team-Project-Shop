@@ -21,8 +21,9 @@ import {
   Delete as DeleteIcon,
   Image as ImageIcon,
 } from '@mui/icons-material'
-import { createBoard } from '@/api/boardApi'
+import { createBoard, uploadBoardFiles } from '@/api/boardApi'
 import { brandColors } from '@/theme/tokens'
+import { useAuth } from '@/hooks/useAuth'
 
 interface AttachedFile {
   id: string
@@ -34,15 +35,16 @@ const BoardWritePage = () => {
   const { category } = useParams<{ category: string }>()
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { user, isLoggedIn } = useAuth()
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
   const [submitting, setSubmitting] = useState(false)
 
-  // TODO: 실제 로그인 사용자 정보 연동
-  const currentUserId = localStorage.getItem('user_id') || ''
-  const currentUserRole = (localStorage.getItem('role') || 'User') as 'Admin' | 'User'
+  // useAuth 훅에서 사용자 정보 가져오기
+  const currentUserId = user?.userId?.toString() || ''
+  const currentUserRole = (user?.role === 'ADMIN' ? 'Admin' : 'User') as 'Admin' | 'User'
 
   const getCategoryLabel = (cat: string) => {
     const labels: Record<string, string> = {
@@ -130,7 +132,7 @@ const BoardWritePage = () => {
       return
     }
 
-    if (!currentUserId) {
+    if (!isLoggedIn || !currentUserId) {
       alert('로그인이 필요합니다.')
       navigate('/login')
       return
@@ -138,10 +140,13 @@ const BoardWritePage = () => {
 
     setSubmitting(true)
     try {
-      // TODO: 파일 업로드 API 연동 필요
-      // const uploadedFiles = await Promise.all(
-      //   attachedFiles.map(f => uploadFile(f.file))
-      // )
+      // 파일 업로드 처리
+      let fileUrls: string[] = []
+      if (attachedFiles.length > 0) {
+        const files = attachedFiles.map(f => f.file)
+        const uploadResult = await uploadBoardFiles(files)
+        fileUrls = uploadResult.fileUrls
+      }
 
       await createBoard({
         writer_id: currentUserId,
@@ -149,7 +154,7 @@ const BoardWritePage = () => {
         content: content.trim(),
         board_category: category || 'qna',
         role: currentUserRole,
-        // files: uploadedFiles, // 업로드된 파일 ID 목록
+        files: fileUrls, // 업로드된 파일 URL 목록
       })
       alert('게시글이 등록되었습니다.')
       navigate(`/board/${category}`)
@@ -162,7 +167,7 @@ const BoardWritePage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: 4 }}>
       {/* 뒤로가기 */}
       <Button
         startIcon={<ArrowBackIcon />}

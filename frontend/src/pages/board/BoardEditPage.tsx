@@ -25,6 +25,7 @@ import {
 } from '@mui/icons-material'
 import { fetchBoardDetail, updateBoard } from '@/api/boardApi'
 import { brandColors } from '@/theme/tokens'
+import { useAuth } from '@/hooks/useAuth'
 
 interface AttachedFile {
   id: string
@@ -37,6 +38,7 @@ const BoardEditPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { user, isLoggedIn } = useAuth()
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -44,9 +46,9 @@ const BoardEditPage = () => {
   const [submitting, setSubmitting] = useState(false)
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
 
-  // 현재 로그인 사용자 정보
-  const currentUserId = localStorage.getItem('user_id') || ''
-  const currentUserRole = (localStorage.getItem('role') || 'User') as 'Admin' | 'User'
+  // useAuth 훅에서 사용자 정보 가져오기
+  const currentUserId = user?.userId?.toString() || ''
+  const currentUserRole = (user?.role === 'ADMIN' ? 'Admin' : 'User') as 'Admin' | 'User'
 
   // 기존 게시글 데이터 로드
   useEffect(() => {
@@ -152,7 +154,7 @@ const BoardEditPage = () => {
       return
     }
 
-    if (!currentUserId) {
+    if (!isLoggedIn || !currentUserId) {
       alert('로그인이 필요합니다.')
       navigate('/login')
       return
@@ -186,7 +188,7 @@ const BoardEditPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: 4 }}>
       {/* 뒤로가기 */}
       <Button
         startIcon={<ArrowBackIcon />}

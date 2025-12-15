@@ -17,6 +17,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 import ProductCard from '@/components/common/ProductCard'
 import { fetchItems } from '@/api/itemApi'
+import type { ItemSummary } from '@/types/api'
 import { fetchActiveBanners, type Banner } from '@/api/bannerApi'
 import { useAiRecommend, type AiRecommendWithProduct } from '@/hooks/useAiRecommend'
 import type { ProductSummary } from '@/types/product'
@@ -32,22 +33,22 @@ const carouselCards = [
   { id: 6, image: '/images/carousel-woman-3.jpg', title: 'CASUAL' },
 ]
 
-// 기본 배너 데이터 (DB에 배너가 없을 경우 폴백)
+// 기본 배너 데이터 (DB에 배너가 없을 경우 폴백) - 크기 최적화 300x400
 const defaultBannerSlides = [
   [
-    { id: 1, image: '/images/banner-1.jpg', fallback: 'https://picsum.photos/id/400/600/800', label: '2025\n결 산\n빅세일', brand: 'vunque', title: '인기 브랜드 백팩 발매', subtitle: '분크', link: '/products?category=bag' },
-    { id: 2, image: '/images/banner-2.jpg', fallback: 'https://picsum.photos/id/401/600/800', label: '2025\n결 산\n빅세일', brand: '', title: '잡화 브랜드데이 최대 25% 쿠폰', subtitle: '락피쉬웨더웨어, 도씨 외', link: '/products?category=shoes' },
-    { id: 3, image: '/images/banner-3.jpg', fallback: 'https://picsum.photos/id/402/600/800', label: '2025\n결 산\n빅세일', brand: 'Poète', title: '25 겨울 발매 최대 10% 할인', subtitle: '포에트서울', link: '/products?category=knit' },
+    { id: 1, image: '/images/banner-1.jpg', fallback: 'https://picsum.photos/id/400/300/400', label: '2025\n결 산\n빅세일', brand: 'vunque', title: '인기 브랜드 백팩 발매', subtitle: '분크', link: '/products?category=bag' },
+    { id: 2, image: '/images/banner-2.jpg', fallback: 'https://picsum.photos/id/401/300/400', label: '2025\n결 산\n빅세일', brand: '', title: '잡화 브랜드데이 최대 25% 쿠폰', subtitle: '락피쉬웨더웨어, 도씨 외', link: '/products?category=shoes' },
+    { id: 3, image: '/images/banner-3.jpg', fallback: 'https://picsum.photos/id/402/300/400', label: '2025\n결 산\n빅세일', brand: 'Poète', title: '25 겨울 발매 최대 10% 할인', subtitle: '포에트서울', link: '/products?category=knit' },
   ],
   [
-    { id: 4, image: '/images/banner-4.jpg', fallback: 'https://picsum.photos/id/403/600/800', label: 'WINTER\nSALE', brand: 'NIKE', title: '나이키 윈터 컬렉션', subtitle: '최대 40% 할인', link: '/products?brand=nike' },
-    { id: 5, image: '/images/banner-5.jpg', fallback: 'https://picsum.photos/id/404/600/800', label: 'NEW\nARRIVAL', brand: 'ADIDAS', title: '아디다스 신상품 입고', subtitle: '한정 수량 특가', link: '/products?brand=adidas' },
-    { id: 6, image: '/images/banner-6.jpg', fallback: 'https://picsum.photos/id/405/600/800', label: 'BEST\nITEM', brand: 'ZARA', title: '자라 베스트 아이템', subtitle: '이번 주 인기상품', link: '/products?brand=zara' },
+    { id: 4, image: '/images/banner-4.jpg', fallback: 'https://picsum.photos/id/403/300/400', label: 'WINTER\nSALE', brand: 'NIKE', title: '나이키 윈터 컬렉션', subtitle: '최대 40% 할인', link: '/products?brand=nike' },
+    { id: 5, image: '/images/banner-5.jpg', fallback: 'https://picsum.photos/id/404/300/400', label: 'NEW\nARRIVAL', brand: 'ADIDAS', title: '아디다스 신상품 입고', subtitle: '한정 수량 특가', link: '/products?brand=adidas' },
+    { id: 6, image: '/images/banner-6.jpg', fallback: 'https://picsum.photos/id/405/300/400', label: 'BEST\nITEM', brand: 'ZARA', title: '자라 베스트 아이템', subtitle: '이번 주 인기상품', link: '/products?brand=zara' },
   ],
   [
-    { id: 7, image: '/images/banner-7.jpg', fallback: 'https://picsum.photos/id/406/600/800', label: 'PREMIUM\nBRAND', brand: 'GUCCI', title: '프리미엄 브랜드 특가', subtitle: '명품 최대 30% 할인', link: '/products?category=premium' },
-    { id: 8, image: '/images/banner-8.jpg', fallback: 'https://picsum.photos/id/407/600/800', label: 'OUTER\nFESTIVAL', brand: 'MONCLER', title: '아우터 페스티벌', subtitle: '겨울 필수템 모음', link: '/products?category=outer' },
-    { id: 9, image: '/images/banner-9.jpg', fallback: 'https://picsum.photos/id/408/600/800', label: 'STREET\nWEAR', brand: 'SUPREME', title: '스트릿 웨어 특집', subtitle: '힙한 스타일링', link: '/products?category=street' },
+    { id: 7, image: '/images/banner-7.jpg', fallback: 'https://picsum.photos/id/406/300/400', label: 'PREMIUM\nBRAND', brand: 'GUCCI', title: '프리미엄 브랜드 특가', subtitle: '명품 최대 30% 할인', link: '/products?category=premium' },
+    { id: 8, image: '/images/banner-8.jpg', fallback: 'https://picsum.photos/id/407/300/400', label: 'OUTER\nFESTIVAL', brand: 'MONCLER', title: '아우터 페스티벌', subtitle: '겨울 필수템 모음', link: '/products?category=outer' },
+    { id: 9, image: '/images/banner-9.jpg', fallback: 'https://picsum.photos/id/408/300/400', label: 'STREET\nWEAR', brand: 'SUPREME', title: '스트릿 웨어 특집', subtitle: '힙한 스타일링', link: '/products?category=street' },
   ],
 ]
 
@@ -70,7 +71,7 @@ const convertBannersToSlides = (banners: Banner[]) => {
     const group = banners.slice(i, i + 3).map((banner) => ({
       id: banner.id,
       image: banner.imageUrl,
-      fallback: `https://picsum.photos/id/${400 + banner.id}/600/800`,
+      fallback: `https://picsum.photos/id/${400 + banner.id}/300/400`,
       label: '',
       brand: '',
       title: banner.title,
@@ -83,16 +84,16 @@ const convertBannersToSlides = (banners: Banner[]) => {
   return slides
 }
 
-// 상품 이미지 - picsum
+// 상품 이미지 - picsum (크기 최적화: 200x250으로 축소, webp 자동 포맷)
 const FASHION_IMAGES = {
-  hoodie: 'https://picsum.photos/id/96/400/500',
-  sweater: 'https://picsum.photos/id/103/400/500',
-  trousers: 'https://picsum.photos/id/119/400/500',
-  tshirt: 'https://picsum.photos/id/129/400/500',
-  dress: 'https://picsum.photos/id/145/400/500',
-  jacket: 'https://picsum.photos/id/157/400/500',
-  coat: 'https://picsum.photos/id/164/400/500',
-  shirt: 'https://picsum.photos/id/177/400/500',
+  hoodie: 'https://picsum.photos/id/96/200/250',
+  sweater: 'https://picsum.photos/id/103/200/250',
+  trousers: 'https://picsum.photos/id/119/200/250',
+  tshirt: 'https://picsum.photos/id/129/200/250',
+  dress: 'https://picsum.photos/id/145/200/250',
+  jacket: 'https://picsum.photos/id/157/200/250',
+  coat: 'https://picsum.photos/id/164/200/250',
+  shirt: 'https://picsum.photos/id/177/200/250',
 }
 
 const HomePage = () => {
@@ -155,14 +156,17 @@ const HomePage = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const response = await fetchItems({ page: 0, size: 8 })
-        const mapped: ProductSummary[] = (response.content || []).map((item: any, index: number) => ({
-          id: item.item_id,
-          title: item.item_name || item.title,
+        // 홈페이지에 더 많은 상품을 가져와서 재고 0인 상품 필터링 후 8개 표시
+        const response = await fetchItems({ page: 0, size: 16 })
+        // 재고가 0인 상품은 필터링하여 표시하지 않음 (판매중지 상품)
+        const availableItems = (response.content || []).filter((item: ItemSummary) => (item.stock ?? 1) > 0)
+        const mapped: ProductSummary[] = availableItems.slice(0, 8).map((item: ItemSummary, index: number) => ({
+          id: item.id,
+          title: item.title,
           brand: item.brand || 'MyShop',
           price: item.price,
-          discountPercent: item.discount_percent,
-          mainImage: item.main_image || Object.values(FASHION_IMAGES)[index % 8],
+          discountPercent: item.discountPercent,
+          mainImage: item.mainImageUrl || Object.values(FASHION_IMAGES)[index % 8],
         }))
         setProducts(mapped)
       } catch (err) {
@@ -176,7 +180,7 @@ const HomePage = () => {
   }, [])
 
   const handleAiSubmit = async () => {
-    if (!aiPrompt.trim() || isAiLoading || aiPrompt.length < 25) return
+    if (!aiPrompt.trim() || isAiLoading) return
 
     try {
       const result = await getRecommendation(aiPrompt)
@@ -479,22 +483,22 @@ const HomePage = () => {
             {/* 하단 영역: 글자수 + 전송버튼 */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.5 }}>
               <Typography sx={{ color: '#bbb', fontSize: '0.75rem' }}>
-                최소 25자  {aiPrompt.length} / 1000
+                {aiPrompt.length} / 1000
               </Typography>
               <IconButton
                 onClick={handleAiSubmit}
-                disabled={isAiLoading || aiPrompt.length < 25}
+                disabled={isAiLoading || !aiPrompt.trim()}
                 size="small"
                 sx={{
-                  bgcolor: aiPrompt.length >= 25 ? '#6366F1' : '#e0e0e0',
-                  color: aiPrompt.length >= 25 ? 'white' : '#999',
+                  bgcolor: aiPrompt.trim() ? '#6366F1' : '#e0e0e0',
+                  color: aiPrompt.trim() ? 'white' : '#999',
                   width: 32,
                   height: 32,
                   transition: 'all 0.2s ease',
-                  cursor: aiPrompt.length >= 25 ? 'pointer' : 'not-allowed',
+                  cursor: aiPrompt.trim() ? 'pointer' : 'not-allowed',
                   '&:hover': {
-                    bgcolor: aiPrompt.length >= 25 ? '#4F46E5' : '#d0d0d0',
-                    transform: aiPrompt.length >= 25 ? 'scale(1.05)' : 'none',
+                    bgcolor: aiPrompt.trim() ? '#4F46E5' : '#d0d0d0',
+                    transform: aiPrompt.trim() ? 'scale(1.05)' : 'none',
                   },
                   '&.Mui-disabled': {
                     color: '#999',
@@ -630,11 +634,13 @@ const HomePage = () => {
                         component="img"
                         src={banner.image}
                         alt={banner.title}
+                        loading="lazy"
                         sx={{
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
                           transition: 'transform 0.5s ease',
+                          bgcolor: '#2a2a2a',
                         }}
                         onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                           e.currentTarget.src = banner.fallback
@@ -1015,8 +1021,9 @@ const HomePage = () => {
             >
               <Box
                 component="img"
-                src="https://picsum.photos/id/252/800/600"
+                src="https://picsum.photos/id/252/400/300"
                 alt="Outer"
+                loading="lazy"
                 sx={{
                   width: '100%',
                   height: '100%',
@@ -1064,8 +1071,9 @@ const HomePage = () => {
               >
                 <Box
                   component="img"
-                  src="https://picsum.photos/id/256/800/400"
+                  src="https://picsum.photos/id/256/400/200"
                   alt="Knit"
+                  loading="lazy"
                   sx={{
                     width: '100%',
                     height: '100%',
@@ -1107,8 +1115,9 @@ const HomePage = () => {
               >
                 <Box
                   component="img"
-                  src="https://picsum.photos/id/274/800/400"
+                  src="https://picsum.photos/id/274/400/200"
                   alt="Bottom"
+                  loading="lazy"
                   sx={{
                     width: '100%',
                     height: '100%',
@@ -1358,9 +1367,9 @@ const HomePage = () => {
         </Box>
         <Grid container spacing={2}>
           {[
-            { title: 'PREMIUM', desc: '프리미엄 브랜드', img: 'https://picsum.photos/id/342/600/400' },
-            { title: 'DESIGNER', desc: '디자이너 컬렉션', img: 'https://picsum.photos/id/357/600/400' },
-            { title: 'LIFESTYLE', desc: '라이프스타일', img: 'https://picsum.photos/id/367/600/400' },
+            { title: 'PREMIUM', desc: '프리미엄 브랜드', img: 'https://picsum.photos/id/342/300/200' },
+            { title: 'DESIGNER', desc: '디자이너 컬렉션', img: 'https://picsum.photos/id/357/300/200' },
+            { title: 'LIFESTYLE', desc: '라이프스타일', img: 'https://picsum.photos/id/367/300/200' },
           ].map((item, index) => (
             <Grid item xs={12} sm={4} key={index}>
               <Box
@@ -1380,6 +1389,7 @@ const HomePage = () => {
                   component="img"
                   src={item.img}
                   alt={item.title}
+                  loading="lazy"
                   sx={{
                     width: '100%',
                     height: '100%',
