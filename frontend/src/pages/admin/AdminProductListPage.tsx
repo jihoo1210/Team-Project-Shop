@@ -259,8 +259,13 @@ const AdminProductListPage: React.FC = () => {
       });
       const data = response.data.result;
       // 백엔드 응답을 프론트엔드 Product 형식으로 변환
-      const mappedProducts = data.content.map((item: { id: number; title: string; brand: string; stock: string; price: number; discountPercent: number; mainImageUrl: string }) => {
-        const stockValue = parseInt(item.stock, 10) || 0;
+      const mappedProducts = data.content.map((item: { id: number; title: string; brand: string; stock: number | string | null | undefined; price: number; discountPercent: number; mainImageUrl: string }) => {
+        // stock이 숫자, 문자열, null, undefined 모두 처리
+        let stockValue = 0;
+        if (item.stock !== null && item.stock !== undefined) {
+          stockValue = typeof item.stock === 'number' ? item.stock : parseInt(String(item.stock), 10);
+          if (isNaN(stockValue)) stockValue = 0;
+        }
         return {
           id: item.id,
           name: item.title,
