@@ -228,8 +228,11 @@ const ProductListPage = () => {
 
       const response = await fetchItems(filterParams)
 
-      // 백엔드 응답 필드명: id, title, brand, price, discountPercent, realPrice, mainImageUrl, favorite, cart
-      const mappedProducts: ProductSummary[] = (response.content || []).map((item) => ({
+      // 백엔드 응답 필드명: id, title, brand, price, discountPercent, realPrice, mainImageUrl, favorite, cart, stock
+      // 재고가 0인 상품은 필터링하여 표시하지 않음 (판매중지 상품)
+      const availableItems = (response.content || []).filter((item) => (item.stock ?? 1) > 0)
+
+      const mappedProducts: ProductSummary[] = availableItems.map((item) => ({
         id: item.id,
         title: item.title || '상품명',
         brand: item.brand || '',
@@ -241,6 +244,7 @@ const ProductListPage = () => {
       }))
 
       setProducts(mappedProducts)
+      // 필터링된 상품 수를 반영 (전체 개수는 백엔드에서 오는 값 사용)
       setTotalCount(response.totalElements || 0)
     } catch (err) {
       console.error('상품 목록 로드 실패:', err)

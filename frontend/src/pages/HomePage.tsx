@@ -17,6 +17,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 import ProductCard from '@/components/common/ProductCard'
 import { fetchItems } from '@/api/itemApi'
+import type { ItemSummary } from '@/types/api'
 import { fetchActiveBanners, type Banner } from '@/api/bannerApi'
 import { useAiRecommend, type AiRecommendWithProduct } from '@/hooks/useAiRecommend'
 import type { ProductSummary } from '@/types/product'
@@ -155,14 +156,17 @@ const HomePage = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const response = await fetchItems({ page: 0, size: 8 })
-        const mapped: ProductSummary[] = (response.content || []).map((item: any, index: number) => ({
-          id: item.item_id,
-          title: item.item_name || item.title,
+        // 홈페이지에 더 많은 상품을 가져와서 재고 0인 상품 필터링 후 8개 표시
+        const response = await fetchItems({ page: 0, size: 16 })
+        // 재고가 0인 상품은 필터링하여 표시하지 않음 (판매중지 상품)
+        const availableItems = (response.content || []).filter((item: ItemSummary) => (item.stock ?? 1) > 0)
+        const mapped: ProductSummary[] = availableItems.slice(0, 8).map((item: ItemSummary, index: number) => ({
+          id: item.id,
+          title: item.title,
           brand: item.brand || 'MyShop',
           price: item.price,
-          discountPercent: item.discount_percent,
-          mainImage: item.main_image || Object.values(FASHION_IMAGES)[index % 8],
+          discountPercent: item.discountPercent,
+          mainImage: item.mainImageUrl || Object.values(FASHION_IMAGES)[index % 8],
         }))
         setProducts(mapped)
       } catch (err) {

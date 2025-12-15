@@ -259,17 +259,21 @@ const AdminProductListPage: React.FC = () => {
       });
       const data = response.data.result;
       // 백엔드 응답을 프론트엔드 Product 형식으로 변환
-      const mappedProducts = data.content.map((item: { id: number; title: string; brand: string; stock: string; price: number; discountPercent: number; mainImageUrl: string }) => ({
-        id: item.id,
-        name: item.title,
-        brand: item.brand,
-        price: item.price,
-        stock: parseInt(item.stock, 10), // 재고 정보가 없으므로 임시
-        status: 'active' as const,
-        category: '패션',
-        createdAt: new Date().toISOString().split('T')[0],
-        imageUrl: item.mainImageUrl,
-      }));
+      const mappedProducts = data.content.map((item: { id: number; title: string; brand: string; stock: string; price: number; discountPercent: number; mainImageUrl: string }) => {
+        const stockValue = parseInt(item.stock, 10) || 0;
+        return {
+          id: item.id,
+          name: item.title,
+          brand: item.brand,
+          price: item.price,
+          stock: stockValue,
+          // 재고가 0이면 자동으로 품절(판매중지) 처리
+          status: stockValue === 0 ? 'soldout' as const : 'active' as const,
+          category: '패션',
+          createdAt: new Date().toISOString().split('T')[0],
+          imageUrl: item.mainImageUrl,
+        };
+      });
       setProducts(mappedProducts);
       setTotalPages(data.totalPages);
     } catch (err) {
