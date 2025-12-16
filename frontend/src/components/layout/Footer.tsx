@@ -9,6 +9,15 @@ const XIcon = () => (
   </svg>
 )
 
+// 소셜 미디어 링크
+const socialLinks = {
+  youtube: 'https://youtube.com',
+  x: 'https://x.com',
+  facebook: 'https://facebook.com',
+  instagram: 'https://instagram.com',
+  linkedin: 'https://linkedin.com',
+}
+
 const footerLinks = {
   Resources: [
     { label: 'FAQ', path: '/faq' },
@@ -74,57 +83,77 @@ const Footer = () => {
             </Typography>
             <Stack direction="row" spacing={0.5} sx={{ mt: 4, justifyContent: { xs: 'center', md: 'flex-start' } }}>
               <IconButton
+                component="a"
+                href={socialLinks.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{
                   color: 'rgba(0,0,0,0.5)',
                   '&:hover': { color: '#111827' },
                   p: 0.8,
                 }}
-                aria-label="YouTube"
+                aria-label="YouTube (새 창에서 열림)"
               >
                 <YouTube sx={{ fontSize: 20 }} />
               </IconButton>
               <IconButton
+                component="a"
+                href={socialLinks.x}
+                target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{
                   color: 'rgba(0,0,0,0.5)',
                   '&:hover': { color: '#111827' },
                   p: 0.8,
                 }}
-                aria-label="X"
+                aria-label="X (새 창에서 열림)"
               >
                 <XIcon />
               </IconButton>
               <IconButton
+                component="a"
+                href={socialLinks.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{
                   color: 'rgba(0,0,0,0.5)',
                   '&:hover': { color: '#111827' },
                   p: 0.8,
                 }}
-                aria-label="Facebook"
+                aria-label="Facebook (새 창에서 열림)"
               >
                 <Facebook sx={{ fontSize: 20 }} />
               </IconButton>
               <IconButton
+                component="a"
+                href={socialLinks.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{
                   color: 'rgba(0,0,0,0.5)',
                   '&:hover': { color: '#111827' },
                   p: 0.8,
                 }}
-                aria-label="Instagram"
+                aria-label="Instagram (새 창에서 열림)"
               >
                 <Instagram sx={{ fontSize: 20 }} />
               </IconButton>
               <IconButton
+                component="a"
+                href={socialLinks.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{
                   color: 'rgba(0,0,0,0.5)',
                   '&:hover': { color: '#111827' },
                   p: 0.8,
                 }}
-                aria-label="LinkedIn"
+                aria-label="LinkedIn (새 창에서 열림)"
               >
                 <LinkedIn sx={{ fontSize: 20 }} />
               </IconButton>
