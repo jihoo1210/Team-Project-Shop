@@ -448,7 +448,7 @@ const HomePage = () => {
           opacity: style.opacity,
           boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
           right: '100%',
-          mr: 0,
+          mr: { xs: 1, md: 2 },
           top: '50%',
           marginTop: { xs: '-70px', sm: '-85px', md: '-105px' },
         }}
@@ -467,6 +467,8 @@ const HomePage = () => {
             right: 0,
             background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
             p: 1.2,
+            pr: 2,
+            textAlign: 'right',
           }}
         >
           <Typography sx={{ color: 'white', fontWeight: 600, fontSize: { xs: '0.65rem', md: '0.8rem' } }}>
@@ -508,7 +510,7 @@ const HomePage = () => {
           opacity: style.opacity,
           boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
           left: '100%',
-          ml: 0,
+          ml: { xs: 1, md: 2 },
           top: '50%',
           marginTop: { xs: '-70px', sm: '-85px', md: '-105px' },
         }}
@@ -527,6 +529,7 @@ const HomePage = () => {
             right: 0,
             background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
             p: 1.2,
+            pl: 2,
           }}
         >
           <Typography sx={{ color: 'white', fontWeight: 600, fontSize: { xs: '0.65rem', md: '0.8rem' } }}>
@@ -960,21 +963,21 @@ const HomePage = () => {
       </Box>
 
       {/* 오늘의 추천 */}
-      <Box ref={todayRecommendRef} sx={{ py: { xs: 6, md: 12 }, px: { xs: 3, md: 12 }, maxWidth: 1600, mx: 'auto' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 4, md: 6 } }}>
+      <Box ref={todayRecommendRef} sx={{ py: { xs: 4, md: 6 }, px: { xs: 2, md: 4 }, maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 2, md: 3 } }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.02em' }}>
+            <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
               오늘의 추천
             </Typography>
-            <Typography sx={{ color: '#888', fontSize: '1rem', mt: 1 }}>
+            <Typography sx={{ color: '#888', fontSize: '0.85rem', mt: 0.5 }}>
               당신을 위한 큐레이션
             </Typography>
           </Box>
-          <Button component={Link} to="/products" sx={{ color: '#1a1a1a', fontWeight: 600 }}>
+          <Button component={Link} to="/products" sx={{ color: '#1a1a1a', fontWeight: 600, fontSize: '0.85rem' }}>
             전체보기 &rarr;
           </Button>
         </Box>
-        <Grid container spacing={{ xs: 2, md: 4 }}>
+        <Grid container spacing={{ xs: 1, md: 2 }}>
           {products.slice(0, 4).map((product) => (
             <Grid item xs={6} md={3} key={product.id} className="product-card">
               <ProductCard product={product} />
