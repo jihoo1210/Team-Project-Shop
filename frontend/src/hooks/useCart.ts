@@ -63,8 +63,8 @@ export const useCart = () => {
   const saveToLocalStorage = useCallback((items: CartItem[]) => {
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
-    } catch (err) {
-      console.error('로컬 스토리지 저장 실패:', err)
+    } catch {
+      // 로컬 스토리지 저장 실패 시 무시
     }
   }, [])
 
@@ -105,11 +105,8 @@ export const useCart = () => {
 
   // 장바구니에 상품 추가
   const addToCart = useCallback(async (item: CartItem): Promise<boolean> => {
-    console.log('[useCart] addToCart 호출:', item)
-
     // 먼저 로컬 스토리지에 저장 (즉시 반영)
     const currentItems = loadFromLocalStorage()
-    console.log('[useCart] 현재 장바구니:', currentItems)
 
     const existingIndex = currentItems.findIndex(
       (i) => i.productId === item.productId && i.color === item.color && i.size === item.size
@@ -125,14 +122,12 @@ export const useCart = () => {
 
     saveToLocalStorage(currentItems)
     setCartItems(currentItems)
-    console.log('[useCart] 저장 완료:', currentItems)
 
     // 백엔드 API는 비동기로 시도 (실패해도 무시)
     try {
       await toggleCartItem(item.productId)
     } catch {
       // 백엔드 실패해도 로컬에는 이미 저장됨
-      console.log('백엔드 장바구니 동기화 실패')
     }
 
     return true

@@ -20,9 +20,8 @@ import { fetchUser } from '@/api/userApi'
 import { useDaumPostcode } from '@/hooks/useDaumPostcode'
 import { loadTossPayments, type TossPaymentsWidgets } from '@tosspayments/tosspayments-sdk'
 
-// 토스페이먼츠 결제위젯 클라이언트 키 (테스트)
-// 결제위젯 SDK는 결제위젯 전용 클라이언트 키가 필요합니다
-const TOSS_CLIENT_KEY = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
+// 토스페이먼츠 결제위젯 클라이언트 키 (환경변수에서 로드)
+const TOSS_CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY || ''
 
 interface OrderItem {
   productId: number
@@ -100,8 +99,7 @@ const OrderPage: React.FC = () => {
         })
 
         setWidgets(widgetsInstance)
-      } catch (err) {
-        console.error('토스페이먼츠 초기화 실패:', err)
+      } catch {
         setError('결제 시스템 초기화에 실패했습니다.')
       }
     }
@@ -152,8 +150,8 @@ const OrderPage: React.FC = () => {
         }
 
         setIsWidgetReady(true)
-      } catch (err) {
-        console.error('위젯 렌더링 실패:', err)
+      } catch {
+        // 위젯 렌더링 실패 시 무시
       }
     }
 
@@ -246,7 +244,7 @@ const OrderPage: React.FC = () => {
           call: shippingInfo.phone,
         })
       } catch {
-        console.log('주문 정보 저장 실패, 결제 진행')
+        // 주문 정보 저장 실패해도 결제 진행
       }
 
       // 토스페이먼츠 결제 요청
