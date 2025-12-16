@@ -22,6 +22,7 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
 import StraightenIcon from '@mui/icons-material/Straighten'
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard'
 import { supportFaqs, type SupportFaq } from './supportFaq'
+import { glassmorphism } from '@/theme/tokens'
 
 type Message = {
   id: string
@@ -651,7 +652,7 @@ const SupportChatWidget = () => {
         </Paper>
       )}
 
-      {/* 플로팅 버튼 */}
+      {/* 플로팅 버튼 - 글래스모피즘 */}
       <Box
         onClick={handleToggle}
         aria-label="고객센터 챗봇 열기"
@@ -660,22 +661,25 @@ const SupportChatWidget = () => {
           width: 56,
           height: 56,
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #1F2937 0%, #111827 100%)',
+          bgcolor: glassmorphism.light.background,
+          backdropFilter: glassmorphism.light.backdropFilter,
+          border: glassmorphism.light.border,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          boxShadow: glassmorphism.light.boxShadow,
           transition: 'all 0.3s ease',
           '&:hover': {
             transform: 'scale(1.08)',
-            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.4)',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
+            bgcolor: 'rgba(255, 255, 255, 0.9)',
           },
         }}
       >
         {isOpen ? (
-          <CloseIcon sx={{ color: 'white', fontSize: 24 }} />
+          <CloseIcon sx={{ color: '#1F2937', fontSize: 24 }} />
         ) : (
-          <ChatBubbleOutlineIcon sx={{ color: 'white', fontSize: 24 }} />
+          <ChatBubbleOutlineIcon sx={{ color: '#1F2937', fontSize: 24 }} />
         )}
       </Box>
     </Box>

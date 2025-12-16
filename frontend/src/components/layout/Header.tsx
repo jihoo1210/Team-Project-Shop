@@ -41,6 +41,7 @@ const Header = () => {
   const { isLoggedIn, isAdmin, logout } = useAuth()
   const { getItemCount } = useCart()
   const [searchTerm, setSearchTerm] = useState('')
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   // 현재 경로가 메뉴 링크와 일치하는지 확인
   const isActiveMenu = (menuLink: string) => {
@@ -54,7 +55,13 @@ const Header = () => {
     e.preventDefault()
     if (searchTerm.trim()) {
       navigate(`/products?searchTerm=${encodeURIComponent(searchTerm)}`)
+      setIsSearchOpen(false)
+      setSearchTerm('')
     }
+  }
+
+  const handleSearchIconClick = () => {
+    setIsSearchOpen((prev) => !prev)
   }
 
   const handleLogout = () => {
@@ -90,44 +97,6 @@ const Header = () => {
             >
               MyShop
             </Typography>
-          </Box>
-
-          {/* 검색창 - 가운데 */}
-          <Box
-            component="form"
-            onSubmit={handleSearch}
-            sx={{
-              flex: 1,
-              maxWidth: 400,
-              mx: { sm: 2, md: 4 },
-              display: { xs: 'none', sm: 'block' },
-            }}
-          >
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="상품을 검색하세요"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton type="submit" size="small" aria-label="검색">
-                      <SearchIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 0,
-                  bgcolor: '#f8f8f8',
-                  '& fieldset': { border: 'none' },
-                  '&:hover fieldset': { border: 'none' },
-                  '&.Mui-focused fieldset': { border: '1px solid #1a1a1a' },
-                },
-              }}
-            />
           </Box>
 
           {/* 우측: 아이콘 */}
@@ -217,9 +186,60 @@ const Header = () => {
                 <ShoppingCartOutlinedIcon />
               </Badge>
             </IconButton>
+
+            {/* 모바일 검색 아이콘 */}
+            <IconButton
+              onClick={handleSearchIconClick}
+              aria-label="검색"
+              sx={{ color: '#1a1a1a', display: { xs: 'flex', md: 'none' } }}
+            >
+              <SearchIcon />
+            </IconButton>
           </Stack>
         </Toolbar>
       </Container>
+
+      {/* 모바일 검색창 (아이콘 클릭 시 표시) */}
+      {isSearchOpen && (
+        <Box
+          component="form"
+          onSubmit={handleSearch}
+          sx={{
+            bgcolor: 'white',
+            borderBottom: '1px solid #eee',
+            py: 1.5,
+            px: 2,
+            display: { xs: 'block', md: 'none' },
+          }}
+        >
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="상품을 검색하세요"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            autoFocus
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton type="submit" size="small" aria-label="검색">
+                    <SearchIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                bgcolor: '#f8f8f8',
+                '& fieldset': { border: 'none' },
+                '&:hover fieldset': { border: 'none' },
+                '&.Mui-focused fieldset': { border: '1px solid #1a1a1a' },
+              },
+            }}
+          />
+        </Box>
+      )}
 
       {/* 하단: 카테고리 메뉴 */}
       <Box sx={{ borderTop: '1px solid #f0f0f0', display: { xs: 'none', md: 'block' } }}>
@@ -231,6 +251,7 @@ const Header = () => {
               py: 1,
               overflowX: 'auto',
               '&::-webkit-scrollbar': { display: 'none' },
+              alignItems: 'center',
             }}
           >
             {categoryMenus.map((menu, index) => {
@@ -289,11 +310,44 @@ const Header = () => {
               )
             })}
 
-            {/* 검색 아이콘 (우측) */}
-            <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
-              <IconButton size="small" aria-label="검색" sx={{ color: '#1a1a1a' }}>
-                <SearchIcon />
-              </IconButton>
+            {/* 검색창 (우측) */}
+            <Box
+              component="form"
+              onSubmit={handleSearch}
+              sx={{
+                ml: 'auto',
+                width: 280,
+              }}
+            >
+              <TextField
+                fullWidth
+                size="medium"
+                placeholder="상품을 검색하세요"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton type="submit" size="small" aria-label="검색">
+                        <SearchIcon sx={{ fontSize: 20 }} />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    bgcolor: '#f8f8f8',
+                    '& fieldset': { border: 'none' },
+                    '&:hover fieldset': { border: 'none' },
+                    '&.Mui-focused fieldset': { border: '1px solid #1a1a1a' },
+                  },
+                  '& .MuiInputBase-input': {
+                    py: 0.8,
+                    fontSize: '0.85rem',
+                  },
+                }}
+              />
             </Box>
           </Stack>
         </Container>
