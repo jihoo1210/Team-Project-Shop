@@ -1,4 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 import { Box, Button, Grid, Typography, CircularProgress, Stack, IconButton, TextField, Snackbar, Alert, Dialog, DialogContent, DialogActions } from '@mui/material'
 import {
   AutoAwesome,
@@ -100,6 +104,19 @@ const HomePage = () => {
   const navigate = useNavigate()
   const [products, setProducts] = useState<ProductSummary[]>([])
   const [loading, setLoading] = useState(true)
+
+  // GSAP refs
+  const heroRef = useRef<HTMLDivElement>(null)
+  const heroTitleRef = useRef<HTMLDivElement>(null)
+  const heroSubtitleRef = useRef<HTMLDivElement>(null)
+  const aiBoxRef = useRef<HTMLDivElement>(null)
+  const quickMenuRef = useRef<HTMLDivElement>(null)
+  const todayRecommendRef = useRef<HTMLDivElement>(null)
+  const bestSectionRef = useRef<HTMLDivElement>(null)
+  const newArrivalRef = useRef<HTMLDivElement>(null)
+  const couponSectionRef = useRef<HTMLDivElement>(null)
+  const coupon1Ref = useRef<HTMLButtonElement>(null)
+  const coupon2Ref = useRef<HTMLButtonElement>(null)
   const [aiPrompt, setAiPrompt] = useState('')
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [bannerSlideIndex, setBannerSlideIndex] = useState(0)
@@ -119,6 +136,118 @@ const HomePage = () => {
     aiResult: null
   })
   const { getRecommendation, loading: isAiLoading, error: aiError } = useAiRecommend()
+
+  // GSAP 애니메이션
+  useEffect(() => {
+    // 히어로 섹션 초기 애니메이션
+    const ctx = gsap.context(() => {
+      // 타이틀 페이드인
+      if (heroTitleRef.current) {
+        gsap.fromTo(heroTitleRef.current,
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }
+        )
+      }
+      // 서브타이틀 페이드인 (딜레이)
+      if (heroSubtitleRef.current) {
+        gsap.fromTo(heroSubtitleRef.current,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.8, delay: 0.2, ease: 'power3.out' }
+        )
+      }
+      // AI 박스 페이드인 (딜레이)
+      if (aiBoxRef.current) {
+        gsap.fromTo(aiBoxRef.current,
+          { opacity: 0, y: 40, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.8, delay: 0.4, ease: 'power3.out' }
+        )
+      }
+      // 퀵메뉴 아이템들 순차적 등장
+      if (quickMenuRef.current) {
+        gsap.fromTo(quickMenuRef.current.children,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: 'power2.out',
+            scrollTrigger: {
+              trigger: quickMenuRef.current,
+              start: 'top 85%',
+            }
+          }
+        )
+      }
+      // 오늘의 추천 섹션
+      if (todayRecommendRef.current) {
+        gsap.fromTo(todayRecommendRef.current.querySelectorAll('.product-card'),
+          { opacity: 0, y: 50 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power2.out',
+            scrollTrigger: {
+              trigger: todayRecommendRef.current,
+              start: 'top 80%',
+            }
+          }
+        )
+      }
+      // 베스트 섹션
+      if (bestSectionRef.current) {
+        gsap.fromTo(bestSectionRef.current.querySelectorAll('.product-card'),
+          { opacity: 0, y: 50 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: 'power2.out',
+            scrollTrigger: {
+              trigger: bestSectionRef.current,
+              start: 'top 80%',
+            }
+          }
+        )
+      }
+      // 신상품 섹션
+      if (newArrivalRef.current) {
+        gsap.fromTo(newArrivalRef.current.querySelectorAll('.product-card'),
+          { opacity: 0, y: 50 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power2.out',
+            scrollTrigger: {
+              trigger: newArrivalRef.current,
+              start: 'top 80%',
+            }
+          }
+        )
+      }
+      // 쿠폰 섹션 애니메이션
+      if (couponSectionRef.current) {
+        // 섹션 전체 페이드인
+        gsap.fromTo(couponSectionRef.current,
+          { opacity: 0, y: 40 },
+          { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
+            scrollTrigger: {
+              trigger: couponSectionRef.current,
+              start: 'top 85%',
+            }
+          }
+        )
+      }
+      // 쿠폰1 플로팅 애니메이션
+      if (coupon1Ref.current) {
+        gsap.to(coupon1Ref.current, {
+          y: -8,
+          duration: 1.5,
+          ease: 'power1.inOut',
+          yoyo: true,
+          repeat: -1,
+        })
+      }
+      // 쿠폰2 플로팅 애니메이션 (약간 딜레이)
+      if (coupon2Ref.current) {
+        gsap.to(coupon2Ref.current, {
+          y: -8,
+          duration: 1.5,
+          ease: 'power1.inOut',
+          yoyo: true,
+          repeat: -1,
+          delay: 0.3,
+        })
+      }
+    }, heroRef)
+
+    return () => ctx.revert()
+  }, [loading])
 
   // 캐러셀 자동 회전
   useEffect(() => {
@@ -156,11 +285,11 @@ const HomePage = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        // 홈페이지에 더 많은 상품을 가져와서 재고 0인 상품 필터링 후 8개 표시
-        const response = await fetchItems({ page: 0, size: 16 })
+        // 홈페이지에 더 많은 상품을 가져와서 BEST 8개 + NEW ARRIVALS 8개 + 오늘의 추천 4개 = 20개
+        const response = await fetchItems({ page: 0, size: 24 })
         // 재고가 0인 상품은 필터링하여 표시하지 않음 (판매중지 상품)
         const availableItems = (response.content || []).filter((item: ItemSummary) => (item.stock ?? 1) > 0)
-        const mapped: ProductSummary[] = availableItems.slice(0, 8).map((item: ItemSummary, index: number) => ({
+        const mapped: ProductSummary[] = availableItems.slice(0, 20).map((item: ItemSummary, index: number) => ({
           id: item.id,
           title: item.title,
           brand: item.brand || 'MyShop',
@@ -388,12 +517,13 @@ const HomePage = () => {
   }
 
   return (
-    <Box sx={{ bgcolor: '#fff' }}>
+    <Box ref={heroRef} sx={{ bgcolor: '#fff' }}>
       {/* 히어로 섹션 - 회전 캐러셀 + AI 프롬프트 */}
       <Box sx={{ position: 'relative', bgcolor: '#f5f5f5', py: { xs: 6, md: 10 }, overflow: 'hidden' }}>
         {/* 상단 어필 문구 */}
         <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 5 } }}>
           <Typography
+            ref={heroTitleRef}
             sx={{
               color: '#1a1a1a',
               fontSize: { xs: '1.3rem', md: '1.8rem' },
@@ -404,6 +534,7 @@ const HomePage = () => {
             원하는 스타일을 말해주세요!
           </Typography>
           <Typography
+            ref={heroSubtitleRef}
             sx={{
               color: '#666',
               fontSize: { xs: '0.9rem', md: '1rem' },
@@ -429,6 +560,7 @@ const HomePage = () => {
 
           {/* AI 프롬프트 입력창 */}
           <Box
+            ref={aiBoxRef}
             sx={{
               position: 'relative',
               zIndex: 10,
@@ -719,6 +851,7 @@ const HomePage = () => {
       <Box sx={{ bgcolor: '#fff', py: 3, borderBottom: '1px solid #eee' }}>
         <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 4 } }}>
           <Stack
+            ref={quickMenuRef}
             direction="row"
             spacing={{ xs: 2, md: 4 }}
             alignItems="flex-start"
@@ -793,7 +926,7 @@ const HomePage = () => {
       </Box>
 
       {/* 오늘의 추천 */}
-      <Box sx={{ py: { xs: 6, md: 12 }, px: { xs: 3, md: 12 }, maxWidth: 1600, mx: 'auto' }}>
+      <Box ref={todayRecommendRef} sx={{ py: { xs: 6, md: 12 }, px: { xs: 3, md: 12 }, maxWidth: 1600, mx: 'auto' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 4, md: 6 } }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.02em' }}>
@@ -809,7 +942,7 @@ const HomePage = () => {
         </Box>
         <Grid container spacing={{ xs: 2, md: 4 }}>
           {products.slice(0, 4).map((product) => (
-            <Grid item xs={6} md={3} key={product.id}>
+            <Grid item xs={6} md={3} key={product.id} className="product-card">
               <ProductCard product={product} />
             </Grid>
           ))}
@@ -1149,48 +1282,48 @@ const HomePage = () => {
         </Grid>
       </Box>
 
-      {/* 베스트 상품 - 중간 마진 */}
-      <Box sx={{ py: { xs: 6, md: 10 }, px: { xs: 2, md: 6 }, maxWidth: 1400, mx: 'auto' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 4, md: 6 } }}>
+      {/* 베스트 상품 */}
+      <Box ref={bestSectionRef} sx={{ py: { xs: 4, md: 6 }, px: { xs: 2, md: 4 }, maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 2, md: 3 } }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.02em' }}>
+            <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
               BEST
             </Typography>
-            <Typography sx={{ color: '#888', fontSize: '1rem', mt: 1 }}>
+            <Typography sx={{ color: '#888', fontSize: '0.85rem', mt: 0.5 }}>
               가장 많이 사랑받는 아이템
             </Typography>
           </Box>
-          <Button component={Link} to="/products?sort=best" sx={{ color: '#1a1a1a', fontWeight: 600 }}>
+          <Button component={Link} to="/products?sort=best" sx={{ color: '#1a1a1a', fontWeight: 600, fontSize: '0.85rem' }}>
             전체보기 &rarr;
           </Button>
         </Box>
-        <Grid container spacing={{ xs: 2, md: 4 }}>
+        <Grid container spacing={{ xs: 1, md: 2 }}>
           {products.slice(0, 8).map((product, index) => (
-            <Grid item xs={6} md={3} key={product.id}>
+            <Grid item xs={3} md={1.5} key={product.id} className="product-card">
               <Box sx={{ position: 'relative' }}>
                 {index < 3 && (
                   <Box
                     sx={{
                       position: 'absolute',
-                      top: 12,
-                      left: 12,
+                      top: 6,
+                      left: 6,
                       zIndex: 1,
                       bgcolor: index === 0 ? '#ff4444' : '#1a1a1a',
                       color: 'white',
-                      width: 32,
-                      height: 32,
+                      width: 20,
+                      height: 20,
                       borderRadius: '50%',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '0.85rem',
+                      fontSize: '0.65rem',
                       fontWeight: 700,
                     }}
                   >
                     {index + 1}
                   </Box>
                 )}
-                <ProductCard product={product} />
+                <ProductCard product={product} compact />
               </Box>
             </Grid>
           ))}
@@ -1200,16 +1333,25 @@ const HomePage = () => {
       {/* 타임세일 배너 + 쿠폰 */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 25%, #1a1a1a 50%, #3a3a3a 75%, #1a1a1a 100%)',
           py: 6,
-          px: { xs: 2, md: 6 },
+          px: { xs: 2, md: 4 },
         }}
       >
+        <Box
+          ref={couponSectionRef}
+          sx={{
+            maxWidth: 900,
+            mx: 'auto',
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)',
+            borderRadius: 1,
+            p: { xs: 3, md: 4 },
+          }}
+        >
         <Stack
-          direction={{ xs: 'column', lg: 'row' }}
+          direction={{ xs: 'column', md: 'row' }}
           justifyContent="space-between"
           alignItems="center"
-          spacing={4}
+          spacing={3}
         >
           {/* 왼쪽: 텍스트 영역 */}
           <Box sx={{ textAlign: { xs: 'center', lg: 'left' }, flex: '0 0 auto' }}>
@@ -1224,11 +1366,11 @@ const HomePage = () => {
               }}
             >
               <Typography sx={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem' }}>
-                LIMITED TIME OFFER
+                SPECIAL OFFER
               </Typography>
             </Box>
             <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: { xs: '1.8rem', md: '2.5rem' } }}>
-              지금 딱! 오늘만 특가
+              첫구매 할인 쿠폰
             </Typography>
             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '1rem', mt: 1 }}>
               최대 78% 할인 + 추가 쿠폰 혜택
@@ -1260,6 +1402,7 @@ const HomePage = () => {
           >
             {/* VIP 50% 골드 쿠폰 */}
             <Box
+              ref={coupon1Ref}
               component="button"
               onClick={() => {
                 setSnackbar({ open: true, message: 'VIP 50% 할인 쿠폰이 발급되었습니다!', severity: 'success' })
@@ -1270,12 +1413,9 @@ const HomePage = () => {
                 padding: 0,
                 cursor: 'pointer',
                 width: { xs: 140, sm: 180, md: 200 },
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                },
+                transition: 'box-shadow 0.3s ease',
                 '&:hover img': {
-                  boxShadow: '0 12px 30px rgba(255,255,255,0.2)',
+                  boxShadow: '0 12px 30px rgba(255,255,255,0.3)',
                 },
               }}
             >
@@ -1295,6 +1435,7 @@ const HomePage = () => {
 
             {/* SPECIAL 25% 실버 쿠폰 */}
             <Box
+              ref={coupon2Ref}
               component="button"
               onClick={() => {
                 setSnackbar({ open: true, message: 'SPECIAL 25% 할인 쿠폰이 발급되었습니다!', severity: 'success' })
@@ -1305,12 +1446,9 @@ const HomePage = () => {
                 padding: 0,
                 cursor: 'pointer',
                 width: { xs: 140, sm: 180, md: 200 },
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                },
+                transition: 'box-shadow 0.3s ease',
                 '&:hover img': {
-                  boxShadow: '0 12px 30px rgba(255,255,255,0.2)',
+                  boxShadow: '0 12px 30px rgba(255,255,255,0.3)',
                 },
               }}
             >
@@ -1329,27 +1467,28 @@ const HomePage = () => {
             </Box>
           </Stack>
         </Stack>
+        </Box>
       </Box>
 
-      {/* 신상품 - 좁은 마진으로 넓게 */}
-      <Box sx={{ py: { xs: 6, md: 10 }, px: { xs: 2, md: 4 }, bgcolor: '#fafafa' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 4, md: 6 } }}>
+      {/* 신상품 */}
+      <Box ref={newArrivalRef} sx={{ py: { xs: 4, md: 6 }, px: { xs: 2, md: 4 }, maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 2, md: 3 } }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.02em' }}>
+            <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
               NEW ARRIVALS
             </Typography>
-            <Typography sx={{ color: '#888', fontSize: '1rem', mt: 1 }}>
+            <Typography sx={{ color: '#888', fontSize: '0.85rem', mt: 0.5 }}>
               방금 도착한 신상품
             </Typography>
           </Box>
-          <Button component={Link} to="/products?sort=new" sx={{ color: '#1a1a1a', fontWeight: 600 }}>
+          <Button component={Link} to="/products?sort=new" sx={{ color: '#1a1a1a', fontWeight: 600, fontSize: '0.85rem' }}>
             전체보기 &rarr;
           </Button>
         </Box>
-        <Grid container spacing={{ xs: 2, md: 4 }}>
-          {products.slice(4, 8).map((product) => (
-            <Grid item xs={6} md={3} key={product.id}>
-              <ProductCard product={product} />
+        <Grid container spacing={{ xs: 1, md: 2 }}>
+          {products.slice(8, 16).map((product) => (
+            <Grid item xs={3} md={1.5} key={product.id} className="product-card">
+              <ProductCard product={product} compact />
             </Grid>
           ))}
         </Grid>

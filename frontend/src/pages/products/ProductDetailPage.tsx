@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import gsap from 'gsap'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
@@ -47,9 +48,13 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => (
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  
+
   // 장바구니 훅
   const { addToCart } = useCart()
+
+  // GSAP refs
+  const imageRef = useRef<HTMLDivElement>(null)
+  const infoRef = useRef<HTMLDivElement>(null)
 
   // 상품 상세 데이터
   const [product, setProduct] = useState<ItemDetail | null>(null)
@@ -113,6 +118,26 @@ const ProductDetailPage = () => {
   useEffect(() => {
     loadProduct()
   }, [loadProduct])
+
+  // GSAP 애니메이션
+  useEffect(() => {
+    if (!loading && product) {
+      // 이미지 영역 페이드인
+      if (imageRef.current) {
+        gsap.fromTo(imageRef.current,
+          { opacity: 0, x: -30 },
+          { opacity: 1, x: 0, duration: 0.6, ease: 'power2.out' }
+        )
+      }
+      // 상품 정보 영역 페이드인
+      if (infoRef.current) {
+        gsap.fromTo(infoRef.current,
+          { opacity: 0, x: 30 },
+          { opacity: 1, x: 0, duration: 0.6, delay: 0.15, ease: 'power2.out' }
+        )
+      }
+    }
+  }, [loading, product])
 
   // 리뷰 변경 시 재로드
   const handleReviewChange = () => {
@@ -266,7 +291,7 @@ const ProductDetailPage = () => {
 
       <Grid container spacing={6}>
         {/* 좌측: 상품 이미지 슬라이더 */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} ref={imageRef}>
           {/* 메인 이미지 */}
           <Box
             sx={{
@@ -334,7 +359,7 @@ const ProductDetailPage = () => {
         </Grid>
 
         {/* 우측: 상품 정보 영역 */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} ref={infoRef}>
           {/* 브랜드 */}
           <Typography variant="body2" color="text.secondary" gutterBottom>
             {product.brand}
