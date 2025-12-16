@@ -20,6 +20,7 @@ import {
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { useCart } from '@/hooks/useCart'
 
 // 카테고리 메뉴 데이터 (백엔드 MajorCategoryEnum 기준)
 const categoryMenus = [
@@ -38,6 +39,7 @@ const Header = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { isLoggedIn, isAdmin, logout } = useAuth()
+  const { getItemCount } = useCart()
   const [searchTerm, setSearchTerm] = useState('')
 
   // 현재 경로가 메뉴 링크와 일치하는지 확인
@@ -46,7 +48,7 @@ const Header = () => {
     return currentPath === menuLink || currentPath.startsWith(menuLink)
   }
 
-  const cartItemCount = 0
+  const cartItemCount = getItemCount()
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,7 +69,10 @@ const Header = () => {
         <Toolbar sx={{ justifyContent: 'space-between', py: 1.5, minHeight: 'auto' }}>
           {/* 좌측: 햄버거 메뉴 + 로고 */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <IconButton sx={{ display: { xs: 'flex', md: 'none' }, color: '#1a1a1a' }}>
+            <IconButton
+              aria-label="메뉴 열기"
+              sx={{ display: { xs: 'flex', md: 'none' }, color: '#1a1a1a' }}
+            >
               <MenuIcon />
             </IconButton>
             <Typography
@@ -107,7 +112,7 @@ const Header = () => {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton type="submit" size="small">
+                    <IconButton type="submit" size="small" aria-label="검색">
                       <SearchIcon />
                     </IconButton>
                   </InputAdornment>
@@ -186,13 +191,28 @@ const Header = () => {
 
             <Divider orientation="vertical" flexItem sx={{ mx: 1, display: { xs: 'none', md: 'flex' } }} />
 
-            <IconButton component={Link} to="/mypage/wishlist" sx={{ color: '#1a1a1a' }}>
+            <IconButton
+              component={Link}
+              to="/mypage/wishlist"
+              aria-label="찜한 상품"
+              sx={{ color: '#1a1a1a' }}
+            >
               <FavoriteBorderIcon />
             </IconButton>
-            <IconButton component={Link} to="/mypage" sx={{ color: '#1a1a1a' }}>
+            <IconButton
+              component={Link}
+              to="/mypage"
+              aria-label="마이페이지"
+              sx={{ color: '#1a1a1a' }}
+            >
               <PersonOutlineIcon />
             </IconButton>
-            <IconButton component={Link} to="/cart" sx={{ color: '#1a1a1a' }}>
+            <IconButton
+              component={Link}
+              to="/cart"
+              aria-label={`장바구니 ${cartItemCount}개 상품`}
+              sx={{ color: '#1a1a1a' }}
+            >
               <Badge badgeContent={cartItemCount} color="error" sx={{ '& .MuiBadge-badge': { fontSize: '0.7rem' } }}>
                 <ShoppingCartOutlinedIcon />
               </Badge>
@@ -271,7 +291,7 @@ const Header = () => {
 
             {/* 검색 아이콘 (우측) */}
             <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
-              <IconButton size="small" sx={{ color: '#1a1a1a' }}>
+              <IconButton size="small" aria-label="검색" sx={{ color: '#1a1a1a' }}>
                 <SearchIcon />
               </IconButton>
             </Box>
