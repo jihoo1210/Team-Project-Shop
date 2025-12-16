@@ -114,3 +114,54 @@ export const layoutTokens = {
   gutter: 24,
   sectionSpacing: 48,
 }
+
+// 글래스모피즘 스타일 토큰
+export const glassmorphism = {
+  // 기본 글래스 효과
+  light: {
+    background: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+  },
+
+  // 더 투명한 글래스
+  subtle: {
+    background: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(8px)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+  },
+
+  // 카드용 글래스
+  card: {
+    background: 'rgba(255, 255, 255, 0.75)',
+    backdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+  },
+
+  // 다크 글래스 (어두운 배경용)
+  dark: {
+    background: 'rgba(0, 0, 0, 0.3)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+  },
+
+  // 강조 글래스 (컬러 틴트)
+  accent: {
+    background: 'rgba(99, 102, 241, 0.15)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(99, 102, 241, 0.2)',
+    boxShadow: '0 8px 32px rgba(99, 102, 241, 0.15)',
+  },
+
+  // 버튼/아이콘용 글래스
+  button: {
+    background: 'rgba(255, 255, 255, 0.8)',
+    backdropFilter: 'blur(8px)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+  },
+}
