@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Container,
   Typography,
   Box,
   Grid,
@@ -149,14 +148,14 @@ const WishlistPage = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 8, textAlign: 'center' }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <CircularProgress />
-      </Container>
+      </Box>
     )
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box>
       {/* 페이지 헤더 */}
       <Box sx={{ mb: 4 }}>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
@@ -381,7 +380,7 @@ const WishlistPage = () => {
           </Grid>
         </>
       )}
-    </Container>
+    </Box>
   )
 }
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import {
   Box,
-  Container,
   Typography,
   Paper,
   Grid,
@@ -301,24 +300,24 @@ const MyProfilePage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <CircularProgress />
         <Typography sx={{ mt: 2 }}>로딩 중...</Typography>
-      </Container>
+      </Box>
     )
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
+    <Box sx={{ maxWidth: 800 }}>
+      <Typography variant="h5" fontWeight="bold" sx={{ mb: { xs: 3, md: 4 } }}>
         내 정보
       </Typography>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 3, md: 4 }}>
         {/* 프로필 정보 */}
         <Grid item xs={12}>
-          <Paper elevation={0} sx={{ p: 3, border: '1px solid #E5E7EB' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, border: '1px solid #E5E7EB', borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
               <Typography variant="h6" fontWeight="bold">
                 프로필 정보
               </Typography>
@@ -330,9 +329,10 @@ const MyProfilePage: React.FC = () => {
               </Button>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
-              <Avatar sx={{ width: 100, height: 100, bgcolor: 'primary.main' }}>
-                <PersonIcon sx={{ fontSize: 60 }} />
+            {/* 아바타 - 가운데 정렬, 아래로 배치 */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
+              <Avatar sx={{ width: 120, height: 120, bgcolor: 'primary.main', mb: 2 }}>
+                <PersonIcon sx={{ fontSize: 70 }} />
               </Avatar>
               {isEditing && (
                 <Button variant="outlined" size="small">
@@ -341,8 +341,8 @@ const MyProfilePage: React.FC = () => {
               )}
             </Box>
 
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
                 <TextField
                   label="이메일"
                   fullWidth
@@ -388,7 +388,7 @@ const MyProfilePage: React.FC = () => {
 
         {/* 배송지 관리 */}
         <Grid item xs={12}>
-          <Paper elevation={0} sx={{ p: 3, border: '1px solid #E5E7EB' }}>
+          <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, border: '1px solid #E5E7EB', borderRadius: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6" fontWeight="bold">
                 배송지 관리
@@ -458,11 +458,11 @@ const MyProfilePage: React.FC = () => {
 
         {/* 비밀번호 변경 */}
         <Grid item xs={12}>
-          <Paper elevation={0} sx={{ p: 3, border: '1px solid #E5E7EB' }}>
+          <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, border: '1px solid #E5E7EB', borderRadius: 2 }}>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
               비밀번호 변경
             </Typography>
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 3 }} />
 
             {passwordError && (
               <Alert severity="error" sx={{ mb: 2 }}>
@@ -506,11 +506,11 @@ const MyProfilePage: React.FC = () => {
 
         {/* 회원 탈퇴 */}
         <Grid item xs={12}>
-          <Paper elevation={0} sx={{ p: 3, border: '1px solid #E5E7EB' }}>
+          <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, border: '1px solid #E5E7EB', borderRadius: 2 }}>
             <Typography variant="h6" fontWeight="bold" gutterBottom color="error">
               회원 탈퇴
             </Typography>
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 3 }} />
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               회원 탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
             </Typography>
@@ -628,7 +628,7 @@ const MyProfilePage: React.FC = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Container>
+    </Box>
   )
 }
 
