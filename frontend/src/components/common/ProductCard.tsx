@@ -9,6 +9,7 @@ import { brandColors } from '@/theme/tokens'
 
 interface ProductCardProps {
   product: ProductSummary
+  compact?: boolean
 }
 
 // 이미지 로드 실패 시 fallback 처리
@@ -24,7 +25,7 @@ const getImageSrc = (url?: string): string => {
   return url.startsWith('/') ? url : `/${url}`
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, compact = false }: ProductCardProps) => {
   const navigate = useNavigate()
   // 좋아요 훅 사용 (랜덤 숫자 + 토글)
   const { likeCount, isLiked, toggleLike } = useLike({
@@ -59,18 +60,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
         bgcolor: 'transparent',
         transition: 'transform 0.3s ease',
         '&:hover': {
-          transform: 'translateY(-8px)',
+          transform: compact ? 'translateY(-4px)' : 'translateY(-8px)',
         },
         '&:hover img': {
           transform: 'scale(1.03)',
         },
       }}
     >
-      <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 1, bgcolor: '#f5f5f5' }}>
+      <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: compact ? 0.5 : 1, bgcolor: '#f5f5f5' }}>
         <CardMedia
           component="img"
           sx={{
-            height: { xs: 200, sm: 260, md: 320 },
+            height: compact ? { xs: 100, sm: 120, md: 140 } : { xs: 200, sm: 260, md: 320 },
             objectFit: 'cover',
             transition: 'transform 0.5s ease',
           }}
@@ -79,45 +80,47 @@ const ProductCard = ({ product }: ProductCardProps) => {
           onError={handleImageError}
         />
         {/* 좋아요 버튼 + 카운트 */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 12,
-            right: 12,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <IconButton
-            onClick={handleFavoriteClick}
-            size="small"
+        {!compact && (
+          <Box
             sx={{
-              bgcolor: 'rgba(255,255,255,0.9)',
-              backdropFilter: 'blur(4px)',
-              '&:hover': { bgcolor: 'white' },
+              position: 'absolute',
+              top: 12,
+              right: 12,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
             }}
           >
-            {isLiked ? (
-              <Favorite sx={{ fontSize: 20, color: '#ff4444' }} />
-            ) : (
-              <FavoriteBorder sx={{ fontSize: 20 }} />
-            )}
-          </IconButton>
-          <Typography
-            sx={{
-              fontSize: '0.7rem',
-              fontWeight: 600,
-              color: brandColors.muted,
-              mt: 0.3,
-              bgcolor: 'rgba(255,255,255,0.8)',
-              px: 0.5,
-              borderRadius: 0.5,
-            }}
-          >
-            {likeCount}
-          </Typography>
-        </Box>
+            <IconButton
+              onClick={handleFavoriteClick}
+              size="small"
+              sx={{
+                bgcolor: 'rgba(255,255,255,0.9)',
+                backdropFilter: 'blur(4px)',
+                '&:hover': { bgcolor: 'white' },
+              }}
+            >
+              {isLiked ? (
+                <Favorite sx={{ fontSize: 20, color: '#ff4444' }} />
+              ) : (
+                <FavoriteBorder sx={{ fontSize: 20 }} />
+              )}
+            </IconButton>
+            <Typography
+              sx={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: brandColors.muted,
+                mt: 0.3,
+                bgcolor: 'rgba(255,255,255,0.8)',
+                px: 0.5,
+                borderRadius: 0.5,
+              }}
+            >
+              {likeCount}
+            </Typography>
+          </Box>
+        )}
         {product.badges && product.badges.length > 0 && (
           <Stack
             direction="row"
@@ -141,49 +144,53 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </Stack>
         )}
       </Box>
-      <CardContent sx={{ flexGrow: 1, px: 0.5, pt: 2, pb: 1 }}>
-        <Typography
-          variant="caption"
-          sx={{ color: '#999', fontSize: '0.75rem', letterSpacing: '0.02em' }}
-        >
-          {product.brand}
-        </Typography>
+      <CardContent sx={{ flexGrow: 1, px: compact ? 0.3 : 0.5, pt: compact ? 1 : 2, pb: compact ? 0.5 : 1 }}>
+        {!compact && (
+          <Typography
+            variant="caption"
+            sx={{ color: '#999', fontSize: '0.75rem', letterSpacing: '0.02em' }}
+          >
+            {product.brand}
+          </Typography>
+        )}
         <Typography
           sx={{
             fontWeight: 500,
-            fontSize: '0.95rem',
-            mt: 0.5,
-            mb: 1,
-            lineHeight: 1.4,
+            fontSize: compact ? '0.7rem' : '0.95rem',
+            mt: compact ? 0 : 0.5,
+            mb: compact ? 0.5 : 1,
+            lineHeight: 1.3,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             display: '-webkit-box',
-            WebkitLineClamp: 2,
+            WebkitLineClamp: compact ? 1 : 2,
             WebkitBoxOrient: 'vertical',
           }}
         >
           {product.title}
         </Typography>
-        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1 }}>
-          <Star sx={{ color: '#FFB800', fontSize: 16 }} />
-          <Typography sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
-            {(product.scoreAverage ?? 0).toFixed(1)}
-          </Typography>
-          <Typography sx={{ fontSize: '0.75rem', color: '#999' }}>
-            ({product.reviewCount ?? 0})
-          </Typography>
-        </Stack>
-        <Stack direction="row" alignItems="baseline" spacing={1}>
+        {!compact && (
+          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1 }}>
+            <Star sx={{ color: '#FFB800', fontSize: 16 }} />
+            <Typography sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+              {(product.scoreAverage ?? 0).toFixed(1)}
+            </Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: '#999' }}>
+              ({product.reviewCount ?? 0})
+            </Typography>
+          </Stack>
+        )}
+        <Stack direction="row" alignItems="baseline" spacing={compact ? 0.5 : 1}>
           {product.discountPercent && (
-            <Typography sx={{ color: '#ff4444', fontWeight: 700, fontSize: '1rem' }}>
+            <Typography sx={{ color: '#ff4444', fontWeight: 700, fontSize: compact ? '0.7rem' : '1rem' }}>
               {product.discountPercent}%
             </Typography>
           )}
-          <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+          <Typography sx={{ fontWeight: 700, fontSize: compact ? '0.75rem' : '1.1rem' }}>
             {discountedPrice.toLocaleString()}원
           </Typography>
         </Stack>
-        {product.discountPercent && (
+        {!compact && product.discountPercent && (
           <Typography
             sx={{
               fontSize: '0.8rem',
