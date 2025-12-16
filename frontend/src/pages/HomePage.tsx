@@ -1,4 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 import { Box, Button, Grid, Typography, CircularProgress, Stack, IconButton, TextField, Snackbar, Alert, Dialog, DialogContent, DialogActions } from '@mui/material'
 import {
   AutoAwesome,
@@ -100,6 +104,16 @@ const HomePage = () => {
   const navigate = useNavigate()
   const [products, setProducts] = useState<ProductSummary[]>([])
   const [loading, setLoading] = useState(true)
+
+  // GSAP refs
+  const heroRef = useRef<HTMLDivElement>(null)
+  const heroTitleRef = useRef<HTMLDivElement>(null)
+  const heroSubtitleRef = useRef<HTMLDivElement>(null)
+  const aiBoxRef = useRef<HTMLDivElement>(null)
+  const quickMenuRef = useRef<HTMLDivElement>(null)
+  const todayRecommendRef = useRef<HTMLDivElement>(null)
+  const bestSectionRef = useRef<HTMLDivElement>(null)
+  const newArrivalRef = useRef<HTMLDivElement>(null)
   const [aiPrompt, setAiPrompt] = useState('')
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [bannerSlideIndex, setBannerSlideIndex] = useState(0)
@@ -119,6 +133,84 @@ const HomePage = () => {
     aiResult: null
   })
   const { getRecommendation, loading: isAiLoading, error: aiError } = useAiRecommend()
+
+  // GSAP 애니메이션
+  useEffect(() => {
+    // 히어로 섹션 초기 애니메이션
+    const ctx = gsap.context(() => {
+      // 타이틀 페이드인
+      if (heroTitleRef.current) {
+        gsap.fromTo(heroTitleRef.current,
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }
+        )
+      }
+      // 서브타이틀 페이드인 (딜레이)
+      if (heroSubtitleRef.current) {
+        gsap.fromTo(heroSubtitleRef.current,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.8, delay: 0.2, ease: 'power3.out' }
+        )
+      }
+      // AI 박스 페이드인 (딜레이)
+      if (aiBoxRef.current) {
+        gsap.fromTo(aiBoxRef.current,
+          { opacity: 0, y: 40, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.8, delay: 0.4, ease: 'power3.out' }
+        )
+      }
+      // 퀵메뉴 아이템들 순차적 등장
+      if (quickMenuRef.current) {
+        gsap.fromTo(quickMenuRef.current.children,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: 'power2.out',
+            scrollTrigger: {
+              trigger: quickMenuRef.current,
+              start: 'top 85%',
+            }
+          }
+        )
+      }
+      // 오늘의 추천 섹션
+      if (todayRecommendRef.current) {
+        gsap.fromTo(todayRecommendRef.current.querySelectorAll('.product-card'),
+          { opacity: 0, y: 50 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power2.out',
+            scrollTrigger: {
+              trigger: todayRecommendRef.current,
+              start: 'top 80%',
+            }
+          }
+        )
+      }
+      // 베스트 섹션
+      if (bestSectionRef.current) {
+        gsap.fromTo(bestSectionRef.current.querySelectorAll('.product-card'),
+          { opacity: 0, y: 50 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: 'power2.out',
+            scrollTrigger: {
+              trigger: bestSectionRef.current,
+              start: 'top 80%',
+            }
+          }
+        )
+      }
+      // 신상품 섹션
+      if (newArrivalRef.current) {
+        gsap.fromTo(newArrivalRef.current.querySelectorAll('.product-card'),
+          { opacity: 0, y: 50 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power2.out',
+            scrollTrigger: {
+              trigger: newArrivalRef.current,
+              start: 'top 80%',
+            }
+          }
+        )
+      }
+    }, heroRef)
+
+    return () => ctx.revert()
+  }, [loading])
 
   // 캐러셀 자동 회전
   useEffect(() => {
@@ -388,12 +480,13 @@ const HomePage = () => {
   }
 
   return (
-    <Box sx={{ bgcolor: '#fff' }}>
+    <Box ref={heroRef} sx={{ bgcolor: '#fff' }}>
       {/* 히어로 섹션 - 회전 캐러셀 + AI 프롬프트 */}
       <Box sx={{ position: 'relative', bgcolor: '#f5f5f5', py: { xs: 6, md: 10 }, overflow: 'hidden' }}>
         {/* 상단 어필 문구 */}
         <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 5 } }}>
           <Typography
+            ref={heroTitleRef}
             sx={{
               color: '#1a1a1a',
               fontSize: { xs: '1.3rem', md: '1.8rem' },
@@ -404,6 +497,7 @@ const HomePage = () => {
             원하는 스타일을 말해주세요!
           </Typography>
           <Typography
+            ref={heroSubtitleRef}
             sx={{
               color: '#666',
               fontSize: { xs: '0.9rem', md: '1rem' },
@@ -429,6 +523,7 @@ const HomePage = () => {
 
           {/* AI 프롬프트 입력창 */}
           <Box
+            ref={aiBoxRef}
             sx={{
               position: 'relative',
               zIndex: 10,
@@ -719,6 +814,7 @@ const HomePage = () => {
       <Box sx={{ bgcolor: '#fff', py: 3, borderBottom: '1px solid #eee' }}>
         <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 4 } }}>
           <Stack
+            ref={quickMenuRef}
             direction="row"
             spacing={{ xs: 2, md: 4 }}
             alignItems="flex-start"
@@ -793,7 +889,7 @@ const HomePage = () => {
       </Box>
 
       {/* 오늘의 추천 */}
-      <Box sx={{ py: { xs: 6, md: 12 }, px: { xs: 3, md: 12 }, maxWidth: 1600, mx: 'auto' }}>
+      <Box ref={todayRecommendRef} sx={{ py: { xs: 6, md: 12 }, px: { xs: 3, md: 12 }, maxWidth: 1600, mx: 'auto' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 4, md: 6 } }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.02em' }}>
@@ -809,7 +905,7 @@ const HomePage = () => {
         </Box>
         <Grid container spacing={{ xs: 2, md: 4 }}>
           {products.slice(0, 4).map((product) => (
-            <Grid item xs={6} md={3} key={product.id}>
+            <Grid item xs={6} md={3} key={product.id} className="product-card">
               <ProductCard product={product} />
             </Grid>
           ))}
@@ -1150,7 +1246,7 @@ const HomePage = () => {
       </Box>
 
       {/* 베스트 상품 - 중간 마진 */}
-      <Box sx={{ py: { xs: 6, md: 10 }, px: { xs: 2, md: 6 }, maxWidth: 1400, mx: 'auto' }}>
+      <Box ref={bestSectionRef} sx={{ py: { xs: 6, md: 10 }, px: { xs: 2, md: 6 }, maxWidth: 1400, mx: 'auto' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 4, md: 6 } }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.02em' }}>
@@ -1166,7 +1262,7 @@ const HomePage = () => {
         </Box>
         <Grid container spacing={{ xs: 2, md: 4 }}>
           {products.slice(0, 8).map((product, index) => (
-            <Grid item xs={6} md={3} key={product.id}>
+            <Grid item xs={6} md={3} key={product.id} className="product-card">
               <Box sx={{ position: 'relative' }}>
                 {index < 3 && (
                   <Box
@@ -1332,7 +1428,7 @@ const HomePage = () => {
       </Box>
 
       {/* 신상품 - 좁은 마진으로 넓게 */}
-      <Box sx={{ py: { xs: 6, md: 10 }, px: { xs: 2, md: 4 }, bgcolor: '#fafafa' }}>
+      <Box ref={newArrivalRef} sx={{ py: { xs: 6, md: 10 }, px: { xs: 2, md: 4 }, bgcolor: '#fafafa' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 4, md: 6 } }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.02em' }}>
@@ -1348,7 +1444,7 @@ const HomePage = () => {
         </Box>
         <Grid container spacing={{ xs: 2, md: 4 }}>
           {products.slice(4, 8).map((product) => (
-            <Grid item xs={6} md={3} key={product.id}>
+            <Grid item xs={6} md={3} key={product.id} className="product-card">
               <ProductCard product={product} />
             </Grid>
           ))}
