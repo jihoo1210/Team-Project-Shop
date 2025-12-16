@@ -44,18 +44,18 @@ const Footer = () => {
       component="footer"
       sx={{
         bgcolor: '#ffffff',
-        pt: { xs: 6, md: 8 },
+        pt: { xs: 8, md: 12 },
         pb: { xs: 4, md: 6 },
-        mt: 'auto',
+        mt: { xs: 6, md: 10 },
         position: 'relative',
         overflow: 'hidden',
         borderTop: '1px solid #e5e7eb',
       }}
     >
-      <Box sx={{ maxWidth: 1400, mx: 'auto', px: { xs: 3, md: 6 }, position: 'relative', zIndex: 1 }}>
-        <Grid container spacing={{ xs: 4, md: 8 }}>
+      <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 3, md: 6 }, position: 'relative', zIndex: 1 }}>
+        <Grid container spacing={{ xs: 4, md: 6 }} justifyContent="center">
           {/* 로고 & 소셜 */}
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={3} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
             <Typography
               component={Link}
               to="/"
@@ -72,7 +72,7 @@ const Footer = () => {
             >
               MyShop
             </Typography>
-            <Stack direction="row" spacing={0.5} sx={{ mt: 4 }}>
+            <Stack direction="row" spacing={0.5} sx={{ mt: 4, justifyContent: { xs: 'center', md: 'flex-start' } }}>
               <IconButton
                 size="small"
                 sx={{
@@ -132,7 +132,7 @@ const Footer = () => {
           </Grid>
 
           {/* Resources */}
-          <Grid item xs={6} sm={3} md={2}>
+          <Grid item xs={6} sm={3} md={2} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
             <Typography sx={{ color: '#111827', fontWeight: 600, fontSize: '0.875rem', mb: 2.5 }}>
               Resources
             </Typography>
@@ -157,7 +157,7 @@ const Footer = () => {
           </Grid>
 
           {/* Community */}
-          <Grid item xs={6} sm={3} md={2}>
+          <Grid item xs={6} sm={3} md={2} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
             <Typography sx={{ color: '#111827', fontWeight: 600, fontSize: '0.875rem', mb: 2.5 }}>
               Community
             </Typography>
@@ -182,7 +182,7 @@ const Footer = () => {
           </Grid>
 
           {/* Company */}
-          <Grid item xs={6} sm={3} md={2}>
+          <Grid item xs={6} sm={3} md={2} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
             <Typography sx={{ color: '#111827', fontWeight: 600, fontSize: '0.875rem', mb: 2.5 }}>
               Company
             </Typography>
@@ -207,7 +207,7 @@ const Footer = () => {
           </Grid>
 
           {/* Legal */}
-          <Grid item xs={6} sm={3} md={2}>
+          <Grid item xs={6} sm={3} md={2} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
             <Typography sx={{ color: '#111827', fontWeight: 600, fontSize: '0.875rem', mb: 2.5 }}>
               Legal
             </Typography>

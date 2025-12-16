@@ -6,14 +6,14 @@ import SupportChatWidget from '@/components/support/SupportChatWidget'
 
 const MainLayout = () => {
   return (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header />
-      <Box component="main">
+      <Box component="main" sx={{ flex: 1 }}>
         <Outlet />
       </Box>
       <Footer />
       <SupportChatWidget />
-    </>
+    </Box>
   )
 }
 

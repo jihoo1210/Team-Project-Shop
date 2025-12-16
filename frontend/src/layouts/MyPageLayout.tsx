@@ -31,11 +31,11 @@ const MyPageLayout = () => {
   }
 
   return (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header />
-      <Box sx={{ px: { xs: 2, md: 6 }, py: 6 }}>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
-          <Box sx={{ width: { xs: '100%', md: 240 } }}>
+      <Box sx={{ flex: 1, maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 4 }, py: { xs: 4, md: 6 }, width: '100%' }}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 3, md: 5 }}>
+          <Box sx={{ width: { xs: '100%', md: 160 }, flexShrink: 0 }}>
             <Typography variant="h6" fontWeight={700} sx={{ mb: 3, color: '#1a1a1a' }}>
               마이페이지
             </Typography>
@@ -103,7 +103,7 @@ const MyPageLayout = () => {
         </Stack>
       </Box>
       <Footer />
-    </>
+    </Box>
   )
 }
 
