@@ -249,20 +249,40 @@ const HomePage = () => {
     return () => ctx.revert()
   }, [loading])
 
-  // 캐러셀 자동 회전
+  // 캐러셀 자동 회전 (requestAnimationFrame 기반)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCarouselIndex((prev) => (prev + 1) % carouselCards.length)
-    }, 3000)
-    return () => clearInterval(interval)
+    let animationId: number
+    let lastTime = performance.now()
+    const intervalMs = 3000 // 3초
+
+    const animate = (currentTime: number) => {
+      if (currentTime - lastTime >= intervalMs) {
+        setCarouselIndex((prev) => (prev + 1) % carouselCards.length)
+        lastTime = currentTime
+      }
+      animationId = requestAnimationFrame(animate)
+    }
+
+    animationId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(animationId)
   }, [])
 
-  // 배너 슬라이더 자동 회전
+  // 배너 슬라이더 자동 회전 (requestAnimationFrame 기반)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBannerSlideIndex((prev) => (prev + 1) % bannerSlides.length)
-    }, 5000)
-    return () => clearInterval(interval)
+    let animationId: number
+    let lastTime = performance.now()
+    const intervalMs = 5000 // 5초
+
+    const animate = (currentTime: number) => {
+      if (currentTime - lastTime >= intervalMs) {
+        setBannerSlideIndex((prev) => (prev + 1) % bannerSlides.length)
+        lastTime = currentTime
+      }
+      animationId = requestAnimationFrame(animate)
+    }
+
+    animationId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(animationId)
   }, [bannerSlides.length])
 
   // DB에서 배너 데이터 로드
