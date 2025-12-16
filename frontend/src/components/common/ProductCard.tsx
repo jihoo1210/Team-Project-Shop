@@ -6,7 +6,7 @@ import { Box, Card, CardContent, CardMedia, Chip, IconButton, Stack, Typography 
 import { useNavigate } from 'react-router-dom'
 import type { ProductSummary } from '@/types/product'
 import { useLike } from '@/hooks/useLike'
-import { brandColors } from '@/theme/tokens'
+import { brandColors, glassmorphism } from '@/theme/tokens'
 
 interface ProductCardProps {
   product: ProductSummary
@@ -56,12 +56,16 @@ const ProductCard = memo(({ product, compact = false }: ProductCardProps) => {
         display: 'flex',
         flexDirection: 'column',
         cursor: 'pointer',
-        border: 'none',
-        borderRadius: 0,
-        bgcolor: 'transparent',
-        transition: 'transform 0.3s ease',
+        borderRadius: compact ? 2 : 3,
+        bgcolor: glassmorphism.card.background,
+        backdropFilter: glassmorphism.card.backdropFilter,
+        border: glassmorphism.card.border,
+        boxShadow: glassmorphism.card.boxShadow,
+        transition: 'all 0.3s ease',
+        p: compact ? 1 : 1.5,
         '&:hover': {
           transform: compact ? 'translateY(-4px)' : 'translateY(-8px)',
+          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
         },
         '&:hover img': {
           transform: 'scale(1.03)',
@@ -97,9 +101,15 @@ const ProductCard = memo(({ product, compact = false }: ProductCardProps) => {
               size="small"
               aria-label={isLiked ? '찜 해제' : '찜하기'}
               sx={{
-                bgcolor: 'rgba(255,255,255,0.9)',
-                backdropFilter: 'blur(4px)',
-                '&:hover': { bgcolor: 'white' },
+                bgcolor: glassmorphism.button.background,
+                backdropFilter: glassmorphism.button.backdropFilter,
+                border: glassmorphism.button.border,
+                boxShadow: glassmorphism.button.boxShadow,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.95)',
+                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
+                },
               }}
             >
               {isLiked ? (

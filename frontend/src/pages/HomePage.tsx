@@ -25,6 +25,7 @@ import type { ItemSummary } from '@/types/api'
 import { fetchActiveBanners, type Banner } from '@/api/bannerApi'
 import { useAiRecommend, type AiRecommendWithProduct } from '@/hooks/useAiRecommend'
 import type { ProductSummary } from '@/types/product'
+import { glassmorphism } from '@/theme/tokens'
 
 // 히어로 섹션 캐러셀 카드 데이터 (회전용)
 // 좌측: 남성 (1-3), 우측: 여성 (4-6)
@@ -584,12 +585,17 @@ const HomePage = () => {
             sx={{
               position: 'relative',
               zIndex: 10,
-              bgcolor: 'white',
-              borderRadius: 2,
+              bgcolor: glassmorphism.light.background,
+              backdropFilter: glassmorphism.light.backdropFilter,
+              border: glassmorphism.light.border,
+              borderRadius: 3,
               p: 2.5,
               mx: { xs: 2, sm: 3 },
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              border: '1px solid #e8e8e8',
+              boxShadow: glassmorphism.light.boxShadow,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+              },
             }}
           >
             {/* 상단 AI 라벨 */}
@@ -685,17 +691,20 @@ const HomePage = () => {
               sx={{
                 px: 2,
                 py: 0.8,
-                bgcolor: 'white',
+                bgcolor: glassmorphism.subtle.background,
+                backdropFilter: glassmorphism.subtle.backdropFilter,
+                border: glassmorphism.subtle.border,
                 borderRadius: 5,
                 fontSize: '0.8rem',
                 color: '#666',
                 cursor: 'pointer',
-                border: '1px solid #e0e0e0',
+                boxShadow: glassmorphism.subtle.boxShadow,
                 transition: 'all 0.2s',
                 '&:hover': {
-                  bgcolor: '#6366F1',
+                  bgcolor: 'rgba(99, 102, 241, 0.9)',
                   color: 'white',
-                  borderColor: '#6366F1',
+                  border: '1px solid rgba(99, 102, 241, 0.5)',
+                  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
                 },
               }}
             >
@@ -916,13 +925,18 @@ const HomePage = () => {
                       height: 48,
                       borderRadius: '50%',
                       mb: 1,
-                      bgcolor: '#f5f5f5',
+                      bgcolor: glassmorphism.button.background,
+                      backdropFilter: glassmorphism.button.backdropFilter,
+                      border: glassmorphism.button.border,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      boxShadow: glassmorphism.button.boxShadow,
                       transition: 'all 0.2s ease',
                       '&:hover': {
-                        bgcolor: '#e8e8e8',
+                        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
+                        transform: 'translateY(-2px)',
+                        bgcolor: 'rgba(255, 255, 255, 0.95)',
                       },
                     }}
                   >
