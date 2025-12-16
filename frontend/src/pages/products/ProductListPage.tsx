@@ -830,36 +830,13 @@ const ProductListPage = () => {
                           }}
                         />
 
-                        {/* 찜 버튼 - 찜한 상품은 빨간 하트로 표시 */}
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            color: product.favorite ? '#ff4444' : '#fff',
-                            bgcolor: product.favorite ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.3)',
-                            borderRadius: '50%',
-                            width: 32,
-                            height: 32,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          {product.favorite ? (
-                            <HeartFilledIcon sx={{ fontSize: 18 }} />
-                          ) : (
-                            <HeartIcon sx={{ fontSize: 18 }} />
-                          )}
-                        </Box>
-
                         {/* 장바구니에 있는 상품 표시 */}
                         {product.cart && (
                           <Box
                             sx={{
                               position: 'absolute',
                               top: 8,
-                              right: 48,
+                              right: 8,
                               color: '#1976d2',
                               bgcolor: 'rgba(255,255,255,0.9)',
                               borderRadius: '50%',
@@ -890,35 +867,73 @@ const ProductListPage = () => {
                         />
                       )}
 
-                      {/* 브랜드명 */}
-                      <Typography
-                        variant="body2"
-                        fontWeight={600}
-                        sx={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {product.brand || 'MyShop'}
-                      </Typography>
+                      {/* 브랜드명 + 찜 버튼 */}
+                      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ px: 1 }}>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={600}
+                            sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {product.brand || 'MyShop'}
+                          </Typography>
 
-                      {/* 상품명 */}
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          mb: 0.5,
-                        }}
-                      >
-                        {product.title}
-                      </Typography>
+                          {/* 상품명 */}
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              mb: 0.5,
+                            }}
+                          >
+                            {product.title}
+                          </Typography>
+                        </Box>
+
+                        {/* 찜 버튼 + 좋아요 수 (우측) */}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            ml: 1,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              color: product.favorite ? '#ff4444' : '#999',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            {product.favorite ? (
+                              <HeartFilledIcon sx={{ fontSize: 22 }} />
+                            ) : (
+                              <HeartIcon sx={{ fontSize: 22 }} />
+                            )}
+                          </Box>
+                          <Typography
+                            sx={{
+                              fontSize: '0.7rem',
+                              fontWeight: 500,
+                              color: '#999',
+                            }}
+                          >
+                            {(product.likeCount ?? 0) >= 9999 ? '9,999+' : (product.likeCount ?? 0).toLocaleString()}
+                          </Typography>
+                        </Box>
+                      </Stack>
 
                       {/* 가격 */}
-                      <Stack direction="row" spacing={1} alignItems="baseline" flexWrap="wrap">
+                      <Stack direction="row" spacing={1} alignItems="baseline" flexWrap="wrap" sx={{ px: 1 }}>
                         {product.discountPercent && product.discountPercent > 0 && (
                           <>
                             <Typography
@@ -937,18 +952,15 @@ const ProductListPage = () => {
                         </Typography>
                       </Stack>
 
-                      {/* 평점 & 좋아요 */}
-                      <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                      {/* 평점 */}
+                      <Stack direction="row" spacing={1} sx={{ mt: 0.5, px: 1 }}>
                         <Typography variant="caption" color="text.secondary">
                           ★ {(product.scoreAverage ?? 0).toFixed(1)} ({product.reviewCount ?? 0})
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          ♥ {(product.likeCount ?? 0) >= 9999 ? '9,999+' : (product.likeCount ?? 0).toLocaleString()}
                         </Typography>
                       </Stack>
 
                       {/* 뱃지들 */}
-                      <Stack direction="row" spacing={0.5} sx={{ mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
+                      <Stack direction="row" spacing={0.5} sx={{ mt: 1, flexWrap: 'wrap', gap: 0.5, px: 1 }}>
                         <Chip label="쿠폰" size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
                         {index % 3 === 0 && (
                           <Chip label="단독" size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
