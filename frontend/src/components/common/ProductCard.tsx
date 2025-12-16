@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react'
 import FavoriteBorder from '@mui/icons-material/FavoriteBorder'
 import Favorite from '@mui/icons-material/Favorite'
 import Star from '@mui/icons-material/Star'
@@ -25,7 +26,7 @@ const getImageSrc = (url?: string): string => {
   return url.startsWith('/') ? url : `/${url}`
 }
 
-const ProductCard = ({ product, compact = false }: ProductCardProps) => {
+const ProductCard = memo(({ product, compact = false }: ProductCardProps) => {
   const navigate = useNavigate()
   // 좋아요 훅 사용 (랜덤 숫자 + 토글)
   const { likeCount, isLiked, toggleLike } = useLike({
@@ -37,14 +38,14 @@ const ProductCard = ({ product, compact = false }: ProductCardProps) => {
     ? product.price * (1 - product.discountPercent / 100)
     : product.price
 
-  const handleCardClick = () => {
+  const handleCardClick = useCallback(() => {
     navigate(`/products/${product.id}`)
-  }
+  }, [navigate, product.id])
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation() // 카드 클릭 이벤트 전파 방지
     toggleLike()
-  }
+  }, [toggleLike])
 
   return (
     <Card
@@ -94,6 +95,7 @@ const ProductCard = ({ product, compact = false }: ProductCardProps) => {
             <IconButton
               onClick={handleFavoriteClick}
               size="small"
+              aria-label={isLiked ? '찜 해제' : '찜하기'}
               sx={{
                 bgcolor: 'rgba(255,255,255,0.9)',
                 backdropFilter: 'blur(4px)',
@@ -205,6 +207,8 @@ const ProductCard = ({ product, compact = false }: ProductCardProps) => {
       </CardContent>
     </Card>
   )
-}
+})
+
+ProductCard.displayName = 'ProductCard'
 
 export default ProductCard
