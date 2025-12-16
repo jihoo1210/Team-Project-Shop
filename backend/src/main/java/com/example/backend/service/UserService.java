@@ -17,11 +17,15 @@ public class UserService {
     private final UserRepository userRepository;    
 
     public User checkLoginAndGetUser() throws Exception {
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(userId != null) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        // 비로그인 사용자의 경우 "anonymousUser" 문자열이 반환됨
+        if (principal instanceof Long) {
+            Long userId = (Long) principal;
             log.info("User Id: {}", userId);
             return userRepository.findById(userId).orElse(null);
         }
+
         return null;
     }
     

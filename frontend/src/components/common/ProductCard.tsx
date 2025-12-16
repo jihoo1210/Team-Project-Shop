@@ -84,55 +84,6 @@ const ProductCard = memo(({ product, compact = false }: ProductCardProps) => {
           alt={product.title}
           onError={handleImageError}
         />
-        {/* 좋아요 버튼 + 카운트 */}
-        {!compact && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 12,
-              right: 12,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <IconButton
-              onClick={handleFavoriteClick}
-              size="small"
-              aria-label={isLiked ? '찜 해제' : '찜하기'}
-              sx={{
-                bgcolor: glassmorphism.button.background,
-                backdropFilter: glassmorphism.button.backdropFilter,
-                border: glassmorphism.button.border,
-                boxShadow: glassmorphism.button.boxShadow,
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  bgcolor: 'rgba(255, 255, 255, 0.95)',
-                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
-                },
-              }}
-            >
-              {isLiked ? (
-                <Favorite sx={{ fontSize: 20, color: '#ff4444' }} />
-              ) : (
-                <FavoriteBorder sx={{ fontSize: 20 }} />
-              )}
-            </IconButton>
-            <Typography
-              sx={{
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                color: brandColors.muted,
-                mt: 0.3,
-                bgcolor: 'rgba(255,255,255,0.8)',
-                px: 0.5,
-                borderRadius: 0.5,
-              }}
-            >
-              {likeCount}
-            </Typography>
-          </Box>
-        )}
         {product.badges && product.badges.length > 0 && (
           <Stack
             direction="row"
@@ -156,31 +107,74 @@ const ProductCard = memo(({ product, compact = false }: ProductCardProps) => {
           </Stack>
         )}
       </Box>
-      <CardContent sx={{ flexGrow: 1, px: compact ? 0.3 : 0.5, pt: compact ? 1 : 2, pb: compact ? 0.5 : 1 }}>
-        {!compact && (
-          <Typography
-            variant="caption"
-            sx={{ color: '#999', fontSize: '0.75rem', letterSpacing: '0.02em' }}
-          >
-            {product.brand}
-          </Typography>
-        )}
-        <Typography
-          sx={{
-            fontWeight: 500,
-            fontSize: compact ? '0.7rem' : '0.95rem',
-            mt: compact ? 0 : 0.5,
-            mb: compact ? 0.5 : 1,
-            lineHeight: 1.3,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: compact ? 1 : 2,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
-          {product.title}
-        </Typography>
+      <CardContent sx={{ flexGrow: 1, px: compact ? 0.5 : 1.5, pt: compact ? 1 : 2, pb: compact ? 0.5 : 1 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            {!compact && (
+              <Typography
+                variant="caption"
+                sx={{ color: '#999', fontSize: '0.75rem', letterSpacing: '0.02em' }}
+              >
+                {product.brand}
+              </Typography>
+            )}
+            <Typography
+              sx={{
+                fontWeight: 500,
+                fontSize: compact ? '0.7rem' : '0.95rem',
+                mt: compact ? 0 : 0.5,
+                mb: compact ? 0.5 : 1,
+                lineHeight: 1.3,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: compact ? 1 : 2,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
+              {product.title}
+            </Typography>
+          </Box>
+          {/* 좋아요 버튼 + 카운트 (우측) */}
+          {!compact && (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                ml: 1,
+              }}
+            >
+              <IconButton
+                onClick={handleFavoriteClick}
+                size="small"
+                aria-label={isLiked ? '찜 해제' : '찜하기'}
+                sx={{
+                  transition: 'all 0.2s ease',
+                  p: 0.5,
+                  '&:hover': {
+                    bgcolor: 'rgba(0, 0, 0, 0.04)',
+                  },
+                }}
+              >
+                {isLiked ? (
+                  <Favorite sx={{ fontSize: 22, color: '#ff4444' }} />
+                ) : (
+                  <FavoriteBorder sx={{ fontSize: 22, color: '#999' }} />
+                )}
+              </IconButton>
+              <Typography
+                sx={{
+                  fontSize: '0.7rem',
+                  fontWeight: 500,
+                  color: brandColors.muted,
+                }}
+              >
+                {likeCount}
+              </Typography>
+            </Box>
+          )}
+        </Stack>
         {!compact && (
           <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1 }}>
             <Star sx={{ color: '#FFB800', fontSize: 16 }} />
