@@ -13,6 +13,8 @@ import {
   Stack,
   Avatar,
   Divider,
+  Snackbar,
+  Alert,
 } from '@mui/material'
 import {
   Edit as EditIcon,
@@ -54,6 +56,17 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
   const [editContent, setEditContent] = useState('')
   const [editSubmitting, setEditSubmitting] = useState(false)
 
+  // Snackbar 상태
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  })
+
+  const showSnackbar = (message: string, severity: 'success' | 'error' | 'warning') => {
+    setSnackbar({ open: true, message, severity })
+  }
+
   // 평균 별점 계산
   const averageRating = reviews.length > 0
     ? reviews.reduce((acc, r) => acc + r.score, 0) / reviews.length
@@ -62,11 +75,11 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
   // 리뷰 작성 핸들러
   const handleWriteSubmit = async () => {
     if (!writeContent.trim()) {
-      alert('리뷰 내용을 입력해주세요.')
+      showSnackbar('리뷰 내용을 입력해주세요.', 'warning')
       return
     }
     if (!isLoggedIn || !currentUserId) {
-      alert('로그인이 필요합니다.')
+      showSnackbar('로그인이 필요합니다.', 'warning')
       return
     }
 
@@ -77,14 +90,13 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
         score: writeScore,
         content: writeContent.trim(),
       })
-      alert('리뷰가 등록되었습니다.')
+      showSnackbar('리뷰가 등록되었습니다.', 'success')
       setIsWriteModalOpen(false)
       setWriteScore(5)
       setWriteContent('')
       onReviewChange()
-    } catch (error) {
-      console.error('리뷰 등록 실패:', error)
-      alert('리뷰 등록에 실패했습니다.')
+    } catch {
+      showSnackbar('리뷰 등록에 실패했습니다.', 'error')
     } finally {
       setWriteSubmitting(false)
     }
@@ -101,7 +113,7 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
   const handleEditSubmit = async () => {
     if (!editingReview) return
     if (!editContent.trim()) {
-      alert('리뷰 내용을 입력해주세요.')
+      showSnackbar('리뷰 내용을 입력해주세요.', 'warning')
       return
     }
 
@@ -113,12 +125,11 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
         content: editContent.trim(),
         role: currentUserRole as 'Admin' | 'User',
       })
-      alert('리뷰가 수정되었습니다.')
+      showSnackbar('리뷰가 수정되었습니다.', 'success')
       setEditingReview(null)
       onReviewChange()
-    } catch (error) {
-      console.error('리뷰 수정 실패:', error)
-      alert('리뷰 수정에 실패했습니다.')
+    } catch {
+      showSnackbar('리뷰 수정에 실패했습니다.', 'error')
     } finally {
       setEditSubmitting(false)
     }
@@ -130,11 +141,10 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
 
     try {
       await deleteReview(review.review_no)
-      alert('리뷰가 삭제되었습니다.')
+      showSnackbar('리뷰가 삭제되었습니다.', 'success')
       onReviewChange()
-    } catch (error) {
-      console.error('리뷰 삭제 실패:', error)
-      alert('리뷰 삭제에 실패했습니다.')
+    } catch {
+      showSnackbar('리뷰 삭제에 실패했습니다.', 'error')
     }
   }
 
@@ -359,6 +369,22 @@ const ReviewSection = ({ itemId, reviews, onReviewChange }: ReviewSectionProps) 
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }
