@@ -55,6 +55,7 @@ const Footer = () => {
         bgcolor: '#ffffff',
         pt: { xs: 8, md: 12 },
         pb: { xs: 4, md: 6 },
+        mb: { xs: 2, md: 4 },
         mt: { xs: 6, md: 10 },
         position: 'relative',
         overflow: 'hidden',

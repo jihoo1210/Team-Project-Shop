@@ -56,7 +56,7 @@ const ProductCard = memo(({ product, compact = false }: ProductCardProps) => {
         display: 'flex',
         flexDirection: 'column',
         cursor: 'pointer',
-        borderRadius: compact ? 2 : 3,
+        borderRadius: compact ? 1 : 2,
         bgcolor: glassmorphism.card.background,
         backdropFilter: glassmorphism.card.backdropFilter,
         border: glassmorphism.card.border,
