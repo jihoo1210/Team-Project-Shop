@@ -21,7 +21,7 @@ import {
   Delete as DeleteIcon,
   Image as ImageIcon,
 } from '@mui/icons-material'
-import { createBoard, uploadBoardFiles } from '@/api/boardApi'
+import { createBoard } from '@/api/boardApi'
 import { brandColors } from '@/theme/tokens'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -140,22 +140,14 @@ const BoardWritePage = () => {
 
     setSubmitting(true)
     try {
-      // 파일 업로드 처리
-      let fileUrls: string[] = []
-      if (attachedFiles.length > 0) {
-        const files = attachedFiles.map(f => f.file)
-        const uploadResult = await uploadBoardFiles(files)
-        fileUrls = uploadResult.fileUrls
-      }
+      // 파일과 함께 게시글 등록 (multipart/form-data)
+      const files = attachedFiles.length > 0 ? attachedFiles.map(f => f.file) : undefined
 
       await createBoard({
-        writer_id: currentUserId,
         title: title.trim(),
         content: content.trim(),
         board_category: category || 'qna',
-        role: currentUserRole,
-        files: fileUrls, // 업로드된 파일 URL 목록
-      })
+      }, files)
       alert('게시글이 등록되었습니다.')
       navigate(`/board/${category}`)
     } catch (error) {
