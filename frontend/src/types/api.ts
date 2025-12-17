@@ -203,6 +203,7 @@ export type BoardWriteRequest = {
   content: string
   board_category: string
   role: 'Admin' | 'User'
+  files?: string[]
 }
 export type BoardUpdateRequest = {
   board_no: string
@@ -213,12 +214,42 @@ export type BoardUpdateRequest = {
   role: 'Admin' | 'User'
 }
 export type BoardDeleteRequest = { board_no: string; writer_id: string; role: 'Admin' | 'User' }
-export type BoardListItem = { board_no: string; title: string; writer_id: string; view: number }
+export type BoardListItem = {
+  board_no: number
+  title: string
+  writer_id: number
+  writer_name: string
+  board_category: string
+  view: number
+  secret_yn: string
+  reg_date: string
+  comment_count: number
+}
+
+export type BoardFileItem = {
+  file_no: number
+  board_no: number
+  origin_filename: string
+  save_filename: string
+  file_size: number
+  file_ext: string
+  reg_date: string
+}
 
 export type CommentWriteRequest = { board_no: string; writer_id: string; co_content: string }
 export type CommentUpdateRequest = { co_no: string; writer_id: string; co_content: string }
 export type CommentDeleteRequest = { co_no: string; writer_id: string; role: 'Admin' | 'User' }
-export type CommentListItem = { co_no: string; title: string; writer_id: string; view: number }
+export type CommentListItem = {
+  co_no: number
+  board_no: number
+  writer_id: number
+  writer_name: string
+  co_comment: string
+  secret_yn: string
+  del_yn: string
+  co_reg_date: string
+  co_mod_date: string
+}
 
 /* 리뷰 */
 export type ReviewWriteRequest = { 

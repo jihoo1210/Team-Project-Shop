@@ -1,15 +1,29 @@
 package com.example.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
 public class BoardFileDTO {
-    private Long fileNo;            // 파일 번호 (PK)
-    private Long boardNo;           // 게시글 번호 (FK)
-    private String originFilename; // 원본 파일명
-    private String saveFilename;   // 저장 파일명
-    private long fileSize;         // 파일 크기
-    private String fileExt;        // 파일 확장자
-    private LocalDateTime regDate; // 등록일
+    @JsonProperty("file_no")
+    private Long fileNo;
+
+    @JsonProperty("board_no")
+    private Long boardNo;
+
+    @JsonProperty("origin_filename")
+    private String originFilename;
+
+    @JsonProperty("save_filename")
+    private String saveFilename;
+
+    @JsonProperty("file_size")
+    private long fileSize;
+
+    @JsonProperty("file_ext")
+    private String fileExt;
+
+    @JsonProperty("reg_date")
+    private LocalDateTime regDate;
 }

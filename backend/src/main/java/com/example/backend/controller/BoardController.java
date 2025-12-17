@@ -47,25 +47,25 @@ public class BoardController {
 
     // 글쓰기 (다중 파일 업로드 지원)
     @PostMapping("/write")
-    public ResponseEntity<?> write(BoardDTO board, 
-                                   @RequestParam(required = false) List<MultipartFile> files, 
+    public ResponseEntity<?> write(BoardDTO board,
+                                   @RequestParam(value = "uploadFiles", required = false) List<MultipartFile> uploadFiles,
                                    HttpServletRequest request) {
-        
+
         Long userId = (Long) request.getAttribute("userId");
 
         if (userId == null) return ResponseEntity.status(401).body("로그인 필요");
 
         // 파일 검증
-        if (files != null && !files.isEmpty()) {
-            for (MultipartFile file : files) {
+        if (uploadFiles != null && !uploadFiles.isEmpty()) {
+            for (MultipartFile file : uploadFiles) {
                 if (file.isEmpty()) continue;
-                
+
                 // 파일 크기 검증
                 if (file.getSize() > MAX_FILE_SIZE) {
                     return ResponseEntity.badRequest()
                             .body("파일 크기는 10MB를 초과할 수 없습니다: " + file.getOriginalFilename());
                 }
-                
+
                 // 확장자 검증
                 String ext = getFileExtension(file.getOriginalFilename()).toLowerCase();
                 if (!ALLOWED_FILE_EXTENSIONS.contains(ext)) {
@@ -76,7 +76,7 @@ public class BoardController {
         }
 
         try {
-            boardService.write(board, files, userId);
+            boardService.write(board, uploadFiles, userId);
             return ResponseEntity.ok("작성 성공");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("에러 발생: " + e.getMessage());

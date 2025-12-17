@@ -49,10 +49,10 @@ public class BoardServiceImpl {
 
     private static final String UPLOAD_PATH = "C:\\shopping_upload\\";
 
-    // 목록 조회
+    // 목록 조회 (page는 1부터 시작, 내부적으로 0-based로 변환)
     public Map<String, Object> getList(int page, String category, String keyword) {
         int size = 10;
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
 
         Page<Board> boardPage;
 
@@ -74,10 +74,11 @@ public class BoardServiceImpl {
                 .toList();
 
         Map<String, Object> map = new HashMap<>();
-        map.put("list", list);
+        map.put("content", list);
         map.put("totalPages", boardPage.getTotalPages());
         map.put("totalElements", boardPage.getTotalElements());
-        map.put("currentPage", page);
+        map.put("number", page - 1);
+        map.put("size", size);
         return map;
     }
 

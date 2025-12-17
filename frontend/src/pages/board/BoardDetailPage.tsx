@@ -18,8 +18,10 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
+  AttachFile as AttachFileIcon,
+  Download as DownloadIcon,
 } from '@mui/icons-material'
-import { fetchBoardDetail, fetchComments, createComment, updateComment, deleteBoard, deleteComment, type BoardDetail } from '@/api/boardApi'
+import { fetchBoardDetail, fetchComments, createComment, updateComment, deleteBoard, deleteComment, getBoardImageUrl, downloadBoardFile, type BoardDetail } from '@/api/boardApi'
 import type { CommentListItem } from '@/types/api'
 import { brandColors } from '@/theme/tokens'
 import { useAuth } from '@/hooks/useAuth'
@@ -71,13 +73,36 @@ const BoardDetailPage = () => {
   const handleDelete = async () => {
     if (!post || !window.confirm('정말 삭제하시겠습니까?')) return
     try {
-      await deleteBoard(post.board_no)
+      await deleteBoard(post.board_no.toString())
       alert('삭제되었습니다.')
       navigate(`/board/${category}`)
     } catch (error) {
       console.error('삭제 실패:', error)
       alert('삭제에 실패했습니다.')
     }
+  }
+
+  // 파일 다운로드 핸들러
+  const handleFileDownload = async (fileNo: number, filename: string) => {
+    try {
+      const blob = await downloadBoardFile(fileNo)
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('파일 다운로드 실패:', error)
+      alert('파일 다운로드에 실패했습니다.')
+    }
+  }
+
+  // 이미지 파일 여부 확인
+  const isImageFile = (ext: string) => {
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext.toLowerCase())
   }
 
   const handleCommentSubmit = async () => {
@@ -113,8 +138,8 @@ const BoardDetailPage = () => {
 
   // 댓글 수정 시작
   const handleEditCommentStart = (comment: CommentListItem) => {
-    setEditingCommentId(comment.co_no)
-    setEditingCommentContent(comment.title) // title이 content 역할
+    setEditingCommentId(comment.co_no.toString())
+    setEditingCommentContent(comment.co_comment)
   }
 
   // 댓글 수정 취소
@@ -177,7 +202,7 @@ const BoardDetailPage = () => {
     )
   }
 
-  const isAuthor = post.writer_id === currentUserId
+  const isAuthor = post.writer_id.toString() === currentUserId
   const canDelete = isAuthor || currentUserRole === 'Admin'
 
   return (
@@ -224,10 +249,10 @@ const BoardDetailPage = () => {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography color="text.secondary" fontSize="0.875rem">
-              작성자: {post.writer_id}
+              작성자: {post.writer_name}
             </Typography>
             <Typography color="text.secondary" fontSize="0.875rem">
-              {new Date(post.created_at).toLocaleDateString('ko-KR')}
+              {new Date(post.reg_date).toLocaleDateString('ko-KR')}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <VisibilityIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
@@ -272,6 +297,71 @@ const BoardDetailPage = () => {
         >
           {post.content}
         </Typography>
+
+        {/* 이미지 미리보기 */}
+        {post.files && post.files.filter(f => isImageFile(f.file_ext)).length > 0 && (
+          <Box sx={{ mt: 3 }}>
+            <Divider sx={{ mb: 2 }} />
+            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2 }}>
+              첨부 이미지
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              {post.files.filter(f => isImageFile(f.file_ext)).map((file) => (
+                <Box
+                  key={file.file_no}
+                  component="img"
+                  src={getBoardImageUrl(file.file_no)}
+                  alt={file.origin_filename}
+                  sx={{
+                    maxWidth: '100%',
+                    maxHeight: 400,
+                    borderRadius: 1,
+                    border: `1px solid ${brandColors.border}`,
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => window.open(getBoardImageUrl(file.file_no), '_blank')}
+                />
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        {/* 첨부파일 목록 */}
+        {post.files && post.files.length > 0 && (
+          <Box sx={{ mt: 3 }}>
+            <Divider sx={{ mb: 2 }} />
+            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <AttachFileIcon fontSize="small" />
+              첨부파일 ({post.files.length})
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {post.files.map((file) => (
+                <Box
+                  key={file.file_no}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    p: 1,
+                    bgcolor: brandColors.background,
+                    borderRadius: 1,
+                  }}
+                >
+                  <Typography fontSize="0.875rem">
+                    {file.origin_filename} ({(file.file_size / 1024).toFixed(1)} KB)
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleFileDownload(file.file_no, file.origin_filename)}
+                    title="다운로드"
+                  >
+                    <DownloadIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
       </Paper>
 
       {/* 댓글 섹션 (QnA만) */}
@@ -302,7 +392,7 @@ const BoardDetailPage = () => {
                   }}
                 >
                   <Avatar sx={{ width: 36, height: 36, bgcolor: brandColors.primary }}>
-                    {comment.writer_id.charAt(0).toUpperCase()}
+                    {comment.writer_name?.charAt(0).toUpperCase() || '?'}
                   </Avatar>
                   <Box sx={{ flex: 1 }}>
                     <Box
@@ -314,12 +404,12 @@ const BoardDetailPage = () => {
                       }}
                     >
                       <Typography fontWeight={600} fontSize="0.875rem">
-                        {comment.writer_id}
+                        {comment.writer_name}
                       </Typography>
-                      {(comment.writer_id === currentUserId ||
+                      {(comment.writer_id.toString() === currentUserId ||
                         currentUserRole === 'Admin') && (
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
-                          {comment.writer_id === currentUserId && (
+                          {comment.writer_id.toString() === currentUserId && (
                             <IconButton
                               size="small"
                               onClick={() => handleEditCommentStart(comment)}
@@ -329,7 +419,7 @@ const BoardDetailPage = () => {
                           )}
                           <IconButton
                             size="small"
-                            onClick={() => handleDeleteComment(comment.co_no)}
+                            onClick={() => handleDeleteComment(comment.co_no.toString())}
                           >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
@@ -337,7 +427,7 @@ const BoardDetailPage = () => {
                       )}
                     </Box>
                     {/* 수정 모드 */}
-                    {editingCommentId === comment.co_no ? (
+                    {editingCommentId === comment.co_no.toString() ? (
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <TextField
                           fullWidth
@@ -366,7 +456,7 @@ const BoardDetailPage = () => {
                         </Box>
                       </Box>
                     ) : (
-                      <Typography fontSize="0.875rem">{comment.title}</Typography>
+                      <Typography fontSize="0.875rem">{comment.co_comment}</Typography>
                     )}
                   </Box>
                 </Box>
