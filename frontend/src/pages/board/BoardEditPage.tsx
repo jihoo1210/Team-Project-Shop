@@ -163,9 +163,11 @@ const BoardEditPage = () => {
     setSubmitting(true)
     try {
       await updateBoard(id!, {
+        writer_id: currentUserId,
         title: title.trim(),
         content: content.trim(),
         board_category: category || 'qna',
+        role: currentUserRole,
       })
       alert('게시글이 수정되었습니다.')
       navigate(`/board/${category}/${id}`)

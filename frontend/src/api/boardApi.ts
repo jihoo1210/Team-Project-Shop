@@ -1,8 +1,8 @@
 import axiosClient from './axiosClient'
 import type {
+  BoardWriteRequest,
   BoardUpdateRequest,
   BoardListItem,
-  BoardFileItem,
   CommentListItem,
   PaginatedResponse,
   PageableQuery,
@@ -22,74 +22,47 @@ export const fetchBoardList = (params?: BoardListQuery) =>
 
 // 게시글 상세 조회 - GET /api/board/{boardNo}
 export interface BoardDetail {
-  board_no: number
+  board_no: string
   title: string
   content: string
-  writer_id: number
-  writer_name: string
+  writer_id: string
   board_category: string
   view: number
-  secret_yn: string
-  del_yn: string
-  reg_date: string
-  mod_date: string
-  comment_count: number
-  files?: BoardFileItem[]
+  created_at: string
+  updated_at: string
+  files?: { file_id: string; file_name: string; file_url: string }[]
 }
 export const fetchBoardDetail = (boardNo: string) =>
   axiosClient.get<BoardDetail>(`/board/${boardNo}`).then((res) => res.data)
 
-// 게시글 작성 - POST /api/board/write (multipart/form-data)
-export const createBoard = (data: {
-  title: string
-  content: string
-  board_category: string
-  secret_yn?: string
-}, files?: File[]) => {
+// 게시글 작성 - POST /api/board/write
+export const createBoard = (data: BoardWriteRequest) =>
+  axiosClient.post<{ board_no: string }>('/board/write', data).then((res) => res.data)
+
+// 게시글 수정 - PUT /api/board/{boardNo}
+export const updateBoard = (boardNo: string, data: Omit<BoardUpdateRequest, 'board_no'>) =>
+  axiosClient.put<void>(`/board/${boardNo}`, data).then((res) => res.data)
+
+// 게시글 삭제 - DELETE /api/board/{boardNo}
+export const deleteBoard = (boardNo: string) =>
+  axiosClient.delete<void>(`/board/${boardNo}`).then((res) => res.data)
+
+// 파일 업로드 - POST /api/board/upload
+export const uploadBoardFiles = (files: File[]) => {
   const formData = new FormData()
-  formData.append('title', data.title)
-  formData.append('content', data.content)
-  formData.append('boardCategory', data.board_category)
-  formData.append('secretYn', data.secret_yn || 'N')
-
-  if (files && files.length > 0) {
-    files.forEach((file) => {
-      formData.append('uploadFiles', file)
-    })
-  }
-
+  files.forEach((file) => {
+    formData.append('files', file)
+  })
   return axiosClient
-    .post<string>('/board/write', formData, {
+    .post<{ fileUrls: string[] }>('/board/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     .then((res) => res.data)
 }
 
-// 게시글 수정 - PUT /api/board/{boardNo}
-export const updateBoard = (boardNo: string, data: {
-  title: string
-  content: string
-  board_category: string
-  secret_yn?: string
-}) =>
-  axiosClient.put<void>(`/board/${boardNo}`, {
-    title: data.title,
-    content: data.content,
-    boardCategory: data.board_category,
-    secretYn: data.secret_yn || 'N',
-  }).then((res) => res.data)
-
-// 게시글 삭제 - DELETE /api/board/{boardNo}
-export const deleteBoard = (boardNo: string | number) =>
-  axiosClient.delete<void>(`/board/${boardNo}`).then((res) => res.data)
-
 // 파일 다운로드 - GET /api/board/file/{fileNo}
-export const downloadBoardFile = (fileNo: number) =>
+export const downloadBoardFile = (fileNo: string) =>
   axiosClient.get<Blob>(`/board/file/${fileNo}`, { responseType: 'blob' }).then((res) => res.data)
-
-// 이미지 미리보기 URL 생성
-export const getBoardImageUrl = (fileNo: number) =>
-  `${axiosClient.defaults.baseURL}/board/image/${fileNo}`
 
 /* 댓글 API - SPEC: /api/comments */
 

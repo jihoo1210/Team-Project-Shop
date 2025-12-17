@@ -1,35 +1,17 @@
 package com.example.backend.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
 public class CommentDTO {
-    @JsonProperty("co_no")
-    private Long coNo;
-
-    @JsonProperty("board_no")
-    private Long boardNo;
-
-    @JsonProperty("writer_id")
-    private Long writerId;
-
-    @JsonProperty("writer_name")
-    private String writerName;
-
-    @JsonProperty("co_comment")
-    private String coComment;
-
-    @JsonProperty("secret_yn")
-    private String secretYn;
-
-    @JsonProperty("del_yn")
-    private String delYn;
-
-    @JsonProperty("co_reg_date")
-    private LocalDateTime coRegDate;
-
-    @JsonProperty("co_mod_date")
-    private LocalDateTime coModDate;
+    private Long coNo;           // 댓글 번호
+    private Long boardNo;        // 게시글 번호
+    private Long writerId;       // 작성자 ID
+    private String writerName;   // 작성자 이름 (화면 표시용)
+    private String coComment;    // 댓글 내용
+    private String secretYn;     // 비밀 댓글 여부
+    private String delYn;        // 삭제 여부
+    private LocalDateTime coRegDate;  // 등록일
+    private LocalDateTime coModDate;  // 수정일
 }

@@ -1,44 +1,26 @@
 package com.example.backend.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 public class BoardDTO {
-    @JsonProperty("board_no")
-    private Long boardNo;
+    private Long boardNo;          // 게시글 번호
+    private Long writerId;         // 작성자 ID (FK)
+    private String writerName;     // 작성자 이름 (화면 표시용)
 
-    @JsonProperty("writer_id")
-    private Long writerId;
+    private String boardCategory;  // 말머리 (board_category)
+    private String title;          // 제목
+    private String content;        // 내용
+    private int views;             // 조회수
 
-    @JsonProperty("writer_name")
-    private String writerName;
+    private String secretYn;       // 비밀글 여부
+    private String delYn;          // 삭제 여부
 
-    @JsonProperty("board_category")
-    private String boardCategory;
+    private LocalDateTime regDate; // 작성일
+    private LocalDateTime modDate; // 수정일
 
-    private String title;
-    private String content;
-
-    @JsonProperty("view")
-    private int views;
-
-    @JsonProperty("secret_yn")
-    private String secretYn;
-
-    @JsonProperty("del_yn")
-    private String delYn;
-
-    @JsonProperty("reg_date")
-    private LocalDateTime regDate;
-
-    @JsonProperty("mod_date")
-    private LocalDateTime modDate;
-
-    @JsonProperty("comment_count")
-    private long commentCount;
-
-    private List<BoardFileDTO> files;
+    private long commentCount;     // 댓글 수 (화면 표시용)
+    private List<BoardFileDTO> files; // 첨부파일 목록
 }

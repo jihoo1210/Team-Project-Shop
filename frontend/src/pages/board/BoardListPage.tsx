@@ -55,7 +55,7 @@ const BoardListPage = () => {
       try {
         const data = await fetchBoardList({
           category: currentCategory,
-          page: currentPage,
+          page: currentPage - 1,
           size: 15,
         })
         setBoardData(data)
@@ -83,7 +83,7 @@ const BoardListPage = () => {
     setSearchParams({ page: page.toString() })
   }
 
-  const handleRowClick = (boardNo: number) => {
+  const handleRowClick = (boardNo: string) => {
     navigate(`/board/${currentCategory}/${boardNo}`)
   }
 
@@ -188,7 +188,7 @@ const BoardListPage = () => {
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell align="center">{post.writer_name}</TableCell>
+                  <TableCell align="center">{post.writer_id}</TableCell>
                   <TableCell align="center">{post.view}</TableCell>
                 </TableRow>
               ))
