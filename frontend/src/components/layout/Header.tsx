@@ -1,0 +1,359 @@
+import SearchIcon from '@mui/icons-material/Search'
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline'
+import MenuIcon from '@mui/icons-material/Menu'
+import {
+  AppBar,
+  Badge,
+  Box,
+  Button,
+  Container,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Toolbar,
+  Typography,
+  Stack,
+  Divider,
+} from '@mui/material'
+import { useState } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
+import { useCart } from '@/hooks/useCart'
+
+// 카테고리 메뉴 데이터 (백엔드 MajorCategoryEnum 기준)
+const categoryMenus = [
+  { label: '베스트', link: '/products?sort=best', isHot: true, isNew: false },
+  { label: '신상', link: '/products?sort=new', isHot: false, isNew: true },
+  { label: '세일', link: '/products?sort=sale', isHot: false, isNew: false },
+  { label: '여성', link: '/products?category=WOMEN', isHot: false, isNew: false },
+  { label: '남성', link: '/products?category=MEN', isHot: false, isNew: false },
+  { label: '키즈', link: '/products?category=KIDS', isHot: false, isNew: false },
+  { label: '슈즈', link: '/products?category=SHOES', isHot: false, isNew: false },
+  { label: '가방', link: '/products?category=BAGS', isHot: false, isNew: false },
+  { label: '액세서리', link: '/products?category=ACCESSORIES', isHot: false, isNew: false },
+]
+
+const Header = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { isLoggedIn, isAdmin, logout } = useAuth()
+  const { getItemCount } = useCart()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+
+  // 현재 경로가 메뉴 링크와 일치하는지 확인
+  const isActiveMenu = (menuLink: string) => {
+    const currentPath = location.pathname + location.search
+    return currentPath === menuLink || currentPath.startsWith(menuLink)
+  }
+
+  const cartItemCount = getItemCount()
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchTerm.trim()) {
+      navigate(`/products?searchTerm=${encodeURIComponent(searchTerm)}`)
+      setIsSearchOpen(false)
+      setSearchTerm('')
+    }
+  }
+
+  const handleSearchIconClick = () => {
+    setIsSearchOpen((prev) => !prev)
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
+
+  return (
+    <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid #eee' }}>
+      {/* 상단: 로고 + 검색 + 아이콘 */}
+      <Container maxWidth="lg">
+        <Toolbar sx={{ justifyContent: 'space-between', py: 1.5, minHeight: 'auto' }}>
+          {/* 좌측: 햄버거 메뉴 + 로고 */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton
+              aria-label="메뉴 열기"
+              sx={{ display: { xs: 'flex', md: 'none' }, color: '#1a1a1a' }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography
+              variant="h5"
+              component={Link}
+              to="/"
+              sx={{
+                fontWeight: 800,
+                color: '#1a1a1a',
+                textDecoration: 'none',
+                fontSize: { xs: '1.3rem', md: '1.5rem' },
+                letterSpacing: '-0.5px',
+                '&:hover': { opacity: 0.7 },
+              }}
+            >
+              MyShop
+            </Typography>
+          </Box>
+
+          {/* 우측: 아이콘 */}
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            {isLoggedIn ? (
+              <>
+                {isAdmin && (
+                  <Button
+                    component={Link}
+                    to="/admin"
+                    size="small"
+                    sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                  >
+                    관리자
+                  </Button>
+                )}
+                <Button
+                  component={Link}
+                  to="/board/notice"
+                  size="small"
+                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                >
+                  게시판
+                </Button>
+                <Button
+                  onClick={handleLogout}
+                  size="small"
+                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                >
+                  로그아웃
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  component={Link}
+                  to="/board/notice"
+                  size="small"
+                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                >
+                  게시판
+                </Button>
+                <Button
+                  component={Link}
+                  to="/login"
+                  size="small"
+                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                >
+                  로그인
+                </Button>
+                <Button
+                  component={Link}
+                  to="/signup"
+                  size="small"
+                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                >
+                  회원가입
+                </Button>
+              </>
+            )}
+
+            <Divider orientation="vertical" flexItem sx={{ mx: 1, display: { xs: 'none', md: 'flex' } }} />
+
+            <IconButton
+              component={Link}
+              to="/mypage/wishlist"
+              aria-label="찜한 상품"
+              sx={{ color: '#1a1a1a' }}
+            >
+              <FavoriteBorderIcon />
+            </IconButton>
+            <IconButton
+              component={Link}
+              to="/mypage"
+              aria-label="마이페이지"
+              sx={{ color: '#1a1a1a' }}
+            >
+              <PersonOutlineIcon />
+            </IconButton>
+            <IconButton
+              component={Link}
+              to="/cart"
+              aria-label={`장바구니 ${cartItemCount}개 상품`}
+              sx={{ color: '#1a1a1a' }}
+            >
+              <Badge badgeContent={cartItemCount} color="error" sx={{ '& .MuiBadge-badge': { fontSize: '0.7rem' } }}>
+                <ShoppingCartOutlinedIcon />
+              </Badge>
+            </IconButton>
+
+            {/* 모바일 검색 아이콘 */}
+            <IconButton
+              onClick={handleSearchIconClick}
+              aria-label="검색"
+              sx={{ color: '#1a1a1a', display: { xs: 'flex', md: 'none' } }}
+            >
+              <SearchIcon />
+            </IconButton>
+          </Stack>
+        </Toolbar>
+      </Container>
+
+      {/* 모바일 검색창 (아이콘 클릭 시 표시) */}
+      {isSearchOpen && (
+        <Box
+          component="form"
+          onSubmit={handleSearch}
+          sx={{
+            bgcolor: 'white',
+            borderBottom: '1px solid #eee',
+            py: 1.5,
+            px: 2,
+            display: { xs: 'block', md: 'none' },
+          }}
+        >
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="상품을 검색하세요"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            autoFocus
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton type="submit" size="small" aria-label="검색">
+                    <SearchIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                bgcolor: '#f8f8f8',
+                '& fieldset': { border: 'none' },
+                '&:hover fieldset': { border: 'none' },
+                '&.Mui-focused fieldset': { border: '1px solid #1a1a1a' },
+              },
+            }}
+          />
+        </Box>
+      )}
+
+      {/* 하단: 카테고리 메뉴 */}
+      <Box sx={{ borderTop: '1px solid #f0f0f0', display: { xs: 'none', md: 'block' } }}>
+        <Container maxWidth="lg">
+          <Stack
+            direction="row"
+            spacing={0}
+            sx={{
+              py: 1,
+              overflowX: 'auto',
+              '&::-webkit-scrollbar': { display: 'none' },
+              alignItems: 'center',
+            }}
+          >
+            {categoryMenus.map((menu, index) => {
+              const isActive = isActiveMenu(menu.link)
+              return (
+              <Button
+                key={index}
+                component={Link}
+                to={menu.link}
+                sx={{
+                  color: isActive ? '#000' : '#1a1a1a',
+                  fontSize: '0.95rem',
+                  fontWeight: isActive ? 700 : 500,
+                  px: 2,
+                  py: 0.5,
+                  whiteSpace: 'nowrap',
+                  minWidth: 'auto',
+                  position: 'relative',
+                  borderBottom: isActive ? '2px solid #1a1a1a' : 'none',
+                  borderRadius: 0,
+                  '&:hover': {
+                    bgcolor: 'transparent',
+                    color: '#666',
+                  },
+                }}
+              >
+                {menu.label}
+                {menu.isHot && (
+                  <Box
+                    component="span"
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 4,
+                      width: 6,
+                      height: 6,
+                      bgcolor: '#ff4444',
+                      borderRadius: '50%',
+                    }}
+                  />
+                )}
+                {menu.isNew && (
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 0.5,
+                      fontSize: '0.65rem',
+                      color: '#ff4444',
+                      fontWeight: 700,
+                    }}
+                  >
+                    N
+                  </Box>
+                )}
+              </Button>
+              )
+            })}
+
+            {/* 검색창 (우측) */}
+            <Box
+              component="form"
+              onSubmit={handleSearch}
+              sx={{
+                ml: 'auto',
+                width: 280,
+              }}
+            >
+              <TextField
+                fullWidth
+                size="medium"
+                placeholder="상품을 검색하세요"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton type="submit" size="small" aria-label="검색">
+                        <SearchIcon sx={{ fontSize: 20 }} />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    bgcolor: '#f8f8f8',
+                    '& fieldset': { border: 'none' },
+                    '&:hover fieldset': { border: 'none' },
+                    '&.Mui-focused fieldset': { border: '1px solid #1a1a1a' },
+                  },
+                  '& .MuiInputBase-input': {
+                    py: 0.8,
+                    fontSize: '0.85rem',
+                  },
+                }}
+              />
+            </Box>
+          </Stack>
+        </Container>
+      </Box>
+    </AppBar>
+  )
+}
+
+export default Header

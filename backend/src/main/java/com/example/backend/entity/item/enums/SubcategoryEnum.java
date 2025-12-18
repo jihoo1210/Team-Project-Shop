@@ -1,0 +1,33 @@
+package com.example.backend.entity.item.enums;
+
+public enum SubcategoryEnum {
+    T_SHIRT,
+    SHIRT,
+    BLOUSE,
+    SWEATER,
+    HOODIE,
+    CARDIGAN,
+    JACKET,
+    COAT,
+    PARKA,
+    VEST,
+    JEANS,
+    PANTS,
+    SHORTS,
+    SKIRT,
+    LEGGINGS,
+    SWEATPANTS,
+    MINI_DRESS,
+    MIDI_DRESS,
+    MAXI_DRESS,
+    FORMAL_SUIT,
+    CASUAL_SUIT,
+    BRA,
+    PANTIES,
+    BOXERS,
+    SOCKS,
+    RUNNING,
+    GYM,
+    YOGA,
+    SWIMMING;
+}

@@ -1,0 +1,132 @@
+name: Deploy Frontend and Backend
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  # 백엔드 환경 변수
+  DB_URL: ${{ secrets.DB_URL }}
+  DB_USERNAME: ${{ secrets.DB_USERNAME }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+  NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
+  # 프론트엔드 환경 변수
+  VITE_TOSS_CLIENT_KEY: ${{ secrets.VITE_TOSS_CLIENT_KEY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # --- Node.js 설정 ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      # --- Java 설정 ---
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      # --- React 빌드 (환경 변수 주입) ---
+      - name: Build React Frontend
+        run: |
+          cd frontend
+          cat > .env.production << EOF
+          VITE_API_BASE_URL=/api
+          VITE_TOSS_CLIENT_KEY=${{ secrets.VITE_TOSS_CLIENT_KEY }}
+          EOF
+          npm install
+          npm run build
+
+      # --- Spring Boot 빌드 ---
+      - name: Build Spring Boot Backend
+        run: |
+          cd backend
+          chmod +x ./gradlew
+          ./gradlew build -x test
+
+      # --- 서버로 파일 전송 (SCP) ---
+      - name: Transfer Files to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_KEY }}
+          source: "frontend/dist/*,backend/build/libs/*.jar"
+          target: "/home/ubuntu/deploy"
+          strip_components: 0
+
+      # --- 서버에서 배포 스크립트 실행 (환경 변수 주입) ---
+      - name: Execute Deployment Script
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_KEY }}
+          envs: DB_URL,DB_USERNAME,DB_PASSWORD,JWT_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,NAVER_CLIENT_ID,NAVER_CLIENT_SECRET,OPENAI_API_KEY,TOSS_SECRET_KEY
+          script: |
+            # React: 배포 경로로 복사 (Nginx가 /var/www/html을 바라본다고 가정)
+            sudo rm -rf /var/www/html/*
+            sudo cp -r /home/ubuntu/deploy/frontend/dist/* /var/www/html/
+
+            # Spring Boot: 기존 프로세스 종료
+            fuser -k 8083/tcp || true
+
+            # 환경 변수 파일 생성
+            cat > /home/ubuntu/deploy/app.env << EOF
+            DB_URL=${DB_URL}
+            DB_USERNAME=${DB_USERNAME}
+            DB_PASSWORD=${DB_PASSWORD}
+            JWT_SECRET=${JWT_SECRET}
+            GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+            GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+            NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
+            NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
+            OPENAI_API_KEY=${OPENAI_API_KEY}
+            TOSS_SECRET_KEY=${TOSS_SECRET_KEY}
+            EOF
+            chmod 600 /home/ubuntu/deploy/app.env
+
+            # JAR 파일 찾아서 환경 변수와 함께 실행
+            JAR_FILE=$(ls /home/ubuntu/deploy/backend/build/libs/*.jar | grep -v plain | head -1)
+
+            # 환경 변수 로드 후 실행
+            set -a
+            source /home/ubuntu/deploy/app.env
+            set +a
+
+            nohup java -jar \
+              -Dspring.profiles.active=prod \
+              -DDB_URL="${DB_URL}" \
+              -DDB_USERNAME="${DB_USERNAME}" \
+              -DDB_PASSWORD="${DB_PASSWORD}" \
+              -DJWT_SECRET="${JWT_SECRET}" \
+              -DGOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}" \
+              -DGOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET}" \
+              -DNAVER_CLIENT_ID="${NAVER_CLIENT_ID}" \
+              -DNAVER_CLIENT_SECRET="${NAVER_CLIENT_SECRET}" \
+              -DOPENAI_API_KEY="${OPENAI_API_KEY}" \
+              -DTOSS_SECRET_KEY="${TOSS_SECRET_KEY}" \
+              "$JAR_FILE" > /home/ubuntu/deploy/app.log 2>&1 &
+
+            # 서버 시작 확인
+            sleep 15
+            curl -f http://localhost:8083/actuator/health || echo "Health check pending..."
+
+            echo "Deployment completed successfully!"
