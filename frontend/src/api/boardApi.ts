@@ -1,6 +1,5 @@
 import axiosClient from './axiosClient'
 import type {
-  BoardUpdateRequest,
   BoardListItem,
   BoardFileItem,
   CommentListItem,

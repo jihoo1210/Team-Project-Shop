@@ -1,4 +1,4 @@
-import { useState, useCallback, ImgHTMLAttributes } from 'react'
+import { useState, useCallback, type ImgHTMLAttributes } from 'react'
 import { Box, Skeleton } from '@mui/material'
 
 /**
@@ -32,7 +32,7 @@ export const DEFAULT_FALLBACK = '/placeholder.jpg'
 export const PRODUCT_FALLBACK = '/placeholder.jpg'
 export const USER_FALLBACK = '/avatar-placeholder.png'
 
-interface AppImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'onError'> {
+interface AppImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'onError' | 'src'> {
   /** 이미지 URL (절대/상대 모두 지원) */
   src?: string | null
   /** 대체 텍스트 */

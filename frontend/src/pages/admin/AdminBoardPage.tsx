@@ -85,11 +85,9 @@ const AdminBoardPage = () => {
     }
     try {
       await createBoard({
-        writer_id: 'admin',
         title: formData.title,
         content: formData.content,
         board_category: category,
-        role: 'Admin',
       })
       alert('등록되었습니다.')
       setDialogOpen(false)

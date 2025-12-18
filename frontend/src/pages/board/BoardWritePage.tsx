@@ -44,7 +44,6 @@ const BoardWritePage = () => {
 
   // useAuth 훅에서 사용자 정보 가져오기
   const currentUserId = user?.userId?.toString() || ''
-  const currentUserRole = (user?.role === 'ADMIN' ? 'Admin' : 'User') as 'Admin' | 'User'
 
   const getCategoryLabel = (cat: string) => {
     const labels: Record<string, string> = {

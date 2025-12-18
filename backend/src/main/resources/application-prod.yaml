@@ -1,0 +1,21 @@
+# =====================================================
+# 운영 환경 설정 (Production)
+# =====================================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+logging:
+  level:
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    root: WARN
+
+server:
+  port: 8083

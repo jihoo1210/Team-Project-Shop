@@ -48,7 +48,6 @@ const BoardEditPage = () => {
 
   // useAuth 훅에서 사용자 정보 가져오기
   const currentUserId = user?.userId?.toString() || ''
-  const currentUserRole = (user?.role === 'ADMIN' ? 'Admin' : 'User') as 'Admin' | 'User'
 
   // 기존 게시글 데이터 로드
   useEffect(() => {

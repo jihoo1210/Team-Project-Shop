@@ -21,23 +21,13 @@ import {
   Pagination,
 } from '@mui/material'
 import { fetchOrders, fetchOrderDetail } from '@/api/orderApi'
-import type { OrderDetailResponse } from '@/types/api'
+import type { OrderDetailResponse, OrderListItem } from '@/types/api'
 import { brandColors } from '@/theme/tokens'
-
-// 백엔드 OrderListResponse와 매칭되는 타입
-interface OrderItem {
-  orderId: number
-  title: string
-  mainImgUrl: string
-  totalPrice: number
-  status: string
-  createdAt: string
-}
 
 const MyOrdersPage = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
-  const [orders, setOrders] = useState<OrderItem[]>([])
+  const [orders, setOrders] = useState<OrderListItem[]>([])
   const [selectedOrder, setSelectedOrder] = useState<OrderDetailResponse | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
   const [page, setPage] = useState(1)
@@ -182,7 +172,7 @@ const MyOrdersPage = () => {
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
-                      {getStatusChip(order.status)}
+                      {getStatusChip(order.status || '')}
                     </TableCell>
                     <TableCell align="center">
                       <Typography fontSize="0.875rem" color="text.secondary">

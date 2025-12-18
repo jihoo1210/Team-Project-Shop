@@ -161,13 +161,14 @@ export type OrderRequest = {
   orderDetail: string
   call: string
 }
-export type OrderListItem = { 
-  order_id?: string
-  main_img_url?: string
-  totalPrice?: number
+export type OrderListItem = {
+  // 백엔드 OrderListResponse와 일치 (camelCase)
+  orderId?: number
   title?: string
-  created_at?: string
+  mainImgUrl?: string
+  totalPrice?: number
   status?: string
+  createdAt?: string
 }
 export type OrderDetailItem = { 
   item_id?: string
