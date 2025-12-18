@@ -61,6 +61,19 @@ jobs:
           chmod +x ./gradlew
           ./gradlew build -x test
 
+      # --- 서버에 배포 폴더 생성 ---
+      - name: Create Deploy Directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_KEY }}
+          script: |
+            mkdir -p /home/ubuntu/deploy/frontend
+            mkdir -p /home/ubuntu/deploy/backend/build/libs
+            rm -rf /home/ubuntu/deploy/frontend/*
+            rm -rf /home/ubuntu/deploy/backend/build/libs/*
+
       # --- 서버로 파일 전송 (SCP) ---
       - name: Transfer Files to Server
         uses: appleboy/scp-action@master
@@ -71,6 +84,7 @@ jobs:
           source: "frontend/dist/*,backend/build/libs/*.jar"
           target: "/home/ubuntu/deploy"
           strip_components: 0
+          overwrite: true
 
       # --- 서버에서 배포 스크립트 실행 (환경 변수 주입) ---
       - name: Execute Deployment Script
