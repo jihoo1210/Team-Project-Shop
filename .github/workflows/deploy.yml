@@ -16,6 +16,8 @@ env:
   NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
+  UPLOAD_DIR: ${{ secrets.UPLOAD_DIR }}
+  FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
   # 프론트엔드 환경 변수
   VITE_TOSS_CLIENT_KEY: ${{ secrets.VITE_TOSS_CLIENT_KEY }}
 
@@ -31,7 +33,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -93,7 +95,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_KEY }}
-          envs: DB_URL,DB_USERNAME,DB_PASSWORD,JWT_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,NAVER_CLIENT_ID,NAVER_CLIENT_SECRET,OPENAI_API_KEY,TOSS_SECRET_KEY
+          envs: DB_URL,DB_USERNAME,DB_PASSWORD,JWT_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,NAVER_CLIENT_ID,NAVER_CLIENT_SECRET,OPENAI_API_KEY,TOSS_SECRET_KEY,UPLOAD_DIR,FRONTEND_URL
           script: |
             DEPLOY_DIR=~/deploy
 
@@ -106,39 +108,30 @@ jobs:
 
             # 환경 변수 파일 생성
             cat > $DEPLOY_DIR/app.env << EOF
-            DB_URL=${DB_URL}
-            DB_USERNAME=${DB_USERNAME}
-            DB_PASSWORD=${DB_PASSWORD}
-            JWT_SECRET=${JWT_SECRET}
-            GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-            GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-            NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
-            NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
-            OPENAI_API_KEY=${OPENAI_API_KEY}
-            TOSS_SECRET_KEY=${TOSS_SECRET_KEY}
+            export DB_URL="${DB_URL}"
+            export DB_USERNAME="${DB_USERNAME}"
+            export DB_PASSWORD="${DB_PASSWORD}"
+            export JWT_SECRET="${JWT_SECRET}"
+            export GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}"
+            export GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET}"
+            export NAVER_CLIENT_ID="${NAVER_CLIENT_ID}"
+            export NAVER_CLIENT_SECRET="${NAVER_CLIENT_SECRET}"
+            export OPENAI_API_KEY="${OPENAI_API_KEY}"
+            export TOSS_SECRET_KEY="${TOSS_SECRET_KEY}"
+            export UPLOAD_DIR="${UPLOAD_DIR:-./uploads/product}"
+            export FRONTEND_URL="${FRONTEND_URL:-https://pr.musecom.net}"
+            export SERVER_PORT=8083
             EOF
             chmod 600 $DEPLOY_DIR/app.env
 
-            # JAR 파일 찾아서 환경 변수와 함께 실행
+            # JAR 파일 찾기
             JAR_FILE=$(ls $DEPLOY_DIR/backend/build/libs/*.jar | grep -v plain | head -1)
 
             # 환경 변수 로드 후 실행
-            set -a
             source $DEPLOY_DIR/app.env
-            set +a
 
             nohup java -jar \
               -Dspring.profiles.active=prod \
-              -DDB_URL="${DB_URL}" \
-              -DDB_USERNAME="${DB_USERNAME}" \
-              -DDB_PASSWORD="${DB_PASSWORD}" \
-              -DJWT_SECRET="${JWT_SECRET}" \
-              -DGOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}" \
-              -DGOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET}" \
-              -DNAVER_CLIENT_ID="${NAVER_CLIENT_ID}" \
-              -DNAVER_CLIENT_SECRET="${NAVER_CLIENT_SECRET}" \
-              -DOPENAI_API_KEY="${OPENAI_API_KEY}" \
-              -DTOSS_SECRET_KEY="${TOSS_SECRET_KEY}" \
               "$JAR_FILE" > $DEPLOY_DIR/app.log 2>&1 &
 
             # 서버 시작 확인
