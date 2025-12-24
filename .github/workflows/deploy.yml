@@ -132,6 +132,7 @@ jobs:
 
             nohup java -jar \
               -Dspring.profiles.active=prod \
+              -Dapp.frontend-url="${FRONTEND_URL:-https://pr.musecom.net}" \
               /home/project/webapps/backend.jar > /home/project/webapps/app.log 2>&1 &
 
             # 서버 시작 확인
