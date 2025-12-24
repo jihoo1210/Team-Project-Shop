@@ -49,7 +49,7 @@ const getDiscountedPrice = (price: number, discountRate?: number) => {
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate()
-  const { cartItems: hookCartItems, loading, removeFromCart, updateQuantity } = useCart()
+  const { cartItems: hookCartItems, loading, removeFromCart, updateQuantity, clearCart } = useCart()
   
   // 선택 상태를 로컬에서 관리
   const [selectableItems, setSelectableItems] = useState<SelectableCartItem[]>([])
@@ -223,6 +223,17 @@ const CartPage: React.FC = () => {
                   disabled={selectedItems.length === 0}
                 >
                   선택 삭제
+                </Button>
+                <Button
+                  color="warning"
+                  variant="outlined"
+                  onClick={async () => {
+                    await clearCart()
+                    setSelectableItems([])
+                  }}
+                  disabled={selectableItems.length === 0}
+                >
+                  전체 비우기
                 </Button>
               </Box>
               <Divider />
