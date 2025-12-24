@@ -71,10 +71,9 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_KEY }}
           script: |
-            mkdir -p ~/deploy/frontend
-            mkdir -p ~/deploy/backend/build/libs
-            rm -rf ~/deploy/frontend/* 2>/dev/null || true
-            rm -rf ~/deploy/backend/build/libs/* 2>/dev/null || true
+            mkdir -p /home/project/www
+            mkdir -p /home/project/webapps
+            rm -rf /home/project/www/* 2>/dev/null || true
 
       # --- 서버로 파일 전송 (SCP) ---
       - name: Transfer Files to Server
@@ -99,15 +98,19 @@ jobs:
           script: |
             DEPLOY_DIR=~/deploy
 
-            # React: 배포 경로로 복사 (Nginx가 /var/www/html을 바라본다고 가정)
-            sudo rm -rf /var/www/html/*
-            sudo cp -r $DEPLOY_DIR/frontend/dist/* /var/www/html/
+            # React: 배포 경로로 복사
+            rm -rf /home/project/www/*
+            cp -r $DEPLOY_DIR/frontend/dist/* /home/project/www/
 
             # Spring Boot: 기존 프로세스 종료
             fuser -k 8083/tcp || true
 
+            # JAR 파일을 지정된 경로로 복사
+            JAR_FILE=$(ls $DEPLOY_DIR/backend/build/libs/*.jar | grep -v plain | head -1)
+            cp "$JAR_FILE" /home/project/webapps/backend.jar
+
             # 환경 변수 파일 생성
-            cat > $DEPLOY_DIR/app.env << EOF
+            cat > /home/project/webapps/app.env << EOF
             export DB_URL="${DB_URL}"
             export DB_USERNAME="${DB_USERNAME}"
             export DB_PASSWORD="${DB_PASSWORD}"
@@ -122,17 +125,14 @@ jobs:
             export FRONTEND_URL="${FRONTEND_URL:-https://pr.musecom.net}"
             export SERVER_PORT=8083
             EOF
-            chmod 600 $DEPLOY_DIR/app.env
-
-            # JAR 파일 찾기
-            JAR_FILE=$(ls $DEPLOY_DIR/backend/build/libs/*.jar | grep -v plain | head -1)
+            chmod 600 /home/project/webapps/app.env
 
             # 환경 변수 로드 후 실행
-            source $DEPLOY_DIR/app.env
+            source /home/project/webapps/app.env
 
             nohup java -jar \
               -Dspring.profiles.active=prod \
-              "$JAR_FILE" > $DEPLOY_DIR/app.log 2>&1 &
+              /home/project/webapps/backend.jar > /home/project/webapps/app.log 2>&1 &
 
             # 서버 시작 확인
             sleep 15
