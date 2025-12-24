@@ -41,6 +41,9 @@ public class SecurityConfig {
     // =====================================================
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
+    @org.springframework.beans.factory.annotation.Value("${app.frontend-url:http://localhost:5173}")
+    private String frontendUrl;
+
     // =====================================================
     // [종혁 코드] - 비밀번호 인코더
     // =====================================================
@@ -75,6 +78,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/banner/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/board/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/ai/proxy").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/payment/**").permitAll()
@@ -93,7 +97,7 @@ public class SecurityConfig {
                                 .baseUri("/api/login/oauth2/code/*")
                         )
                         .successHandler(oAuth2SuccessHandler)
-                        .failureUrl("http://localhost:5173/login?result=failure")
+                        .failureUrl(frontendUrl + "/login?result=failure")
                 )
 
                 // =====================================================
@@ -129,7 +133,9 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "http://localhost:5174"
+                "http://localhost:5174",
+                "https://pr.musecom.net",
+                "http://pr.musecom.net"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
