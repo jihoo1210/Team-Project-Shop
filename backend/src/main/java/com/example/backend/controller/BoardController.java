@@ -85,7 +85,7 @@ public class BoardController {
 
     // 상세 조회 (비밀글 권한 체크)
     @GetMapping("/{boardNo}")
-    public ResponseEntity<?> getBoard(@PathVariable Long boardNo, HttpServletRequest request) {
+    public ResponseEntity<?> getBoard(@PathVariable("boardNo") Long boardNo, HttpServletRequest request) {
         // JWT에서 사용자 정보 가져오기 (비로그인도 조회 가능하도록)
         Long userId = (Long) request.getAttribute("userId");
         String role = (String) request.getAttribute("role");
@@ -104,7 +104,7 @@ public class BoardController {
 
     // 글 수정 (작성자만 가능)
     @PutMapping("/{boardNo}")
-    public ResponseEntity<?> update(@PathVariable Long boardNo,
+    public ResponseEntity<?> update(@PathVariable("boardNo") Long boardNo,
                                     @RequestBody BoardDTO boardDTO,
                                     HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -121,7 +121,7 @@ public class BoardController {
 
     // 글 삭제 (작성자 또는 관리자 가능)
     @DeleteMapping("/{boardNo}")
-    public ResponseEntity<?> delete(@PathVariable Long boardNo, HttpServletRequest request) {
+    public ResponseEntity<?> delete(@PathVariable("boardNo") Long boardNo, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         String role = (String) request.getAttribute("role");
 
@@ -139,7 +139,7 @@ public class BoardController {
 
     // 파일 다운로드
     @GetMapping("/file/{fileNo}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable Long fileNo) {
+    public ResponseEntity<Resource> downloadFile(@PathVariable("fileNo") Long fileNo) {
         try {
             Resource resource = boardService.downloadFile(fileNo);
             BoardFileDTO fileDTO = boardService.getFileInfo(fileNo);
@@ -162,7 +162,7 @@ public class BoardController {
 
     // 이미지 미리보기 (브라우저에서 바로 표시)
     @GetMapping("/image/{fileNo}")
-    public ResponseEntity<Resource> previewImage(@PathVariable Long fileNo) {
+    public ResponseEntity<Resource> previewImage(@PathVariable("fileNo") Long fileNo) {
         try {
             BoardFileDTO fileDTO = boardService.getFileInfo(fileNo);
             

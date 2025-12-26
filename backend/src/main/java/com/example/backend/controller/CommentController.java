@@ -19,7 +19,7 @@ public class CommentController {
     // 댓글 목록 조회 (게시글별)
     @GetMapping("/board/{boardNo}")
     public ResponseEntity<List<CommentDTO>> getCommentList(
-            @PathVariable Long boardNo,
+            @PathVariable("boardNo") Long boardNo,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         String role = (String) request.getAttribute("role");
@@ -31,7 +31,7 @@ public class CommentController {
     // 댓글 작성
     @PostMapping("/board/{boardNo}")
     public ResponseEntity<?> writeComment(
-            @PathVariable Long boardNo,
+            @PathVariable("boardNo") Long boardNo,
             @RequestBody CommentDTO commentDTO,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -53,7 +53,7 @@ public class CommentController {
     // 댓글 수정 (작성자만 가능)
     @PutMapping("/{coNo}")
     public ResponseEntity<?> updateComment(
-            @PathVariable Long coNo,
+            @PathVariable("coNo") Long coNo,
             @RequestBody CommentDTO commentDTO,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -75,7 +75,7 @@ public class CommentController {
     // 댓글 삭제 (작성자 또는 관리자 가능)
     @DeleteMapping("/{coNo}")
     public ResponseEntity<?> deleteComment(
-            @PathVariable Long coNo,
+            @PathVariable("coNo") Long coNo,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {

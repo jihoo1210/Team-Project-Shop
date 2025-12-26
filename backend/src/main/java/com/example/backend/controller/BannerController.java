@@ -62,7 +62,7 @@ public class BannerController {
      * 배너 상세 조회
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getBannerById(@PathVariable Long id) {
+    public ResponseEntity<?> getBannerById(@PathVariable("id") Long id) {
         try {
             BannerResponse banner = bannerService.getBannerById(id);
             return ResponseController.success(banner);
@@ -95,7 +95,7 @@ public class BannerController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateBanner(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestPart("data") BannerRequest request,
             @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
@@ -112,7 +112,7 @@ public class BannerController {
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteBanner(@PathVariable Long id) {
+    public ResponseEntity<?> deleteBanner(@PathVariable("id") Long id) {
         try {
             bannerService.deleteBanner(id);
             return ResponseController.success(null);

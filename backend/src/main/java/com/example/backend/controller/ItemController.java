@@ -114,7 +114,7 @@ public class ItemController {
      * @return ResponseEntity<?>
      */
     @GetMapping("/{itemId}")
-    public ResponseEntity<?> showItem(@PathVariable Long itemId) {
+    public ResponseEntity<?> showItem(@PathVariable("itemId") Long itemId) {
         try {
             User user = userService.checkLoginAndGetUser();
             ShowItemResponse item = itemService.getItemById(itemId, user);
@@ -132,7 +132,7 @@ public class ItemController {
      * @return
      */
     @PostMapping("/favorite/{itemId}")
-    public ResponseEntity<?> toggleFavorite(@PathVariable Long itemId) {
+    public ResponseEntity<?> toggleFavorite(@PathVariable("itemId") Long itemId) {
         try {
             User user = userService.checkLoginAndGetUser();
             itemService.toggleFavoriteItem(itemId, user);
@@ -151,7 +151,7 @@ public class ItemController {
      * @return
      */
     @PostMapping("/cart/{itemId}")
-    public ResponseEntity<?> toggleCart(@PathVariable Long itemId) {
+    public ResponseEntity<?> toggleCart(@PathVariable("itemId") Long itemId) {
         try {
             User user = userService.checkLoginAndGetUser();
             itemService.toggleCartItem(itemId, user);

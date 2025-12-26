@@ -62,7 +62,7 @@ public class AdminController {
      */
     @PutMapping(value = "/{itemId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateItem(
-            @PathVariable Long itemId,
+            @PathVariable("itemId") Long itemId,
             @RequestPart("data") ItemResistraionRequest dto,
             @RequestPart(value = "mainImage", required = false) MultipartFile mainImage,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
@@ -82,7 +82,7 @@ public class AdminController {
      * @return
      */
     @DeleteMapping("/{itemId}")
-    public ResponseEntity<?> deleteItem(@PathVariable Long itemId) {
+    public ResponseEntity<?> deleteItem(@PathVariable("itemId") Long itemId) {
         try {
             adminService.deleteItem(itemId);
             return ResponseController.success(null);

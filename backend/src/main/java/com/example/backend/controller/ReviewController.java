@@ -35,7 +35,7 @@ public class ReviewController {
     private final UserService userService;
 
     @GetMapping("/{itemId}")
-    public ResponseEntity<?> indexReview(@PathVariable Long itemId) {
+    public ResponseEntity<?> indexReview(@PathVariable("itemId") Long itemId) {
         try {
             List<IndexReviewResponse> response = reviewService.indexReview(itemId);
             return ResponseController.success(response);
@@ -45,7 +45,7 @@ public class ReviewController {
     }
 
     @PostMapping("/{itemId}")
-    public ResponseEntity<?> createReview(@PathVariable Long itemId, @RequestBody ReviewCreateRequest dto) {
+    public ResponseEntity<?> createReview(@PathVariable("itemId") Long itemId, @RequestBody ReviewCreateRequest dto) {
         try {
             User user = userService.checkLoginAndGetUser();
             reviewService.createReview(itemId, dto, user);
@@ -56,7 +56,7 @@ public class ReviewController {
     }
 
     @PutMapping("{reviewId}")
-    public ResponseEntity<?> putMethodName(@PathVariable Long reviewId, @RequestBody ReviewCreateRequest dto) {
+    public ResponseEntity<?> putMethodName(@PathVariable("reviewId") Long reviewId, @RequestBody ReviewCreateRequest dto) {
         try {
             reviewService.updateReview(reviewId, dto);
             return ResponseController.success(null);
@@ -66,7 +66,7 @@ public class ReviewController {
     }
 
     @DeleteMapping("{reviewId}")
-    public ResponseEntity<?> deleteReview(@PathVariable Long reviewId) {
+    public ResponseEntity<?> deleteReview(@PathVariable("reviewId") Long reviewId) {
         try {
             reviewService.deleteReview(reviewId);
             return ResponseController.success(null);
