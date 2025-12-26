@@ -1,5 +1,5 @@
 import { AppBar, Box, Button, Drawer, List, ListItemButton, ListItemText, Toolbar, Typography } from '@mui/material'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 
 const adminNav = [
   { label: '대시보드', to: '/admin' },
@@ -10,6 +10,15 @@ const adminNav = [
 ]
 
 const AdminLayout = () => {
+  const location = useLocation()
+
+  const isActive = (path: string) => {
+    if (path === '/admin') {
+      return location.pathname === '/admin'
+    }
+    return location.pathname.startsWith(path)
+  }
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <AppBar position="fixed" sx={{ ml: 240 }} color="primary">
@@ -30,14 +39,30 @@ const AdminLayout = () => {
         }}
       >
         <List>
-          {adminNav.map((item) => (
-            <ListItemButton key={item.to} component={NavLink} to={item.to}>
-              <ListItemText primary={item.label} />
-            </ListItemButton>
-          ))}
+          {adminNav.map((item) => {
+            const active = isActive(item.to)
+            return (
+              <ListItemButton
+                key={item.to}
+                component={NavLink}
+                to={item.to}
+                sx={{
+                  bgcolor: active ? 'action.selected' : 'transparent',
+                  '&:hover': { bgcolor: 'action.hover' },
+                }}
+              >
+                <ListItemText
+                  primary={item.label}
+                  primaryTypographyProps={{
+                    fontWeight: active ? 700 : 400,
+                  }}
+                />
+              </ListItemButton>
+            )
+          })}
         </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'grey.50', p: 4, mt: 8 }}>
+      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'grey.50', p: 5, pt: 6, mt: 12 }}>
         <Outlet />
       </Box>
     </Box>

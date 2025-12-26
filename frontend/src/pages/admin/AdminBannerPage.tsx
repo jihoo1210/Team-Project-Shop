@@ -198,7 +198,7 @@ const AdminBannerPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4, textAlign: 'center' }}>
+      <Container maxWidth="xl" sx={{ py: 2, textAlign: 'center' }}>
         <CircularProgress />
         <Typography sx={{ mt: 2 }}>배너 로딩 중...</Typography>
       </Container>
@@ -206,8 +206,8 @@ const AdminBannerPage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Container maxWidth="xl" sx={{ py: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Box>
           <Typography variant="h4" fontWeight="bold">
             배너 관리

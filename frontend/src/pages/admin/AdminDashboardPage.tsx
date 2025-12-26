@@ -127,15 +127,15 @@ const AdminDashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 2 }}>
         <Typography>로딩 중...</Typography>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
+    <Container maxWidth="xl" sx={{ py: 2 }}>
+      <Typography variant="h4" fontWeight="bold" sx={{ mb: 4 }}>
         대시보드
       </Typography>
 

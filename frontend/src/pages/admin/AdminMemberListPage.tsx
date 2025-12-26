@@ -125,8 +125,8 @@ const AdminMemberListPage = () => {
   const displayedMembers = filteredMembers.slice((page - 1) * pageSize, page * pageSize)
 
   return (
-    <Box>
-      <Typography variant="h4" fontWeight={700} sx={{ mb: 3 }}>
+    <Box sx={{ pt: 2 }}>
+      <Typography variant="h4" fontWeight={700} sx={{ mb: 4 }}>
         회원 관리
       </Typography>
 
