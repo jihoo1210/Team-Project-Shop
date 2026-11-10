@@ -187,7 +187,7 @@ const ProductCard = memo(({ product, compact = false }: ProductCardProps) => {
           </Stack>
         )}
         <Stack direction="row" alignItems="baseline" spacing={compact ? 0.5 : 1}>
-          {product.discountPercent && (
+          {(product.discountPercent ?? 0) > 0 && (
             <Typography sx={{ color: '#ff4444', fontWeight: 700, fontSize: compact ? '0.7rem' : '1rem' }}>
               {product.discountPercent}%
             </Typography>
@@ -196,7 +196,7 @@ const ProductCard = memo(({ product, compact = false }: ProductCardProps) => {
             {discountedPrice.toLocaleString()}원
           </Typography>
         </Stack>
-        {!compact && product.discountPercent && (
+        {!compact && (product.discountPercent ?? 0) > 0 && (
           <Typography
             sx={{
               fontSize: '0.8rem',

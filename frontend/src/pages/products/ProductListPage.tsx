@@ -934,7 +934,7 @@ const ProductListPage = () => {
 
                       {/* 가격 */}
                       <Stack direction="row" spacing={1} alignItems="baseline" flexWrap="wrap" sx={{ px: 1 }}>
-                        {product.discountPercent && product.discountPercent > 0 && (
+                        {(product.discountPercent ?? 0) > 0 && (
                           <>
                             <Typography
                               variant="caption"

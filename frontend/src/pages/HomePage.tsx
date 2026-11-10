@@ -17,6 +17,7 @@ import {
   Apps,
   ChevronLeft,
   ChevronRight,
+  Close,
 } from '@mui/icons-material'
 import { Link, useNavigate } from 'react-router-dom'
 import ProductCard from '@/components/common/ProductCard'
@@ -129,11 +130,9 @@ const HomePage = () => {
   })
   const [productPreview, setProductPreview] = useState<{
     open: boolean
-    product: ProductSummary | null
     aiResult: AiRecommendWithProduct | null
   }>({
     open: false,
-    product: null,
     aiResult: null
   })
   const { getRecommendation, loading: isAiLoading, error: aiError } = useAiRecommend()
@@ -336,11 +335,10 @@ const HomePage = () => {
       const result = await getRecommendation(aiPrompt)
 
       if (result) {
-        // 매칭된 상품이 있으면 미리보기 다이얼로그 표시
-        if (result.matchedProduct) {
+        // 추천 상품이 있으면 코디 다이얼로그 표시
+        if (result.sections.length > 0) {
           setProductPreview({
             open: true,
-            product: result.matchedProduct,
             aiResult: result
           })
         } else {
@@ -382,11 +380,9 @@ const HomePage = () => {
   }
 
   // 상품 미리보기에서 상품 페이지로 이동
-  const handleGoToProduct = () => {
-    if (productPreview.product) {
-      setProductPreview({ open: false, product: null, aiResult: null })
-      navigate(`/products/${productPreview.product.id}`)
-    }
+  const handleGoToProduct = (productId: number) => {
+    setProductPreview({ open: false, aiResult: null })
+    navigate(`/products/${productId}`)
   }
 
   // 미리보기 닫고 검색 결과로 이동
@@ -400,14 +396,14 @@ const HomePage = () => {
       if (productPreview.aiResult.category) {
         searchParams.set('category', productPreview.aiResult.category)
       }
-      setProductPreview({ open: false, product: null, aiResult: null })
+      setProductPreview({ open: false, aiResult: null })
       navigate(`/products?${searchParams.toString()}`)
     }
   }
 
   // 미리보기 닫기
   const handleClosePreview = () => {
-    setProductPreview({ open: false, product: null, aiResult: null })
+    setProductPreview({ open: false, aiResult: null })
   }
 
   if (loading) {
@@ -1603,177 +1599,248 @@ const HomePage = () => {
         </Grid>
       </Box>
 
-      {/* AI 추천 상품 미리보기 다이얼로그 */}
+      {/* AI 추천 코디 다이얼로그 */}
       <Dialog
         open={productPreview.open}
         onClose={handleClosePreview}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
+        scroll="body"
         PaperProps={{
           sx: {
-            borderRadius: 3,
+            borderRadius: 4,
             overflow: 'hidden',
+            mx: { xs: 2, sm: 4 },
+            width: { xs: 'calc(100% - 32px)', sm: 'calc(100% - 64px)' },
           }
         }}
       >
-        <DialogContent sx={{ p: 0 }}>
-          {productPreview.product && (
-            <Box>
-              {/* 상품 이미지 */}
+        {productPreview.aiResult && (
+          <>
+            {/* 헤더 */}
+            <Box
+              sx={{
+                position: 'relative',
+                px: { xs: 5, sm: 7 },
+                pt: { xs: 6, sm: 7 },
+                pb: 5,
+                background: 'linear-gradient(135deg, #EEF0FF 0%, #F7F3FF 60%, #FFF5F8 100%)',
+              }}
+            >
+              <IconButton
+                onClick={handleClosePreview}
+                aria-label="닫기"
+                sx={{ position: 'absolute', top: 16, right: 16, color: '#888' }}
+              >
+                <Close />
+              </IconButton>
               <Box
                 sx={{
-                  position: 'relative',
-                  width: '100%',
-                  height: { xs: 280, sm: 350 },
-                  bgcolor: '#f5f5f5',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  bgcolor: '#6366F1',
+                  color: 'white',
+                  px: 3,
+                  py: 1,
+                  borderRadius: 5,
+                  mb: 3,
                 }}
               >
-                <Box
-                  component="img"
-                  src={productPreview.product.mainImage || 'https://picsum.photos/400/500'}
-                  alt={productPreview.product.title}
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    e.currentTarget.src = 'https://picsum.photos/400/500'
-                  }}
-                />
-                {/* AI 추천 배지 */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 16,
-                    left: 16,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    bgcolor: 'rgba(99, 102, 241, 0.95)',
-                    color: 'white',
-                    px: 1.5,
-                    py: 0.5,
-                    borderRadius: 5,
-                  }}
-                >
-                  <AutoAwesome sx={{ fontSize: 16 }} />
-                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
-                    AI 추천
-                  </Typography>
-                </Box>
-                {/* 할인율 배지 */}
-                {productPreview.product.discountPercent && productPreview.product.discountPercent > 0 && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 16,
-                      right: 16,
-                      bgcolor: '#ff4444',
-                      color: 'white',
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: 1,
-                      fontWeight: 700,
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    {productPreview.product.discountPercent}% OFF
-                  </Box>
-                )}
-              </Box>
-
-              {/* 상품 정보 */}
-              <Box sx={{ p: 3 }}>
-                {/* AI 설명 */}
-                {productPreview.aiResult?.description && (
-                  <Box
-                    sx={{
-                      bgcolor: '#f8f8ff',
-                      border: '1px solid #e8e8ff',
-                      borderRadius: 2,
-                      p: 2,
-                      mb: 2,
-                    }}
-                  >
-                    <Typography sx={{ fontSize: '0.9rem', color: '#555', lineHeight: 1.6 }}>
-                      {productPreview.aiResult.description}
-                    </Typography>
-                  </Box>
-                )}
-
-                <Typography sx={{ fontSize: '0.85rem', color: '#888', mb: 0.5 }}>
-                  {productPreview.product.brand}
+                <AutoAwesome sx={{ fontSize: 14 }} />
+                <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: 0.3 }}>
+                  {productPreview.aiResult.source === 'ai' ? 'AI STYLIST PICK' : 'STYLIST PICK'}
                 </Typography>
-                <Typography sx={{ fontSize: '1.2rem', fontWeight: 700, color: '#1a1a1a', mb: 1.5 }}>
-                  {productPreview.product.title}
-                </Typography>
-
-                {/* 가격 */}
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                  {productPreview.product.discountPercent && productPreview.product.discountPercent > 0 ? (
-                    <>
-                      <Typography
-                        sx={{
-                          fontSize: '1.3rem',
-                          fontWeight: 700,
-                          color: '#ff4444',
-                        }}
-                      >
-                        {Math.round(productPreview.product.price * (1 - productPreview.product.discountPercent / 100)).toLocaleString()}원
-                      </Typography>
-                      <Typography
-                        sx={{
-                          fontSize: '0.95rem',
-                          color: '#aaa',
-                          textDecoration: 'line-through',
-                        }}
-                      >
-                        {productPreview.product.price.toLocaleString()}원
-                      </Typography>
-                    </>
-                  ) : (
-                    <Typography sx={{ fontSize: '1.3rem', fontWeight: 700, color: '#1a1a1a' }}>
-                      {productPreview.product.price.toLocaleString()}원
-                    </Typography>
-                  )}
-                </Box>
               </Box>
+              <Typography sx={{ fontSize: { xs: '1.3rem', sm: '1.6rem' }, fontWeight: 800, color: '#1a1a1a', mb: 2, pr: 8 }}>
+                {productPreview.aiResult.title || 'AI 추천 코디'}
+              </Typography>
+              {productPreview.aiResult.description && (
+                <Typography sx={{ fontSize: '0.95rem', color: '#555', lineHeight: 1.7 }}>
+                  {productPreview.aiResult.description}
+                </Typography>
+              )}
+              {productPreview.aiResult.keywords.length > 0 && (
+                <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1.5} sx={{ mt: 4 }}>
+                  {productPreview.aiResult.keywords.slice(0, 5).map((keyword) => (
+                    <Box
+                      key={keyword}
+                      sx={{
+                        px: 2.5,
+                        py: 0.75,
+                        borderRadius: 5,
+                        bgcolor: 'rgba(255,255,255,0.8)',
+                        border: '1px solid #E0E2FF',
+                        fontSize: '0.8rem',
+                        color: '#4F46E5',
+                        fontWeight: 600,
+                      }}
+                    >
+                      #{keyword}
+                    </Box>
+                  ))}
+                </Stack>
+              )}
             </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 2, pt: 0, gap: 1 }}>
-          <Button
-            onClick={handleGoToSearch}
-            variant="outlined"
-            sx={{
-              flex: 1,
-              py: 1.5,
-              borderColor: '#ddd',
-              color: '#666',
-              '&:hover': {
-                borderColor: '#bbb',
-                bgcolor: '#f5f5f5',
-              },
-            }}
-          >
-            다른 상품 더보기
-          </Button>
-          <Button
-            onClick={handleGoToProduct}
-            variant="contained"
-            sx={{
-              flex: 1,
-              py: 1.5,
-              bgcolor: '#6366F1',
-              '&:hover': {
-                bgcolor: '#4F46E5',
-              },
-            }}
-          >
-            이 상품 보러가기
-          </Button>
-        </DialogActions>
+
+            {/* 추천 상품 */}
+            <DialogContent sx={{ px: { xs: 4, sm: 7 }, py: 6 }}>
+              {productPreview.aiResult.sections.map((section, sectionIndex) => (
+                <Box key={section.gender} sx={{ mt: sectionIndex > 0 ? 8 : 0 }}>
+                  <Stack direction="row" alignItems="baseline" spacing={2} sx={{ mb: 3 }}>
+                    <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: 1, color: '#1a1a1a' }}>
+                      {section.label}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.85rem', color: '#999' }}>
+                      {section.gender === 'women' ? '여성 코디' : '남성 코디'} · {section.items.length}개 아이템
+                    </Typography>
+                    <Box sx={{ flex: 1, height: '1px', bgcolor: '#eee', alignSelf: 'center' }} />
+                  </Stack>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gap: { xs: 3, sm: 4 },
+                      gridTemplateColumns: {
+                        xs: 'repeat(2, 1fr)',
+                        sm: 'repeat(4, 1fr)',
+                      },
+                    }}
+                  >
+                    {section.items.map((product, index) => {
+                      const hasDiscount = (product.discountPercent ?? 0) > 0
+                      const salePrice = hasDiscount
+                        ? Math.round(product.price * (1 - (product.discountPercent ?? 0) / 100))
+                        : product.price
+                      return (
+                        <Box
+                          key={product.id}
+                          onClick={() => handleGoToProduct(product.id)}
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            cursor: 'pointer',
+                            borderRadius: 3,
+                            overflow: 'hidden',
+                            border: '1px solid #eee',
+                            bgcolor: 'white',
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                            '&:hover': {
+                              transform: 'translateY(-4px)',
+                              boxShadow: '0 12px 24px rgba(0,0,0,0.08)',
+                            },
+                          }}
+                        >
+                          <Box sx={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', overflow: 'hidden', bgcolor: '#f5f5f5' }}>
+                            <Box
+                              component="img"
+                              src={product.mainImage || 'https://placehold.co/400x500/png'}
+                              alt={product.title}
+                              sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 25%' }}
+                            />
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                left: 8,
+                                width: 24,
+                                height: 24,
+                                borderRadius: '50%',
+                                bgcolor: 'rgba(17,17,17,0.85)',
+                                color: 'white',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              {index + 1}
+                            </Box>
+                          </Box>
+                          <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', flex: 1 }}>
+                            <Typography sx={{ fontSize: '0.75rem', color: '#999', mb: 0.5 }}>
+                              {product.brand}
+                            </Typography>
+                            <Typography
+                              sx={{
+                                fontSize: '0.9rem',
+                                fontWeight: 700,
+                                color: '#1a1a1a',
+                                mb: 1,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {product.title}
+                            </Typography>
+                            <Stack direction="row" alignItems="baseline" spacing={1.5} sx={{ mb: product.reason ? 2.5 : 0 }}>
+                              {hasDiscount && (
+                                <Typography sx={{ fontSize: '0.9rem', fontWeight: 800, color: '#ff4444' }}>
+                                  {product.discountPercent}%
+                                </Typography>
+                              )}
+                              <Typography sx={{ fontSize: '0.95rem', fontWeight: 800, color: '#1a1a1a' }}>
+                                {salePrice.toLocaleString()}원
+                              </Typography>
+                            </Stack>
+                            {product.reason && (
+                              <Typography
+                                sx={{
+                                  mt: 'auto',
+                                  fontSize: '0.78rem',
+                                  color: '#666',
+                                  lineHeight: 1.5,
+                                  bgcolor: '#F7F7FB',
+                                  borderRadius: 1.5,
+                                  px: 2.5,
+                                  py: 2,
+                                }}
+                              >
+                                {product.reason}
+                              </Typography>
+                            )}
+                          </Box>
+                        </Box>
+                      )
+                    })}
+                  </Box>
+                </Box>
+              ))}
+            </DialogContent>
+
+            <DialogActions sx={{ px: { xs: 4, sm: 7 }, pb: 7, pt: 0, gap: 2 }}>
+              <Button
+                onClick={handleClosePreview}
+                variant="outlined"
+                sx={{
+                  flex: 1,
+                  py: 3,
+                  borderRadius: 2,
+                  borderColor: '#ddd',
+                  color: '#666',
+                  '&:hover': { borderColor: '#bbb', bgcolor: '#f5f5f5' },
+                }}
+              >
+                닫기
+              </Button>
+              <Button
+                onClick={handleGoToSearch}
+                variant="contained"
+                sx={{
+                  flex: 2,
+                  py: 3,
+                  borderRadius: 2,
+                  bgcolor: '#6366F1',
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#4F46E5', boxShadow: 'none' },
+                }}
+              >
+                비슷한 상품 더보기
+              </Button>
+            </DialogActions>
+          </>
+        )}
       </Dialog>
 
       {/* AI 추천 결과 알림 */}
