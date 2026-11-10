@@ -41,9 +41,9 @@ const carouselCards = [
 // 기본 배너 데이터 (DB에 배너가 없을 경우 폴백) - 크기 최적화 300x400
 const defaultBannerSlides = [
   [
-    { id: 1, image: '/images/banner-1.jpg', fallback: 'https://picsum.photos/id/400/300/400', label: '2025\n결 산\n빅세일', brand: 'vunque', title: '인기 브랜드 백팩 발매', subtitle: '분크', link: '/products?category=bag' },
-    { id: 2, image: '/images/banner-2.jpg', fallback: 'https://picsum.photos/id/401/300/400', label: '2025\n결 산\n빅세일', brand: '', title: '잡화 브랜드데이 최대 25% 쿠폰', subtitle: '락피쉬웨더웨어, 도씨 외', link: '/products?category=shoes' },
-    { id: 3, image: '/images/banner-3.jpg', fallback: 'https://picsum.photos/id/402/300/400', label: '2025\n결 산\n빅세일', brand: 'Poète', title: '25 겨울 발매 최대 10% 할인', subtitle: '포에트서울', link: '/products?category=knit' },
+    { id: 1, image: '/images/banner-1.jpg', fallback: 'https://picsum.photos/id/400/300/400', label: '2026\n결 산\n빅세일', brand: 'vunque', title: '인기 브랜드 백팩 발매', subtitle: '분크', link: '/products?category=bag' },
+    { id: 2, image: '/images/banner-2.jpg', fallback: 'https://picsum.photos/id/401/300/400', label: '2026\n결 산\n빅세일', brand: '', title: '잡화 브랜드데이 최대 25% 쿠폰', subtitle: '락피쉬웨더웨어, 도씨 외', link: '/products?category=shoes' },
+    { id: 3, image: '/images/banner-3.jpg', fallback: 'https://picsum.photos/id/402/300/400', label: '2026\n결 산\n빅세일', brand: 'Poète', title: '26 겨울 발매 최대 10% 할인', subtitle: '포에트서울', link: '/products?category=knit' },
   ],
   [
     { id: 4, image: '/images/banner-4.jpg', fallback: 'https://picsum.photos/id/403/300/400', label: 'WINTER\nSALE', brand: 'NIKE', title: '나이키 윈터 컬렉션', subtitle: '최대 40% 할인', link: '/products?brand=nike' },
@@ -591,7 +591,7 @@ const HomePage = () => {
               bgcolor: glassmorphism.light.background,
               backdropFilter: glassmorphism.light.backdropFilter,
               border: glassmorphism.light.border,
-              borderRadius: 3,
+              borderRadius: '12px',
               p: 2.5,
               mx: { xs: 2, sm: 3 },
               boxShadow: glassmorphism.light.boxShadow,
@@ -642,7 +642,7 @@ const HomePage = () => {
             />
 
             {/* 하단 영역: 글자수 + 전송버튼 */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
               <Typography sx={{ color: '#bbb', fontSize: '0.75rem' }}>
                 {aiPrompt.length} / 1000
               </Typography>

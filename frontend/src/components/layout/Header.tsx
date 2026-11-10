@@ -35,6 +35,14 @@ const categoryMenus = [
   { label: '액세서리', link: '/products?category=ACCESSORIES', isHot: false, isNew: false },
 ]
 
+const headerTextButtonSx = {
+  color: '#1a1a1a',
+  fontSize: '0.85rem',
+  minWidth: 'auto',
+  px: 1.25,
+  display: { xs: 'none', md: 'flex' },
+}
+
 const Header = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -100,7 +108,7 @@ const Header = () => {
           </Box>
 
           {/* 우측: 아이콘 */}
-          <Stack direction="row" spacing={0.5} alignItems="center">
+          <Stack direction="row" spacing={0.5} useFlexGap alignItems="center" sx={{ mr: -1 }}>
             {isLoggedIn ? (
               <>
                 {isAdmin && (
@@ -108,7 +116,7 @@ const Header = () => {
                     component={Link}
                     to="/admin"
                     size="small"
-                    sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                    sx={headerTextButtonSx}
                   >
                     관리자
                   </Button>
@@ -117,14 +125,14 @@ const Header = () => {
                   component={Link}
                   to="/board/notice"
                   size="small"
-                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                  sx={headerTextButtonSx}
                 >
                   게시판
                 </Button>
                 <Button
                   onClick={handleLogout}
                   size="small"
-                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                  sx={headerTextButtonSx}
                 >
                   로그아웃
                 </Button>
@@ -135,7 +143,7 @@ const Header = () => {
                   component={Link}
                   to="/board/notice"
                   size="small"
-                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                  sx={headerTextButtonSx}
                 >
                   게시판
                 </Button>
@@ -143,7 +151,7 @@ const Header = () => {
                   component={Link}
                   to="/login"
                   size="small"
-                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                  sx={headerTextButtonSx}
                 >
                   로그인
                 </Button>
@@ -151,14 +159,14 @@ const Header = () => {
                   component={Link}
                   to="/signup"
                   size="small"
-                  sx={{ color: '#1a1a1a', fontSize: '0.85rem', display: { xs: 'none', md: 'flex' } }}
+                  sx={headerTextButtonSx}
                 >
                   회원가입
                 </Button>
               </>
             )}
 
-            <Divider orientation="vertical" flexItem sx={{ mx: 1, display: { xs: 'none', md: 'flex' } }} />
+            <Divider orientation="vertical" flexItem sx={{ ml: 2, mr: 2.25, display: { xs: 'none', md: 'flex' } }} />
 
             <IconButton
               component={Link}
